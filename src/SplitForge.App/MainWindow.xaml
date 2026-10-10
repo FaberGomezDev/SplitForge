@@ -166,7 +166,7 @@
           </Grid.RowDefinitions>
           <StackPanel>
             <TextBlock Style="{StaticResource Heading}" Text="Biblioteca Steam y diagnóstico" />
-            <TextBlock Style="{StaticResource Hint}" Text="Solo INSPECCIONA tus juegos: no habilita cuentas, no separa mandos y no certifica modo sin conexión." />
+            <TextBlock Style="{StaticResource Hint}" Text="Solo INSPECCIONA tus juegos: no separa mandos y no certifica modo sin conexión." />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
               <Button Content="↻  Escanear Steam" Command="{Binding ScanSteamCommand}" />
               <Button Content="Guardar reporte sin datos personales" Command="{Binding ExportSteamCommand}" />
@@ -206,7 +206,7 @@
             <Border Style="{StaticResource PanelBorder}">
               <TextBlock Style="{StaticResource Mono}" Foreground="#D7E5F5" Text="{Binding GameWindowsReport}" />
             </Border>
-            <TextBlock Style="{StaticResource Warning}" Text="Para jugar juntos, cada cliente necesita su cuenta legítima y unirse a la misma partida. Dos ventanas no garantizan dos jugadores ni funcionamiento sin Internet." />
+            <TextBlock Style="{StaticResource Warning}" Text="Para jugar juntos, los clientes deben unirse a la misma partida. Dos ventanas no garantizan dos jugadores ni funcionamiento sin Internet." />
           </StackPanel>
         </ScrollViewer>
       </TabItem>
@@ -216,7 +216,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
             <TextBlock Style="{StaticResource Heading}" Text="7 Days to Die · adaptador experimental" />
-            <TextBlock Style="{StaticResource Hint}" Text="Camino legítimo: servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por cuenta de Steam + pantalla dividida." />
+            <TextBlock Style="{StaticResource Hint}" Text="Servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por jugador + pantalla dividida." />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
               <Button Content="↻  Comprobar" Command="{Binding CheckSevenCommand}" />
               <Button Content="Guardar diagnóstico 7DTD" Command="{Binding ExportSevenCommand}" />
@@ -260,7 +260,7 @@
               </ScrollViewer>
             </Border>
 
-            <TextBlock Style="{StaticResource Heading}" Text="2 · Clientes (una cuenta Steam por jugador)" FontSize="15" Margin="0,8,0,4" />
+            <TextBlock Style="{StaticResource Heading}" Text="2 · Clientes" FontSize="15" Margin="0,8,0,4" />
             <TextBlock Text="{Binding JoinInstructions}" Margin="0,0,0,6" />
             <Button Content="Abrir Steam del jugador 2 (Sandboxie-Plus)" Command="{Binding OpenSecondSteamCommand}" HorizontalAlignment="Left" Margin="0,0,0,6" />
 

@@ -1,6 +1,6 @@
 # SplitForge
 
-**Pantalla dividida local para juegos de Steam compatibles en una sola PC con Windows**: cada jugador con su mando y su parte de la pantalla, en la misma partida cuando el juego lo permite de forma legítima.
+**Pantalla dividida local para juegos de Steam compatibles en una sola PC con Windows**: cada jugador con su mando y su parte de la pantalla, en la misma partida cuando el juego lo permite.
 
 > **Versión 0.7.0 · experimental.** Reconstruida en **.NET 10 + SDL3 + WPF** para eficiencia y fluidez. El prototipo Python 0.6 (validado con dos PS4) sigue en el repositorio como referencia.
 > **Todavía no hay ningún juego comercial validado con dos jugadores.** 7 Days to Die tiene un adaptador experimental.
@@ -23,11 +23,10 @@ Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | mand
 
 ## 7 Days to Die con dos jugadores: qué hace falta
 
-1. **Una cuenta de Steam con el juego por jugador**, cada una con su propia sesión.
-2. **El servidor dedicado gratuito** «7 Days to Die Dedicated Server» (Steam → Biblioteca → Herramientas). SplitForge lo arranca con configuración y guardados propios.
-3. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
-4. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
-5. **Un mando por ventana (experimental):** el filtro XInput nativo en C++ hace que cada cliente vea solo su mando (pestaña 06 → *Instalar filtro* → *Asignar mandos*). Requiere los PS4 como mandos XInput (Steam Input o DS4Windows). Sin validar todavía en hardware: confirma con `SplitForge.Diagnostico.exe 7dtd` que el juego carga XInput.
+1. **El servidor dedicado gratuito** «7 Days to Die Dedicated Server» (Steam → Biblioteca → Herramientas). SplitForge lo arranca con configuración y guardados propios.
+2. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
+3. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
+4. **Un mando por ventana (experimental):** el filtro XInput nativo en C++ hace que cada cliente vea solo su mando (pestaña 06 → *Instalar filtro* → *Asignar mandos*). Requiere los PS4 como mandos XInput (Steam Input o DS4Windows). Sin validar todavía en hardware: confirma con `SplitForge.Diagnostico.exe 7dtd` que el juego carga XInput.
 
 ## Desarrollo
 
@@ -42,7 +41,7 @@ Requiere el SDK de .NET 10. Detalles en [`docs/10-DESARROLLO.md`](docs/10-DESARR
 
 ## Límites y precauciones
 
-- Una ventana de un juego **no es** una instancia cooperativa; dos clientes necesitan identidades autorizadas y la misma partida.
+- Una ventana de un juego **no es** una instancia cooperativa; los clientes deben estar en la misma partida.
 - El modo sin conexión de Steam no crea LAN ni autenticación para dos personas.
 - No se sobrescriben archivos ni guardados de los juegos y no se cierran juegos ajenos.
 - Pantalla completa exclusiva y procesos elevados pueden impedir mover ventanas: usa modo ventana o sin bordes del propio juego.

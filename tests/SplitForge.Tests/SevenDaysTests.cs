@@ -29,7 +29,6 @@ public class SevenDaysAdapterTests
         Assert.Equal(CompatibilityState.Inspeccionado, ready.State); // Nunca COMPATIBLE automáticamente.
         Assert.Equal(CheckStatus.Ok, ready.Find("juego")!.Status);
         Assert.Equal(CheckStatus.Ok, ready.Find("servidor")!.Status);
-        Assert.Equal(CheckStatus.Pending, ready.Find("cuentas")!.Status);
         Assert.Equal(CheckStatus.Pending, ready.Find("aislamiento")!.Status);
         Assert.False(ready.HasFailures);
     }
@@ -47,10 +46,9 @@ public class SevenDaysAdapterTests
     }
 
     [Fact]
-    public void ManifestDeclaresSeparateAccountsAndNothingVerified()
+    public void ManifestDeclaresNothingVerified()
     {
         var m = new SevenDaysToDieAdapter().Manifest;
-        Assert.True(m.RequiresSeparateAccounts);
         Assert.Empty(m.SupportedBuilds);
         Assert.Empty(m.VerifiedModes);
     }

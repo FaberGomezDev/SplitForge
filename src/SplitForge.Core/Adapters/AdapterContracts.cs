@@ -34,7 +34,6 @@ public sealed record AdapterManifest(
     IReadOnlyList<string> VerifiedModes,
     int MinPlayers,
     int MaxPlayers,
-    bool RequiresSeparateAccounts,
     // Refleja una opción oficial del juego (p. ej. "Launch game without EAC").
     bool NeedsAntiCheatDisabledByOfficialOption,
     string Notes);

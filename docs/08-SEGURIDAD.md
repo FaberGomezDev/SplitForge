@@ -19,7 +19,7 @@
 | Ventanas | Revalidación PID+exe+HWND antes de mover; captura de todas las posiciones y estilos antes de cambiar nada; restauración | Pantalla completa exclusiva, procesos elevados |
 | Modo sin bordes | Estilos originales guardados y restaurados (también al cerrar SplitForge); copia en disco `sesion-ventanas.json` para recuperar tras un cierre inesperado, validando que el handle sigue siendo del mismo PID | Juegos que reescriben su propio estilo |
 | Servidor 7DTD | Configuración propia; `ServerVisibility=0`; telnet sin contraseña ⇒ solo loopback; apagado ordenado antes de terminar | Firewall de Windows puede pedir permiso: aceptar solo redes privadas |
-| Sandboxie-Plus | SplitForge solo lanza Steam en un sandbox; el usuario inicia sesión con su otra cuenta; no se ven ni guardan credenciales | Políticas de Steam/antitrampas sobre sandboxes |
+| Sandboxie-Plus | SplitForge solo lanza Steam en un sandbox; el usuario inicia sesión; no se ven ni guardan credenciales | Políticas de Steam/antitrampas sobre sandboxes |
 | Visores del laboratorio | IPC binario con validación estricta; procesos propios | — |
 | Configuración | `settings.v2.json` atómico; `settings.json` del prototipo solo lectura | — |
 | Diagnóstico de módulos | `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ` solo para enumerar nombres de módulos; con EAC activo Windows lo deniega y se informa | — |
@@ -28,7 +28,7 @@
 ## Reglas para una integración nueva
 
 1. Preflight de derechos/modos de juego; no lanzar si falla.
-2. Privilegios mínimos; separar control de cuentas/juego.
+2. Privilegios mínimos.
 3. Plan de restauración antes de modificar ventanas o configuración propia.
 4. Documentar cómo activar desde el juego cualquier modo que la integración necesite (p. ej. sin EAC).
 5. No persistir credenciales ni secretos.
@@ -36,4 +36,4 @@
 
 ## Comunicación clara al usuario
 
-Si solo se detectan dos ventanas: «dos procesos detectados y colocados», no «juego compatible». Si los mandos no están aislados: la operación es incompleta. Si el juego requiere Internet, no etiquetarlo como offline. Si hacen falta dos cuentas, decirlo antes de empezar.
+Si solo se detectan dos ventanas: «dos procesos detectados y colocados», no «juego compatible». Si los mandos no están aislados: la operación es incompleta. Si el juego requiere Internet, no etiquetarlo como offline.

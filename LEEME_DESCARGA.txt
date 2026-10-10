@@ -22,4 +22,3 @@ los clientes de 7DTD sin EAC; nunca sobrescribe archivos del juego y se retira c
 Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
 La configuración de la versión Python (settings.json) no se modifica.
 
-Para que dos personas jueguen la misma partida, cada una necesita su propia cuenta con el juego.

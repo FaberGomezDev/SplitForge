@@ -86,7 +86,7 @@ public sealed partial class MainViewModel
     public IReadOnlyList<int> PlayerCounts { get; } = [2, 3, 4];
 
     public string JoinInstructions =>
-        $"Cada jugador, con SU cuenta de Steam: abre 7 Days to Die {(ServerEac ? "CON EAC" : "con «Launch game without EAC»")} → "
+        $"Cada jugador: abre 7 Days to Die {(ServerEac ? "CON EAC" : "con «Launch game without EAC»")} → "
         + $"Unirse a una partida → Conectar a IP → 127.0.0.1, puerto {ServerPort}. Después pulsa «Dividir pantalla».";
 
     private void InitSevenDays()
@@ -187,8 +187,8 @@ public sealed partial class MainViewModel
         var start = SandboxieLocator.StartExecutable()
                     ?? throw new InvalidOperationException("No se encontró Sandboxie-Plus. Instálalo (gratuito) o usa otro usuario de Windows para el Steam del jugador 2.");
         var steam = SteamLocator.SteamExecutable() ?? throw new InvalidOperationException("No se encontró steam.exe.");
-        if (!Confirm("Steam del jugador 2", "Se abrirá un segundo Steam dentro de Sandboxie-Plus.\n\n"
-                     + "Inicia sesión con la OTRA cuenta (la que tiene su propia copia del juego). SplitForge no ve ni guarda credenciales."))
+        if (!Confirm("Steam del jugador 2", "Se abrirá un segundo Steam dentro de Sandboxie-Plus para el jugador 2.\n\n"
+                     + "SplitForge no ve ni guarda credenciales."))
             return;
         new SystemProcessLauncher().Start(SandboxieLocator.SteamInBox(start, steam)).Dispose();
         _log.Write($"Steam del jugador 2 abierto en el sandbox {SandboxieLocator.DefaultBox}.");

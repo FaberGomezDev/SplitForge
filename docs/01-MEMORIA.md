@@ -19,7 +19,6 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Prototipo: Python 3.13.13, `pygame-ce 2.5.8`, SDL 2.32.10.
 - Dos mandos Bluetooth `Wireless Controller` en Windows, `PS4 Controller` en SDL.
 - 7 Days to Die instalado. El propietario consiguió iniciarlo **sin EAC** con la opción oficial de Steam ("Preguntar al iniciar" → "Launch game without EAC").
-- El propietario **no tiene una segunda cuenta de Steam con 7DTD** (2026-10-10).
 
 ## Línea temporal de aprendizajes
 
@@ -55,21 +54,20 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Servidor dedicado 7DTD local con guardados aislados: **implementado**, no probado en el PC del propietario.
 - Dos/cuatro ventanas de clientes distribuidas sin bordes: **implementado**, eficacia por juego no comprobada.
 - Un mando por cliente dentro del juego: **filtro XInput nativo implementado (experimental)**, sin validar en hardware.
-- Dos clientes de 7DTD en la misma partida con dos mandos aislados: **NO** (falta segunda cuenta y módulo nativo de entrada).
+- Dos clientes de 7DTD en la misma partida con dos mandos aislados: **NO** (falta validar el aislamiento de mandos).
 - FPS/frametimes/VRAM medidos: **NO**.
 
 ## Decisiones tomadas con el propietario (2026-10-10)
 
 - **Técnicas de Nucleus Co-op que adopta SplitForge:** filtrado de mandos por instancia, simulación de foco y colocación de ventanas (ADR-013, ADR-015).
-- **Modo sin conexión de Steam con una sola cuenta:** no sirve; la identidad es la misma y la partida vería al mismo jugador dos veces.
 - **Remote Play Together:** solo funciona con juegos con multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
-- **Retirado en 0.7 a propósito:** el lanzamiento doble genérico de cualquier `.exe` (pestaña «03 EJECUTABLES» del prototipo; sin aislamiento de cuentas ni guardados, riesgo para partidas) y la demo antigua de dos mundos separados (sustituida por el mundo compartido). Siguen disponibles en el prototipo Python. Los juegos se integran mediante adaptadores con preflight.
+- **Retirado en 0.7 a propósito:** el lanzamiento doble genérico de cualquier `.exe` (pestaña «03 EJECUTABLES» del prototipo; sin aislamiento de guardados, riesgo para partidas) y la demo antigua de dos mundos separados (sustituida por el mundo compartido). Siguen disponibles en el prototipo Python. Los juegos se integran mediante adaptadores con preflight.
 
 ## Estado para la siguiente sesión
 
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide: mandos en «01 MANDOS» (incluida la frecuencia del hilo), laboratorio con dos PS4, distribución sin bordes y restauración.
 **P1:** con 7DTD abierto sin EAC (idealmente dos instancias), `SplitForge.Diagnostico.exe 7dtd` → `SplitForge_Reporte_7DTD.json`, y anotar si la ventana sin foco sigue funcionando. Si carga XInput, probar el filtro nativo (W16); si exige foco, añadir simulación de foco al módulo nativo.
-**P2:** segunda cuenta de Steam con 7DTD para la prueba real de dos jugadores.
+**P2:** prueba real de dos jugadores en la misma partida.
 
 ## Política de actualización de memoria
 

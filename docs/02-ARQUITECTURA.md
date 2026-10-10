@@ -60,8 +60,8 @@ flowchart TB
     API --> NET[Servidor/LAN admitido por el juego]
     API --> PERF[Telemetría · PresentMon/ETW]
     API --> SAFETY[Guardados, rollback y políticas]
-    NATIVE --> A[Cliente autorizado J1]
-    NATIVE --> B[Cliente autorizado J2]
+    NATIVE --> A[Cliente J1]
+    NATIVE --> B[Cliente J2]
     PROCESS --> A
     PROCESS --> B
     NET --> A
@@ -72,7 +72,7 @@ flowchart TB
 
 1. **Adaptadores versionados** por juego/build con capacidades probadas, requisitos y bloqueos.
 2. **Separar control y datos:** la UI orquesta; los hilos críticos (entrada, simulación) no dependen de ella.
-3. **Preflight antes de lanzar:** licencia, cuentas, modo de red, mandos, guardados y recuperación.
+3. **Preflight antes de lanzar:** instalación, modo de red, mandos, guardados y recuperación.
 4. **Operaciones reversibles:** snapshot de ventanas y estilos; restauración al detener; no terminar procesos externos.
 5. **Fail closed:** si falta una condición crítica, detener con un motivo observable.
 6. **Métricas antes de optimizar:** frametime P95/P99, FPS por instancia, memoria/VRAM, CPU y latencia de entrada.
@@ -83,4 +83,4 @@ Ventanas nativas sin bordes y división Win32 (implementado). Composición Direc
 
 ### Definición de sesión comercial exitosa
 
-**La misma partida** visible para ambos jugadores; cada mando controla una sola instancia; guardados intactos; cuentas legítimas; cierre y restauración seguros; límites offline documentados. Dos ventanas organizadas sin estas condiciones **no cuentan**.
+**La misma partida** visible para ambos jugadores; cada mando controla una sola instancia; guardados intactos; cierre y restauración seguros; límites offline documentados. Dos ventanas organizadas sin estas condiciones **no cuentan**.

@@ -32,8 +32,8 @@ public sealed record SevenDaysServerOptions
 }
 
 /// <summary>
-/// Adaptador experimental de 7 Days to Die. Camino legítimo: un servidor dedicado oficial local con
-/// guardados aislados y dos clientes, cada uno con SU cuenta Steam.
+/// Adaptador experimental de 7 Days to Die: un servidor dedicado oficial local con guardados
+/// aislados y dos clientes en pantalla dividida.
 /// </summary>
 public sealed class SevenDaysToDieAdapter : IGameAdapter
 {
@@ -46,9 +46,8 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
         VerifiedModes: [],
         MinPlayers: 2,
         MaxPlayers: 4,
-        RequiresSeparateAccounts: true,
         NeedsAntiCheatDisabledByOfficialOption: true,
-        "Servidor dedicado local + un cliente por cuenta. Aislamiento de mandos en el juego pendiente del módulo nativo.");
+        "Servidor dedicado local + un cliente por jugador. Aislamiento de mandos en el juego pendiente del módulo nativo.");
 
     public AdapterPreflight Preflight(AdapterEnvironment env)
     {
@@ -76,8 +75,6 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
                 "Si el cliente rechaza la conexión por versión, actualiza ambos en Steam."));
         }
 
-        checks.Add(new("cuentas", "Una cuenta Steam con el juego por jugador", CheckStatus.Pending,
-            "No se puede verificar automáticamente. El modo sin conexión o una sola cuenta no permiten dos jugadores."));
         checks.Add(new("segundo_steam", "Segunda sesión de Steam", env.SandboxieAvailable ? CheckStatus.Ok : CheckStatus.Pending,
             env.SandboxieAvailable
                 ? "Sandboxie-Plus detectado: puedes abrir el Steam del jugador 2 en un sandbox."

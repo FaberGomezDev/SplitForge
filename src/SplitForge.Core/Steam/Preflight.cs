@@ -22,7 +22,7 @@ public static class ResearchProfiles
     {
         [SevenDaysToDie] = new(SevenDaysToDie, "7 Days to Die", "Adaptador experimental (servidor local)",
             ["7DaysToDie.exe"],
-            "Multijugador por servidor: cada jugador necesita su propia cuenta Steam con el juego. Aislamiento de mandos aún no validado.",
+            "Multijugador por servidor dedicado local. Aislamiento de mandos aún no validado.",
             "Usar la pestaña 7 DAYS TO DIE: servidor dedicado local aislado y unión a 127.0.0.1."),
         [SevenDaysToDieDedicatedServer] = new(SevenDaysToDieDedicatedServer, "7 Days to Die Dedicated Server", "Herramienta del adaptador 7DTD",
             ["7DaysToDieServer.exe"],
@@ -32,7 +32,7 @@ public static class ResearchProfiles
             "El modo multijugador y la autenticación deben verificarse. No se presupone cooperativo sin Internet.",
             "Pendiente de investigar autenticación y sesiones."),
         ["495420"] = new("495420", "State of Decay 2", "Investigación posterior", [],
-            "El multijugador puede requerir identidades y servicios en línea distintos.",
+            "Multijugador con servicios en línea por investigar.",
             "No prometer modo sin conexión con dos jugadores."),
         ["271590"] = new("271590", "Grand Theft Auto V (Legacy)", "Investigación posterior", ["GTA5.exe"],
             "La campaña no incluye cooperativo local nativo; opciones externas no se presuponen compatibles.",
@@ -116,7 +116,7 @@ public static partial class PreflightEvaluator
         {
             notes.Add("Sin perfil de investigación para este AppID.");
         }
-        notes.Add("Sin prueba de dos cuentas/clientes, mandos aislados ni conexión cooperativa local.");
+        notes.Add("Sin prueba de dos clientes, mandos aislados ni conexión cooperativa local.");
 
         return new Preflight(game.AppId, game.Name, profile?.Phase ?? "Sin perfil; aún sin verificar",
             present, inside, detected, expected, names, game.BuildId, game.StateFlags, notes);

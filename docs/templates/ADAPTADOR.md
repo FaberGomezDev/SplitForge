@@ -8,7 +8,7 @@
 - Steam AppID:
 - Build ID (observado):
 - Fecha, sistema operativo y ejecutable real:
-- Identidad/licencia legal requerida (sin nombres ni IDs):
+- Requisitos de cada cliente (sin nombres ni IDs):
 - Restricciones oficiales/EULA/antitrampas:
 
 ## Capacidades verificadas
@@ -16,7 +16,7 @@
 | Prueba | Resultado | Evidencia / condiciones |
 | --- | --- | --- |
 | Iniciar 1 cliente oficial | Pendiente | |
-| Dos clientes autorizados en una PC | Pendiente | |
+| Dos clientes en una PC | Pendiente | |
 | Un mismo mundo/partida | Pendiente | |
 | LAN sin Internet real | Pendiente | |
 | 2 mandos sin entrada cruzada | Pendiente | |
@@ -27,7 +27,7 @@
 ## Preflight y bloqueo
 
 - Comprobaciones que nunca deben saltarse:
-- Qué mostrar cuando falta licencia, cuenta o servidor:
+- Qué mostrar cuando falta el servidor o un cliente:
 - Riesgos conocidos y cómo aislarlos:
 - Modo offline explícitamente admitido / no admitido / desconocido:
 
@@ -35,7 +35,7 @@
 
 1. `preflight`: solo lectura, fallos con motivo.
 2. `prepare`: validar backups de cualquier archivo que pudiera editarse.
-3. `start`: abrir clientes **autorizados**, servidor si procede.
+3. `start`: abrir los clientes y el servidor si procede.
 4. `monitor`: estados de cliente, dispositivo, guardado y métricas.
 5. `stop`: cierre normal, no matar juegos ajenos.
 6. `restore`: revertir posiciones/configuración propia.

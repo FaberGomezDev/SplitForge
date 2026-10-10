@@ -17,12 +17,11 @@
 ## P1 — Juego real elegido: 7 Days to Die
 
 - [x] Juego instalado en el PC de pruebas; arranca sin EAC con la opción oficial.
-- [x] Escenario legítimo definido: servidor dedicado oficial + un cliente por cuenta (ADR-013).
+- [x] Escenario definido: servidor dedicado oficial + un cliente por jugador (ADR-013).
 - [x] Preflight, servidor local aislado, Sandboxie-Plus para el Steam del jugador 2, pantalla dividida (implementado, sin validar).
 - [ ] `SplitForge_Reporte_7DTD.json` con uno y con dos clientes abiertos (APIs de mando, ¿la ventana sin foco sigue funcionando?).
-- [ ] **Segunda cuenta de Steam con 7DTD** (bloqueante para dos jugadores reales).
 
-**Criterio de salida:** dos clientes con cuentas distintas conectados al servidor local de SplitForge.
+**Criterio de salida:** dos clientes conectados al servidor local de SplitForge.
 
 ## P2 — Un mando por ventana dentro del juego (módulo nativo C++)
 
@@ -58,4 +57,4 @@
 
 1. Propietario: descargar `SplitForge-win-x64`, validar mandos y laboratorio, enviar `SplitForge_Reporte_7DTD.json`.
 2. Con el informe: ADR del método de aislamiento y primera versión del módulo nativo.
-3. Con la segunda cuenta: prueba real de dos jugadores y registro de evidencias en `05-INTEGRACION-STEAM.md`.
+3. Prueba real de dos jugadores y registro de evidencias en `05-INTEGRACION-STEAM.md`.

@@ -6,10 +6,9 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 - ¿Qué APIs de mando carga 7DTD en el PC del propietario? → `SplitForge.Diagnostico.exe 7dtd` (con uno y con dos clientes).
 - ¿La ventana **sin foco** sigue simulando el juego y leyendo mandos? (Unity puede pausar o ignorar la entrada en segundo plano).
-- ¿Abre 7DTD una segunda instancia en la misma sesión de Windows (con otra cuenta en Sandboxie-Plus u otro usuario)?
+- ¿Abre 7DTD una segunda instancia en la misma sesión de Windows (en Sandboxie-Plus u otro usuario)?
 - ¿Steam Input captura los PS4 en ambos Steam? ¿Conviene desactivarlo para 7DTD y exponer los PS4 como XInput (DS4Windows) para el filtro por proceso?
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam?
-- Segunda cuenta de Steam con el juego: **pendiente del propietario**.
 
 ## Diseño técnico
 
@@ -23,4 +22,4 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## Prioridad
 
-P0: validar la 0.7 en el PC del propietario. P1: diagnóstico 7DTD y segunda cuenta. P2: módulo nativo de un mando por ventana. P3: métricas. P4: firma y distribución.
+P0: validar la 0.7 en el PC del propietario. P1: diagnóstico 7DTD. P2: módulo nativo de un mando por ventana. P3: métricas. P4: firma y distribución.

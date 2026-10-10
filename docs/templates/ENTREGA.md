@@ -21,7 +21,7 @@
 
 ## Privacidad y seguridad
 
-- ¿Se tocaron cuentas, licencias, guardados, drivers o permisos?:
+- ¿Se tocaron guardados, drivers o permisos?:
 - ¿Los reportes siguen sin datos personales?:
 
 ## Siguiente sesión

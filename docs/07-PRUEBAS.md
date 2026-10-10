@@ -58,7 +58,7 @@ Módulo nativo C++ (MSVC `/W4 /WX` + CTest), pruebas .NET y Python, documentaci�
 | W11 | Servidor 7DTD | Arranca, llega a LISTO, guardados en `%LOCALAPPDATA%\SplitForge\7dtd`, apagado ordenado |
 | W12 | Cliente 7DTD | Un cliente sin EAC se une a `127.0.0.1:26900` |
 | W13 | Diagnóstico 7DTD | Informe con APIs de mando; sin rutas ni títulos |
-| W14 | Dos cuentas 7DTD | Dos clientes en la misma partida (requiere segunda cuenta) |
+| W14 | Dos clientes 7DTD | Dos clientes en la misma partida |
 | W15 | Cierre | Cerrar SplitForge restaura ventanas y apaga el servidor propio |
 | W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; `estado-PID.txt` muestra la ranura |
 

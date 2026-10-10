@@ -31,7 +31,7 @@ public static class SteamLocator
 }
 
 /// <summary>
-/// Sandboxie-Plus permite abrir un segundo Steam con OTRA cuenta legítima en la misma sesión de
+/// Sandboxie-Plus permite abrir un segundo Steam en la misma sesión de
 /// Windows. SplitForge solo lo detecta y lanza Steam dentro del sandbox; el inicio de sesión lo hace el jugador.
 /// </summary>
 [SupportedOSPlatform("windows")]

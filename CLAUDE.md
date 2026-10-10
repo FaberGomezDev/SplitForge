@@ -80,7 +80,7 @@ En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y s
 
 ## Próxima meta explícita
 
-Validar la 0.7 en el PC del propietario (mandos, laboratorio, pantalla dividida) y obtener `SplitForge_Reporte_7DTD.json` con 7DTD abierto **sin EAC**. Con esa evidencia, validar el **filtro XInput nativo** (ADR-015) o añadir simulación de foco si el juego la exige (ver `docs/06-PLAN-DE-DESARROLLO.md`). Para dos jugadores reales en 7DTD hace falta **una segunda cuenta de Steam con el juego**.
+Validar la 0.7 en el PC del propietario (mandos, laboratorio, pantalla dividida) y obtener `SplitForge_Reporte_7DTD.json` con 7DTD abierto **sin EAC**. Con esa evidencia, validar el **filtro XInput nativo** (ADR-015) o añadir simulación de foco si el juego la exige (ver `docs/06-PLAN-DE-DESARROLLO.md`).
 
 ## Memoria de desarrollo
 

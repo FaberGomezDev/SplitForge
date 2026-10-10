@@ -56,8 +56,8 @@ flowchart LR
     PF[Preflight solo lectura] -->|ok| CFG[serverconfig.xml propio\nplantilla + ajustes]
     CFG --> SRV[7DaysToDieServer.exe -configfile …]
     SRV -->|telnet 127.0.0.1 abierto| READY[LISTO]
-    READY --> C1[Cliente J1 · cuenta 1]
-    READY --> C2[Cliente J2 · cuenta 2 · Sandboxie]
+    READY --> C1[Cliente J1]
+    READY --> C2[Cliente J2 · Sandboxie]
     C1 --> TILE[Dividir pantalla\nrevalidar PID/exe · sin bordes]
     C2 --> TILE
     TILE --> STOP[Detener: restaurar ventanas]

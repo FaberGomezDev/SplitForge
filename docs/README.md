@@ -36,6 +36,6 @@
 
 **Experimental, sin validar en hardware:** filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015).
 
-**No implementado / no verificado:** la 0.7 en el hardware del propietario; simulación de foco para juegos que la exijan; dos jugadores reales en 7DTD (requiere segunda cuenta con el juego); métricas de FPS/VRAM.
+**No implementado / no verificado:** la 0.7 en el hardware del propietario; simulación de foco para juegos que la exijan; dos jugadores reales en 7DTD; métricas de FPS/VRAM.
 
 > `docs/` no sustituye las pruebas: documenta contratos y conocimiento acumulado. Para agentes, leer también [`../CLAUDE.md`](../CLAUDE.md).

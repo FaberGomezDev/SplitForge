@@ -99,7 +99,7 @@ public static class GameWindowInspector
             chosen = [.. clients.Take(2)];
             state = GameWindowStates.TwoClients;
             detail = "Dos procesos del mismo ejecutable detectados. Solo se puede distribuir sus ventanas; "
-                   + "partida común, cuentas y mandos siguen sin verificar.";
+                   + "partida común y mandos siguen sin verificar.";
         }
         else if (found.Count > 0)
         {

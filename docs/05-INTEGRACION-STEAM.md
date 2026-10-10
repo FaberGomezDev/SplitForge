@@ -10,7 +10,7 @@
 
 ## Adaptador 7 Days to Die (AppID 251570)
 
-Camino **legítimo** elegido (ADR-013):
+Camino elegido (ADR-013):
 
 | Paso | Qué hace SplitForge | Qué necesita el jugador |
 | --- | --- | --- |
@@ -36,9 +36,9 @@ En cualquier punto: `BLOQUEADO` con motivo verificable. **Nunca** inferir `COMPA
 
 | Juego | ID Steam | Estado | Restricción por validar |
 | --- | --- | --- | --- |
-| 7 Days to Die | 251570 | `INSPECCIONADO` · adaptador experimental | Segunda cuenta con el juego; aislamiento de mandos; ventana sin foco; guardados |
+| 7 Days to Die | 251570 | `INSPECCIONADO` · adaptador experimental | Aislamiento de mandos; ventana sin foco; guardados |
 | No Man's Sky | 275850 | Investigación posterior | Autenticación, sesiones multijugador, offline |
-| State of Decay 2 | 495420 | Investigación posterior | Cuentas Xbox, servicios online |
+| State of Decay 2 | 495420 | Investigación posterior | Servicios online |
 | GTA V Legacy | 271590 | Investigación posterior | Sin cooperativo en campaña, protecciones de GTA Online |
 
 Registrar la versión instalada y la fecha de prueba antes de cambiar un estado.
@@ -46,7 +46,7 @@ Registrar la versión instalada y la fecha de prueba antes de cambiar un estado.
 ## Pruebas mínimas para aprobar un adaptador
 
 - **Instalación:** AppID, build ID, ruta dentro de la biblioteca, ejecutable comprobado.
-- **Lanzamiento:** dos clientes, una cuenta cada uno.
+- **Lanzamiento:** dos clientes a la vez.
 - **Partida:** se ven en el mismo mundo e interactúan; LAN sin Internet demostrada **solo** si se quiere etiquetar como offline.
 - **Mandos:** cada mando afecta exclusivamente a su cliente.
 - **Pantallas:** regiones correctas, DPI/monitor, restauración al cerrar.
@@ -58,7 +58,7 @@ Registrar la versión instalada y la fecha de prueba antes de cambiar un estado.
 
 ```csharp
 public sealed record AdapterManifest(string AppId, string Title, IReadOnlyList<string> SupportedBuilds,
-    IReadOnlyList<string> VerifiedModes, int MinPlayers, int MaxPlayers, bool RequiresSeparateAccounts,
+    IReadOnlyList<string> VerifiedModes, int MinPlayers, int MaxPlayers,
     bool NeedsAntiCheatDisabledByOfficialOption, string Notes);
 
 public interface IGameAdapter
