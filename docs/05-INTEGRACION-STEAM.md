@@ -16,7 +16,7 @@ Camino **legítimo** elegido (ADR-013):
 | --- | --- | --- |
 | Preflight | Juego y servidor instalados, mandos, clientes abiertos, Sandboxie-Plus; estado máximo `INSPECCIONADO` | — |
 | Servidor | Lanza `7DaysToDieServer.exe` (AppID 294420, gratuito) con `-configfile` propio en `%LOCALAPPDATA%\SplitForge\7dtd`: plantilla del servidor + `ServerVisibility=0`, puerto, jugadores, `EACEnabled` según opción, telnet solo en 127.0.0.1, `UserDataFolder` aislado | Instalar «7 Days to Die Dedicated Server» desde Steam → Herramientas |
-| Clientes | Abre, si se pide, un segundo Steam en el sandbox `SplitForge_J2` de Sandboxie-Plus | **Una cuenta de Steam con el juego por jugador**; unirse a `127.0.0.1:puerto` |
+| Clientes | Abre, si se pide, un segundo Steam en el sandbox `SplitForge_J2` de Sandboxie-Plus | Unirse a `127.0.0.1:puerto` |
 | EAC | Servidor sin EAC por defecto (los clientes deben coincidir) | Opción oficial de Steam: Propiedades → General → Preguntar al iniciar → «Launch game without EAC» |
 | Pantalla | Distribuye las ventanas de los clientes (orden por PID, intercambiable), sin bordes, y las restaura al detener | Juego en modo ventana / ventana sin bordes |
 | Apagado | `shutdown` por telnet local, espera hasta 45 s y solo entonces termina el proceso propio | — |
@@ -24,7 +24,6 @@ Camino **legítimo** elegido (ADR-013):
 
 ### Alternativas descartadas para 7DTD
 
-- **Modo sin conexión con una sola cuenta**: misma identidad dos veces; la partida vería al mismo jugador dos veces.
 - **Remote Play Together**: requiere multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
 
 ## Estados formales por juego

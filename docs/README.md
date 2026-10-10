@@ -10,7 +10,7 @@
 | [`02-ARQUITECTURA.md`](02-ARQUITECTURA.md) | Arquitectura actual 0.7, diseño objetivo, diagramas y límites |
 | [`03-MODULOS.md`](03-MODULOS.md) | Responsabilidades y contratos de cada proyecto y tipo público |
 | [`04-CONTROLES.md`](04-CONTROLES.md) | PS4 por Bluetooth, SDL3 en hilo dedicado, calibración y aislamiento pendiente |
-| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Estados por juego, adaptador 7DTD (servidor oficial + cuentas separadas), lo que no se hará |
+| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Estados por juego y adaptador 7DTD (servidor oficial) |
 | [`06-PLAN-DE-DESARROLLO.md`](06-PLAN-DE-DESARROLLO.md) | Fases, hitos de aceptación y prioridades |
 | [`07-PRUEBAS.md`](07-PRUEBAS.md) | Pruebas automáticas (xUnit, unittest, CI) y matriz manual en Windows |
 | [`08-SEGURIDAD.md`](08-SEGURIDAD.md) | Privacidad, EAC, guardados y procesos externos |
