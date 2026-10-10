@@ -24,16 +24,17 @@ public static class WindowsDiagnostics
     public static (nint, nint) VerifyPair(InstalledGame game, GameWindowReport report) =>
         GameWindowInspector.VerifyPair(game, report, new Win32WindowSystem().EnumerateWindows(), ProcessInspector.ImagePath);
 
-    /// <summary>Clientes y servidores de 7DTD abiertos, con las APIs de mando que cargan.</summary>
+    /// <summary>Clientes y servidores de 7DTD abiertos, con las APIs de mando que cargan y su origen.</summary>
     public static SevenDaysDiagnosticReport SevenDays(IReadOnlyList<string> controllers)
     {
         var windowsByPid = new Win32WindowSystem().EnumerateWindows()
             .GroupBy(w => w.Pid).ToDictionary(g => g.Key, g => g.Count());
+        var steamRoots = SteamLocator.FindRoots();
         var clients = ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.GameExe)
-            .Select(pid => Inspect(pid, SevenDaysToDieAdapter.GameExe, windowsByPid)).ToList();
+            .Select(pid => Inspect(pid, SevenDaysToDieAdapter.GameExe, windowsByPid, steamRoots)).ToList();
         var servers = ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.ServerExe)
-            .Select(pid => Inspect(pid, SevenDaysToDieAdapter.ServerExe, windowsByPid)).ToList();
-        return SevenDaysDiagnosticReport.Create(clients, servers, controllers);
+            .Select(pid => Inspect(pid, SevenDaysToDieAdapter.ServerExe, windowsByPid, steamRoots)).ToList();
+        return SevenDaysDiagnosticReport.Create(clients, servers, controllers) with { XInputSlots = XInputProbe.ConnectedSlots() };
     }
 
     /// <summary>Número de clientes de 7DTD con ventana visible (para el preflight).</summary>
@@ -43,12 +44,39 @@ public static class WindowsDiagnostics
         return new Win32WindowSystem().EnumerateWindows().Select(w => w.Pid).Where(pids.Contains).Distinct().Count();
     }
 
-    private static GameProcessDiagnostic Inspect(int pid, string exe, IReadOnlyDictionary<int, int> windowsByPid)
+    /// <summary>
+    /// Carpetas donde el filtro XInput deja su estado: la de SplitForge y, si existe, la del sandbox del
+    /// jugador 2 en Sandboxie-Plus (allí se virtualizan las escrituras de los procesos del sandbox).
+    /// </summary>
+    public static IReadOnlyList<string> XInputStatusFolders(string dataFolder)
     {
-        var modules = ProcessInspector.ModuleNames(pid);
+        var folders = new List<string> { Path.Combine(dataFolder, "xinput") };
+        var drive = Environment.GetEnvironmentVariable("SystemDrive") ?? "C:";
+        if (XInputFilter.SandboxieStatusFolder(drive, Environment.UserName, SandboxieLocator.DefaultBox) is { } boxed && Directory.Exists(boxed))
+            folders.Add(boxed);
+        return folders;
+    }
+
+    /// <summary>Estado del filtro en los clientes de 7DTD abiertos (se descartan procesos cerrados).</summary>
+    public static IReadOnlyList<XInputFilterStatus> XInputStatus(string dataFolder) =>
+        XInputFilter.ReadStatus(XInputStatusFolders(dataFolder), ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.GameExe).ToHashSet());
+
+    private static GameProcessDiagnostic Inspect(int pid, string exe, IReadOnlyDictionary<int, int> windowsByPid, IReadOnlyList<string> steamRoots)
+    {
+        var paths = ProcessInspector.ModulePaths(pid);
         var windows = windowsByPid.GetValueOrDefault(pid);
-        return modules is null
-            ? new(exe, windows, false, null, "Windows denegó la lectura de módulos (¿EAC activo o proceso elevado?).")
-            : new(exe, windows, true, InputModuleClassifier.Classify(modules), null);
+        if (paths is null)
+            return new(exe, windows, false, null, "Windows denegó la lectura de módulos (¿EAC activo o proceso elevado?).");
+        var windowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        var gameFolder = ProcessInspector.ImagePath(pid) is { } image ? Path.GetDirectoryName(image) : null;
+        var entries = paths.Select(p => new ModuleEntry(Path.GetFileName(p), ModuleOriginClassifier.Classify(p, windowsFolder, gameFolder, steamRoots))).ToList();
+        // Copias del filtro: DLL de XInput cargadas desde la carpeta del juego y registradas por SplitForge con el mismo SHA-256.
+        var filter = gameFolder is null
+            ? []
+            : entries.Where(e => e.Origin == ModuleOrigin.Juego
+                                 && XInputFilter.KnownNames.Contains(e.Name, StringComparer.OrdinalIgnoreCase)
+                                 && XInputFilter.IsOwnFile(gameFolder, e.Name))
+                .Select(e => e.Name.ToLowerInvariant()).Distinct().Order(StringComparer.Ordinal).ToList();
+        return new GameProcessDiagnostic(exe, windows, true, InputModuleClassifier.Classify(entries), null) { FilterLoaded = filter };
     }
 }

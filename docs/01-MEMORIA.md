@@ -10,7 +10,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 
 - **Mejores tecnologías para eficiencia, optimización y fluidez** → .NET 10 + SDL3 + C++ nativo donde haga falta (ADR-010). Tkinter descartado.
 - Avanzar todo lo posible en cada entrega, no por etapas pequeñas.
-- Git: trabajar en `main`, **sin ramas `claude/*` ni firmas de asistente** en commits.
+- Git: cada cambio en una **rama de trabajo con nombre descriptivo** (nunca `claude/*`), que el propietario integra en `main`; **sin firmas de asistente** en commits.
 - Objetivo inmediato: **7 Days to Die con dos mandos y dos jugadores en la misma partida**.
 
 ## Equipo de referencia y entorno conocido
@@ -19,6 +19,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Prototipo: Python 3.13.13, `pygame-ce 2.5.8`, SDL 2.32.10.
 - Dos mandos Bluetooth `Wireless Controller` en Windows, `PS4 Controller` en SDL.
 - 7 Days to Die instalado. El propietario consiguió iniciarlo **sin EAC** con la opción oficial de Steam ("Preguntar al iniciar" → "Launch game without EAC").
+- 2026-10-10 (informe 7DTD): SDL3 ve los dos mandos como `Xbox 360 Controller` (XInput); antes aparecían como `PS4 Controller`. Probablemente se traducen con una herramienta tipo DS4Windows (supuesto).
 
 ## Línea temporal de aprendizajes
 
@@ -36,6 +37,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 | 0.6.0+docs | `CLAUDE.md`, `docs/`, chequeo de documentación. | 75 pruebas |
 | 2026-10-10 | Repositorio en GitHub; diagnóstico Python `diagnostico_7dtd.py` (APIs de mando de 7DTD). | 77 pruebas Python |
 | **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; filtro XInput C++; CI Windows. | 112 xUnit; en la VM Windows de la CI: interfaz arranca y se cierra, 6 pestañas capturadas, enumeración Win32 real, SDL3 a 1000 Hz, filtro C++ probado; **sin prueba en el PC del propietario ni con mandos** |
+| 2026-10-10 · informe 7DTD | Primer `SplitForge_Reporte_7DTD.json` real: 1 cliente **sin EAC**; carga `xinput1_3` + `xinput1_4`, DirectInput, HID e InControl (Unity); mandos como `Xbox 360 Controller`. En consecuencia: estado del filtro por DLL y en vivo con lecturas, DLL real comprobada en System32, instalación que actualiza solo copias propias y no se detiene a medias, detección de ranura XInput, informe v3 con origen de módulos y comando `xinput`. | Informe real del propietario; 126 xUnit + 77 unittest; filtro compilado sin avisos con MinGW; prueba de humo de dos copias en la CI de Windows |
 
 ## Incidente PS4: causa, corrección y reglas (siguen vigentes en 0.7)
 
@@ -53,7 +55,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Steam detectado/diagnosticado: **SÍ, solo lectura**.
 - Servidor dedicado 7DTD local con guardados aislados: **implementado**, no probado en el PC del propietario.
 - Dos/cuatro ventanas de clientes distribuidas sin bordes: **implementado**, eficacia por juego no comprobada.
-- Un mando por cliente dentro del juego: **filtro XInput nativo implementado (experimental)**, sin validar en hardware.
+- Un mando por cliente dentro del juego: **filtro XInput nativo implementado (experimental)**. 7DTD carga XInput (informe real); el aislamiento con dos clientes está sin validar.
 - Dos clientes de 7DTD en la misma partida con dos mandos aislados: **NO** (falta validar el aislamiento de mandos).
 - FPS/frametimes/VRAM medidos: **NO**.
 
@@ -66,7 +68,14 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 ## Estado para la siguiente sesión
 
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide: mandos en «01 MANDOS» (incluida la frecuencia del hilo), laboratorio con dos PS4, distribución sin bordes y restauración.
-**P1:** con 7DTD abierto sin EAC (idealmente dos instancias), `SplitForge.Diagnostico.exe 7dtd` → `SplitForge_Reporte_7DTD.json`, y anotar si la ventana sin foco sigue funcionando. Si carga XInput, probar el filtro nativo (W16); si exige foco, añadir simulación de foco al módulo nativo.
+**P1:** hecho con un cliente (2026-10-10): 7DTD sin EAC carga `xinput1_3` y `xinput1_4` (ver `05-INTEGRACION-STEAM.md`). Falta el informe con dos clientes.
+**W16 (siguiente prueba física):**
+1. Con los clientes cerrados, pulsa «Instalar filtro» en la pestaña 06.
+2. Abre los dos clientes sin EAC.
+3. Pulsa «Detectar» para J1 y J2 y luego «Asignar mandos a los clientes».
+4. Comprueba que las lecturas de cada cliente suben y que cada mando mueve solo su ventana.
+5. Anota si la ventana sin foco responde.
+6. Guarda un informe v3 (`7dtd`) con ambos clientes abiertos.
 **P2:** prueba real de dos jugadores en la misma partida.
 
 ## Política de actualización de memoria

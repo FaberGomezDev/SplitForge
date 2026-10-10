@@ -169,6 +169,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
             if (active is { Pending: false, WindowHandles.Count: >= 2 })
                 Status = $"Sesión activa · {active.WindowHandles.Count} ventanas organizadas";
         }
+        if (_tickCount % 60 == 0) // ≈ 0,5 Hz, en segundo plano: filtro XInput y ranuras conectadas.
+            RefreshFilterStatus();
     }
 
     private void AppendLog(string line)

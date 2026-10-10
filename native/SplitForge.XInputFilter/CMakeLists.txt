@@ -16,7 +16,8 @@ else()
   target_link_options(SplitForge.XInputFilter PRIVATE -static -static-libgcc -static-libstdc++)
 endif()
 
-# Prueba de humo: carga el filtro renombrado como xinput1_4.dll y comprueba el filtrado y el estado.
+# Prueba de humo: carga el filtro renombrado como xinput1_4.dll y como xinput1_3.dll (7DTD carga ambas)
+# y comprueba el filtrado, la DLL real de System32 y el estado por DLL.
 add_executable(SplitForge.XInputFilter.Smoke smoke_test.cpp)
 if(MSVC)
   target_compile_options(SplitForge.XInputFilter.Smoke PRIVATE /W4 /WX /permissive-)
@@ -26,6 +27,9 @@ else()
 endif()
 add_dependencies(SplitForge.XInputFilter.Smoke SplitForge.XInputFilter)
 add_custom_command(TARGET SplitForge.XInputFilter.Smoke POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:SplitForge.XInputFilter> $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_4.dll)
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:SplitForge.XInputFilter> $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_4.dll
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:SplitForge.XInputFilter> $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_3.dll)
 enable_testing()
-add_test(NAME filtro_xinput COMMAND SplitForge.XInputFilter.Smoke $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_4.dll)
+add_test(NAME filtro_xinput COMMAND SplitForge.XInputFilter.Smoke
+  $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_4.dll
+  $<TARGET_FILE_DIR:SplitForge.XInputFilter.Smoke>/xinput1_3.dll)

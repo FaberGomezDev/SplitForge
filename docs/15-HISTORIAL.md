@@ -62,3 +62,31 @@ NUEVOS RIESGOS:
 LIMITACIONES EXPLÍCITAS:
 PRÓXIMO PASO:
 ```
+
+## 2026-10-10 · Informe real de 7DTD e instrumentación del filtro XInput
+
+```text
+FECHA: 2026-10-10
+RAMA: 7dtd-diagnostico-xinput (el propietario la integra en main)
+OBJETIVO: aprovechar el primer SplitForge_Reporte_7DTD.json real para preparar la prueba W16.
+EVIDENCIA RECIBIDA: 1 cliente 7DaysToDie.exe sin EAC (módulos legibles, sin módulos de EAC);
+  XInput: xinput1_3.dll + xinput1_4.dll; DirectInput (dinput8), HID, InControl (incontrolnative),
+  steam_api64, superposición de Steam, EOS SDK; SDL3 ve 2 × "Xbox 360 Controller (xbox360)".
+CAMBIOS EFECTIVOS:
+  - Filtro nativo: estado-PID-<dll>.txt por copia (antes las dos copias escribían el mismo archivo
+    y solo una vez, así que tras asignar seguía apareciendo "sin asignar"); se reescribe al cambiar
+    la asignación y cada 2 s con el contador de lecturas; reemplazo atómico; DLL real cargada por ruta
+    absoluta y verificada en System32 (la alternativa xinput1_4 ya no puede resolver a otra copia).
+  - XInputFilter.Install: valida nombres antes de copiar, omite archivos ajenos sin abortar,
+    actualiza solo copias propias sin modificar y guarda el manifiesto aunque falle una copia.
+  - Detección de la ranura XInput de cada mando («Detectar» en la pestaña 06 y comando xinput).
+  - Informe 7DTD v3: origen de cada módulo de mando (sistema/juego/steam/otro, sin rutas),
+    filtro_xinput_cargado (SHA-256), motor, ranuras XInput conectadas.
+  - Estado del filtro y de las ranuras refrescado en segundo plano en la interfaz.
+  - CI también en las ramas de trabajo (paquete para probar antes de integrar).
+EVIDENCIA AUTOMÁTICA: 126 xUnit + 77 unittest; filtro y prueba de humo compilados sin avisos con
+  MinGW (-Wall -Wextra -Werror); la prueba de humo (dos copias, reasignación en vivo) corre en la CI de Windows.
+EVIDENCIA EN WINDOWS REAL: el informe del propietario; nada de lo nuevo probado aún en su PC.
+PRÓXIMO PASO: W16 con dos clientes (lecturas, un mando por ventana, ventana sin foco) e informe v3.
+```
+

@@ -53,7 +53,12 @@ public static unsafe class ProcessInspector
                                          && string.Equals(Path.GetFileName(path), exeName, StringComparison.OrdinalIgnoreCase))];
 
     /// <summary>Nombres (sin rutas) de los módulos cargados, o null si Windows deniega el acceso (p. ej. con EAC).</summary>
-    public static IReadOnlyList<string>? ModuleNames(int pid)
+    public static IReadOnlyList<string>? ModuleNames(int pid) => Modules(pid, fullPath: false);
+
+    /// <summary>Rutas completas de los módulos cargados. Solo para clasificar su origen en local: nunca se exportan.</summary>
+    public static IReadOnlyList<string>? ModulePaths(int pid) => Modules(pid, fullPath: true);
+
+    private static IReadOnlyList<string>? Modules(int pid, bool fullPath)
     {
         var handle = Native.OpenProcess(Native.PROCESS_QUERY_INFORMATION | Native.PROCESS_VM_READ, 0, (uint)pid);
         if (handle == 0)
@@ -77,10 +82,13 @@ public static unsafe class ProcessInspector
                 capacity = count;
             }
             var names = new List<string>(count);
-            var name = stackalloc char[260];
+            const int size = 1024;
+            var name = stackalloc char[size];
             for (var i = 0; i < count; i++)
             {
-                var len = Native.GetModuleBaseName(handle, modules[i], name, 260);
+                var len = fullPath
+                    ? Native.GetModuleFileNameEx(handle, modules[i], name, size)
+                    : Native.GetModuleBaseName(handle, modules[i], name, size);
                 if (len > 0)
                     names.Add(new string(name, 0, (int)len));
             }

@@ -270,20 +270,23 @@
               <Button Content="⇄  Intercambiar J1 / J2" Command="{Binding SwapSevenCommand}" />
             </StackPanel>
             <TextBlock Style="{StaticResource Heading}" Text="4 · Un mando por ventana (filtro XInput nativo · EXPERIMENTAL)" FontSize="15" Margin="0,12,0,4" />
-            <TextBlock Style="{StaticResource Hint}" Text="Cada cliente ve solo su mando. Requisitos: clientes SIN EAC, el diagnóstico debe mostrar «xinput» y los PS4 deben llegar al juego como mandos XInput (Steam Input o DS4Windows, sin duplicados). Si el juego exige foco (Windows.Gaming.Input), este filtro no basta." />
+            <TextBlock Style="{StaticResource Hint}" Text="Cada cliente ve solo su mando. Diagnóstico del 2026-10-10: 7DTD (sin EAC) carga xinput1_3 y xinput1_4 y los mandos llegan a Windows como «Xbox 360 Controller», así que el filtro se instala con ambos nombres. Requisitos: clientes SIN EAC y cada mando en una sola ranura XInput (sin duplicados)." />
             <WrapPanel Margin="0,0,0,6">
               <TextBlock Text="Mando XInput de J1" VerticalAlignment="Center" Margin="0,0,6,0" />
-              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer1}" Width="55" Margin="0,0,14,0" />
+              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer1}" Width="55" Margin="0,0,6,0" />
+              <Button Content="Detectar" Command="{Binding DetectSlotCommand}" CommandParameter="1" Margin="0,0,14,0" />
               <TextBlock Text="Mando XInput de J2" VerticalAlignment="Center" Margin="0,0,6,0" />
-              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer2}" Width="55" Margin="0,0,14,0" />
+              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer2}" Width="55" Margin="0,0,6,0" />
+              <Button Content="Detectar" Command="{Binding DetectSlotCommand}" CommandParameter="2" Margin="0,0,14,0" />
             </WrapPanel>
+            <TextBlock Text="{Binding XInputSlotsStatus}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6" />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
               <Button Content="Instalar filtro" Command="{Binding InstallFilterCommand}" />
               <Button Content="Asignar mandos a los clientes" Style="{StaticResource PrimaryButton}" Command="{Binding AssignFilterCommand}" />
               <Button Content="Quitar filtro" Command="{Binding RemoveFilterCommand}" />
             </StackPanel>
-            <TextBlock Text="{Binding FilterStatus}" Foreground="{StaticResource Muted}" />
-            <TextBlock Style="{StaticResource Warning}" Text="Sin validar en hardware. Guarda el diagnóstico 7DTD con los clientes abiertos: si no carga XInput o exige foco, el siguiente paso es la simulación de foco en el módulo nativo." />
+            <TextBlock Text="{Binding FilterStatus}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+            <TextBlock Style="{StaticResource Warning}" Text="Sin validar en hardware. Con los clientes abiertos y asignados, las «lecturas» de cada cliente deben subir mientras juegas: si se quedan en 0, el juego no lee los mandos por XInput y hay que guardar otro diagnóstico." />
           </StackPanel>
         </ScrollViewer>
       </TabItem>

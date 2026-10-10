@@ -47,7 +47,8 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
         MinPlayers: 2,
         MaxPlayers: 4,
         NeedsAntiCheatDisabledByOfficialOption: true,
-        "Servidor dedicado local + un cliente por jugador. Aislamiento de mandos en el juego pendiente del módulo nativo.");
+        "Servidor dedicado local + un cliente por jugador. Diagnóstico real (2026-10-10, sin EAC): carga xinput1_3 y xinput1_4, "
+        + "DirectInput, HID e InControl (Unity). Aislamiento de mandos con el filtro XInput: pendiente de prueba con dos clientes.");
 
     public AdapterPreflight Preflight(AdapterEnvironment env)
     {
@@ -86,7 +87,8 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
         checks.Add(new("clientes", "Clientes abiertos", env.RunningClients >= 2 ? CheckStatus.Ok : CheckStatus.Pending,
             $"{env.RunningClients} proceso(s) de {GameExe} con ventana."));
         checks.Add(new("aislamiento", "Un mando por ventana dentro del juego", CheckStatus.Pending,
-            "Pendiente del módulo nativo; ejecuta el diagnóstico de 7DTD para elegir el método."));
+            "7DTD carga XInput (xinput1_3 y xinput1_4): instala el filtro XInput, detecta la ranura de cada mando y asígnalas. "
+            + "Sin validar con dos clientes."));
 
         var state = gameExe is null ? CompatibilityState.Bloqueado : CompatibilityState.Inspeccionado;
         return new AdapterPreflight(Manifest.AppId, state, checks);

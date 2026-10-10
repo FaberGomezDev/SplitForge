@@ -22,6 +22,7 @@ try
             ? Windows(Option("--appid") ?? ResearchProfiles.SevenDaysToDie, args.Contains("--todos"), Option("--salida"))
             : NotWindows(),
         "7dtd" => OperatingSystem.IsWindows() ? SevenDays(Option("--salida")) : NotWindows(),
+        "xinput" => OperatingSystem.IsWindows() ? XInput(int.TryParse(Option("--segundos"), out var x) ? Math.Clamp(x, 1, 120) : 20) : NotWindows(),
         "mandos" => Pads(int.TryParse(Option("--segundos"), out var s) ? Math.Clamp(s, 1, 120) : 20),
         "demo-frames" => DemoFrames(int.TryParse(Option("--segundos"), out var d) ? Math.Clamp(d, 1, 600) : 10),
         "visor-lab" => SplitForge.LabViewer.LabViewer.Run(args.Length > 1 && args[1] == "2" ? 2 : 1, Console.OpenStandardInput()),
@@ -42,7 +43,8 @@ static int Help()
           steam      [--salida archivo.json]   Juegos Steam instalados (informe sin rutas personales)
           ventanas   [--appid 251570] [--todos] [--salida archivo.json]
                                                Ventanas/procesos de un juego abierto
-          7dtd       [--salida archivo.json]   7 Days to Die abierto: APIs de mando cargadas
+          7dtd       [--salida archivo.json]   7 Days to Die abierto: APIs de mando cargadas y su origen
+          xinput     [--segundos 20]           Ranuras XInput con mando, pulsaciones en vivo y estado del filtro
           mandos     [--segundos 20]           Prueba en vivo de los mandos con SDL3
         """);
     return 0;
@@ -124,11 +126,54 @@ static int SevenDays(string? output)
         var families = c.Input.Families.Count > 0 ? string.Join(", ", c.Input.Families.Keys) : "ninguna detectada";
         Console.WriteLine($"  Cliente {i + 1}: ventanas={c.VisibleWindows} | APIs de entrada: {families}"
                           + (c.Input.RequiresFocus ? " | ATENCIÓN: Windows.Gaming.Input exige foco" : string.Empty));
+        if (c.Input.Origins is { Count: > 0 } origins)
+            Console.WriteLine("    Origen: " + string.Join(" · ", origins.Select(o => $"{o.Key} ({string.Join("+", o.Value)})")));
+        Console.WriteLine("    Filtro XInput de SplitForge cargado: " + (c.FilterLoaded.Count > 0 ? string.Join(", ", c.FilterLoaded) : "no"));
     }
     if (clients.Count == 0)
         Console.WriteLine("No hay 7 Days to Die abierto. Ábrelo (sin EAC) y vuelve a ejecutar este diagnóstico.");
+    Console.WriteLine("Ranuras XInput con mando: " + (report.XInputSlots is { Count: > 0 } slots ? string.Join(", ", slots) : "ninguna"));
     Console.WriteLine("Reporte guardado: " + target);
     return 0;
+}
+
+/// <summary>Ranuras XInput de Windows: cuáles tienen mando, cuál se pulsa y qué dice el filtro de cada cliente.</summary>
+[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+static int XInput(int seconds)
+{
+    var connected = XInputProbe.ConnectedSlots();
+    Console.WriteLine("Ranuras XInput con mando: " + (connected.Count > 0 ? string.Join(", ", connected) : "ninguna"));
+    PrintFilterStatus();
+    Console.WriteLine($"Pulsa botones en cada mando durante {seconds} s para ver su ranura (funciona aunque otra ventana tenga el foco).");
+    var until = DateTime.UtcNow.AddSeconds(seconds);
+    while (DateTime.UtcNow < until)
+    {
+        var slot = XInputProbe.WaitForPress(until - DateTime.UtcNow);
+        if (slot is null)
+            break;
+        Console.WriteLine($"{seconds - (until - DateTime.UtcNow).TotalSeconds:00.0}s | pulsación en el mando XInput {slot + 1}");
+    }
+    PrintFilterStatus();
+    return 0;
+}
+
+[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+static void PrintFilterStatus()
+{
+    // Solo lectura: se calcula la carpeta de datos sin crearla.
+    var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SplitForge");
+    var status = WindowsDiagnostics.XInputStatus(dataFolder);
+    if (status.Count == 0)
+    {
+        Console.WriteLine("Filtro XInput: ningún cliente de 7DTD abierto lo tiene cargado.");
+        return;
+    }
+    foreach (var s in status)
+    {
+        Console.WriteLine($"Filtro XInput · PID {s.Pid} · {s.Dll} · DLL real {(s.RealLoaded ? "cargada" : "NO cargada")} · "
+                          + $"mando {(s.Slot >= 0 ? (s.Slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")}"
+                          + (s.Reads >= 0 ? $" · {s.Reads} lecturas" : string.Empty));
+    }
 }
 
 static IReadOnlyList<PadInfo> ReadControllers(TimeSpan wait)

@@ -53,6 +53,9 @@ sequenceDiagram
 
 Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input), mientras que XInput funciona en segundo plano. Antes de escribir el módulo nativo hay que saber qué API usa cada juego: `SplitForge.Diagnostico.exe 7dtd` lista los módulos de entrada cargados (XInput, DirectInput, HID, Windows.Gaming.Input, SDL, overlay de Steam, EAC). Opciones según la evidencia:
 
-- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se instala desde la pestaña 06 («Instalar filtro» / «Asignar mandos a los clientes» / «Quitar filtro»). Cada cliente ve solo su ranura; los PS4 deben llegar como XInput (Steam Input o DS4Windows) y sin duplicados. Cada proceso que lo carga escribe `estado-PID.txt` (DLL, real cargada, ranura) para comprobarlo.
+- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se gestiona desde la pestaña 06 con «Instalar filtro», «Detectar», «Asignar mandos a los clientes» y «Quitar filtro».
+  - Cada cliente ve solo su ranura, y los mandos deben llegar como XInput sin duplicados.
+  - Cada copia cargada escribe `estado-PID-<dll>.txt` con la DLL, si cargó la real, la ranura y las lecturas. 7DTD carga dos copias, `xinput1_3` y `xinput1_4`, y por las lecturas se ve cuál usa de verdad.
+- **Ranuras XInput:** XInput numera los mandos del 1 al 4. «Detectar» pide pulsar un botón en el mando de cada jugador y elige su ranura; también lo hace `SplitForge.Diagnostico.exe xinput`. La lectura se hace en un hilo de fondo, nunca en el de la interfaz. En el PC del propietario (2026-10-10), SDL3 ve los dos mandos como `Xbox 360 Controller`, es decir, como XInput.
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
 - Sin drivers de kernel por defecto.

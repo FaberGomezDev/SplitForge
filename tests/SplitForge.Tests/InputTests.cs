@@ -119,4 +119,21 @@ public class InputTests
         Assert.True(b.LX < -0.5f && !b.Fire);
         Assert.NotEqual(a.DeviceId, b.DeviceId);
     }
+
+    [Fact]
+    public void XInputSlotDetectorFindsTheSlotOfThePressedPad()
+    {
+        XInputSlotState[] idle = [new(true), new(true, Buttons: 0x1000), new(false), new(false)];
+        Assert.Null(XInputSlotDetector.NewPress(idle, idle));
+        // Botón mantenido desde antes en la ranura 2 (índice 1): no cuenta; nueva pulsación en la ranura 1.
+        XInputSlotState[] pressed = [new(true, Buttons: 0x1000), new(true, Buttons: 0x1000), new(false), new(false)];
+        Assert.Equal(0, XInputSlotDetector.NewPress(idle, pressed));
+        // Gatillo que cruza el umbral en la ranura 2.
+        XInputSlotState[] trigger = [new(true), new(true, Buttons: 0x1000, RightTrigger: 200), new(false), new(false)];
+        Assert.Equal(1, XInputSlotDetector.NewPress(idle, trigger));
+        // Un mando que se conecta pulsando no se toma como pulsación (evita falsos positivos al reconectar).
+        XInputSlotState[] connecting = [new(true), new(true, Buttons: 0x1000), new(false), new(true, Buttons: 0x0001)];
+        Assert.Null(XInputSlotDetector.NewPress(idle, connecting));
+        Assert.Equal([1, 2], XInputSlotDetector.ConnectedForDisplay(idle));
+    }
 }

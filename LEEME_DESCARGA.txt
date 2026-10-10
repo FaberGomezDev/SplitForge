@@ -11,13 +11,17 @@ Paquete autónomo: NO necesitas instalar Python, .NET ni SDL.
 5. Pestaña 06 7 DAYS TO DIE: servidor local + pantalla dividida (ver requisitos en la propia pestaña).
 
 Diagnósticos (solo lectura), desde una consola en esta carpeta:
-  SplitForge.Diagnostico.exe 7dtd      -> informe de 7 Days to Die abierto (APIs de mando)
+  SplitForge.Diagnostico.exe 7dtd      -> informe de 7 Days to Die abierto (APIs de mando y su origen)
+  SplitForge.Diagnostico.exe xinput    -> ranura XInput de cada mando y estado del filtro en los clientes
   SplitForge.Diagnostico.exe mandos    -> prueba en vivo de los mandos con SDL3
   SplitForge.Diagnostico.exe steam     -> juegos Steam instalados
 Los informes se guardan en el Escritorio y no incluyen rutas, cuentas ni títulos de ventana.
 
 Filtro XInput nativo (experimental): carpeta native\. Se instala desde la pestaña 06 solo con
-los clientes de 7DTD sin EAC; nunca sobrescribe archivos del juego y se retira con "Quitar filtro".
+los clientes de 7DTD sin EAC y cerrados; nunca sobrescribe archivos del juego (solo actualiza
+copias anteriores del propio filtro) y se retira con "Quitar filtro". Con "Detectar" pulsas un
+botón del mando de cada jugador para saber su ranura XInput; con los clientes abiertos y
+asignados, el estado muestra las "lecturas" de cada cliente.
 
 Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
 La configuración de la versión Python (settings.json) no se modifica.

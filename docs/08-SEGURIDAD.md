@@ -22,8 +22,8 @@
 | Sandboxie-Plus | SplitForge solo lanza Steam en un sandbox; el usuario inicia sesión; no se ven ni guardan credenciales | Políticas de Steam/antitrampas sobre sandboxes |
 | Visores del laboratorio | IPC binario con validación estricta; procesos propios | — |
 | Configuración | `settings.v2.json` atómico; `settings.json` del prototipo solo lectura | — |
-| Diagnóstico de módulos | `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ` solo para enumerar nombres de módulos; con EAC activo Windows lo deniega y se informa | — |
-| Filtro XInput nativo (ADR-015) | Se instala con consentimiento solo si ningún cliente tiene EAC cargado; nunca sobrescribe DLL del juego; retira solo lo propio (SHA-256); carga la DLL real por ruta absoluta de System32; sin E/S en `DllMain`; compilado con `/guard:cf`, ASLR y DEP | Validar en hardware; simulación de foco aún no implementada |
+| Diagnóstico de módulos | `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ` solo para enumerar módulos; sus rutas se usan en memoria para clasificar el origen (`sistema`/`juego`/`steam`/`otro`) y nunca se exportan; con EAC activo Windows lo deniega y se informa | — |
+| Filtro XInput nativo (ADR-015) | Se instala con consentimiento solo si ningún cliente tiene EAC cargado; nunca sobrescribe DLL del juego; actualiza o retira solo copias propias sin modificar (SHA-256); carga la DLL real por ruta absoluta y verifica que viene de System32; estado con reemplazo atómico; sin E/S en `DllMain`; compilado con `/guard:cf`, ASLR y DEP | Validar en hardware; simulación de foco aún no implementada |
 
 ## Reglas para una integración nueva
 

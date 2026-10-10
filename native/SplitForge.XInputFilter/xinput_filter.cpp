@@ -6,6 +6,10 @@
 // le asigna en %LOCALAPPDATA%\SplitForge\xinput\asignacion.txt (líneas "PID RANURA").
 // Sin asignación para el PID, es transparente.
 //
+// Estado: cada copia cargada escribe estado-PID-<dll>.txt (7DTD carga xinput1_3 y xinput1_4 a la vez),
+// con la ranura vigente y cuántas lecturas (XInputGetState/Ex) ha atendido. Se reescribe al cambiar la
+// asignación y, como mucho, cada 2 s mientras el juego lee mandos.
+//
 // No inyecta código en otros procesos. Úsese con el juego abierto sin EAC (opción oficial del juego).
 
 #define WIN32_LEAN_AND_MEAN
@@ -21,6 +25,7 @@ constexpr DWORD kNotConnected = 1167; // ERROR_DEVICE_NOT_CONNECTED
 constexpr int kPassThrough = -1;      // Sin asignación: comportamiento original.
 constexpr int kMaxSlots = 4;
 constexpr ULONGLONG kReloadMs = 1000;
+constexpr ULONGLONG kStatusMs = 2000;
 
 struct XInputGamepad {
     WORD buttons;
@@ -79,7 +84,11 @@ HMODULE g_self = nullptr;
 std::atomic<HMODULE> g_real{nullptr};
 std::atomic<int> g_slot{kPassThrough};
 std::atomic<ULONGLONG> g_nextReload{0};
-std::atomic<bool> g_statusWritten{false};
+std::atomic<unsigned long long> g_reads{0}; // Llamadas a XInputGetState/Ex atendidas por esta copia.
+std::atomic_flag g_statusBusy; // C++20: empieza libre.
+int g_writtenSlot = -2;                       // Último estado escrito (solo con g_statusBusy tomado).
+unsigned long long g_writtenReads = ~0ull;
+ULONGLONG g_writtenAt = 0;
 wchar_t g_realName[MAX_PATH] = L"xinput1_3.dll";
 
 // Nombre de esta DLL (xinput1_3.dll, xinput1_4.dll...) para cargar la real con el mismo nombre.
@@ -92,6 +101,26 @@ void ResolveOwnName() {
     wcsncpy_s(g_realName, name, _TRUNCATE);
 }
 
+// Carga una DLL de System32 por ruta absoluta y comprueba que de verdad viene de allí (nunca esta misma
+// copia ni otra copia del filtro con otro nombre, que ya está cargada en el proceso con ese nombre base).
+HMODULE LoadFromSystem(const wchar_t* system, const wchar_t* name) {
+    wchar_t full[MAX_PATH] = {};
+    if (swprintf_s(full, L"%ls\\%ls", system, name) <= 0)
+        return nullptr;
+    HMODULE module = LoadLibraryExW(full, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    if (!module)
+        return nullptr;
+    wchar_t loaded[MAX_PATH] = {};
+    const DWORD length = GetModuleFileNameW(module, loaded, MAX_PATH);
+    const size_t prefix = wcslen(system);
+    const bool fromSystem = length > prefix && length < MAX_PATH && _wcsnicmp(loaded, system, prefix) == 0 && loaded[prefix] == L'\\';
+    if (module == g_self || !fromSystem) {
+        FreeLibrary(module);
+        return nullptr;
+    }
+    return module;
+}
+
 HMODULE Real() {
     HMODULE module = g_real.load(std::memory_order_acquire);
     if (module)
@@ -100,12 +129,9 @@ HMODULE Real() {
     const UINT length = GetSystemDirectoryW(system, MAX_PATH);
     if (length == 0 || length >= MAX_PATH - 20)
         return nullptr;
-    wchar_t full[MAX_PATH] = {};
-    swprintf_s(full, L"%ls\\%ls", system, g_realName);
-    // Ruta absoluta de System32: nunca se carga a sí misma.
-    module = LoadLibraryExW(full, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-    if (!module)
-        module = LoadLibraryExW(L"xinput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    module = LoadFromSystem(system, g_realName);
+    if (!module) // p. ej. xinput1_3.dll no instalada: xinput1_4.dll viene con Windows 8 o posterior.
+        module = LoadFromSystem(system, L"xinput1_4.dll");
     HMODULE expected = nullptr;
     if (!g_real.compare_exchange_strong(expected, module) && module)
         FreeLibrary(module); // Otro hilo ganó la carrera.
@@ -126,20 +152,44 @@ bool AssignmentPath(wchar_t* out, size_t size, const wchar_t* file) {
     return swprintf_s(out, size, L"%ls\\SplitForge\\xinput\\%ls", local, file) > 0;
 }
 
-void WriteStatus(int slot) {
-    bool expected = false;
-    if (!g_statusWritten.compare_exchange_strong(expected, true))
+// Nombre base de esta copia sin extensión (xinput1_4.dll → xinput1_4) para su archivo de estado.
+void BaseName(wchar_t* out, size_t size) {
+    wcsncpy_s(out, size, g_realName, _TRUNCATE);
+    wchar_t* dot = wcsrchr(out, L'.');
+    if (dot)
+        *dot = 0;
+}
+
+// Escribe el estado si cambió la ranura o, cada kStatusMs, si cambiaron las lecturas. Reemplazo atómico
+// (temporal + MoveFileEx) para que SplitForge nunca lea un archivo a medias.
+void MaybeWriteStatus(int slot, ULONGLONG now) {
+    if (g_statusBusy.test_and_set(std::memory_order_acquire))
         return;
-    wchar_t file[64] = {};
-    swprintf_s(file, L"estado-%lu.txt", GetCurrentProcessId());
-    wchar_t path[MAX_PATH * 2] = {};
-    if (!AssignmentPath(path, MAX_PATH * 2, file))
-        return;
-    FILE* f = nullptr;
-    if (_wfopen_s(&f, path, L"w") != 0 || !f)
-        return;
-    fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\n", g_realName, Real() ? L"cargada" : L"NO", slot);
-    fclose(f);
+    const unsigned long long reads = g_reads.load(std::memory_order_relaxed);
+    const bool due = slot != g_writtenSlot || (reads != g_writtenReads && now - g_writtenAt >= kStatusMs);
+    if (due) {
+        wchar_t base[MAX_PATH] = {};
+        BaseName(base, MAX_PATH);
+        wchar_t file[MAX_PATH] = {};
+        wchar_t path[MAX_PATH * 2] = {};
+        wchar_t temp[MAX_PATH * 2] = {};
+        FILE* f = nullptr;
+        if (swprintf_s(file, L"estado-%lu-%ls.txt", GetCurrentProcessId(), base) > 0
+            && AssignmentPath(path, MAX_PATH * 2, file)
+            && swprintf_s(temp, L"%ls.tmp", path) > 0
+            && _wfopen_s(&f, temp, L"w") == 0 && f) {
+            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\n", g_realName, Real() ? L"cargada" : L"NO", slot, reads);
+            const bool written = fclose(f) == 0;
+            if (written && MoveFileExW(temp, path, MOVEFILE_REPLACE_EXISTING)) {
+                g_writtenSlot = slot;
+                g_writtenReads = reads;
+                g_writtenAt = now;
+            } else {
+                DeleteFileW(temp);
+            }
+        }
+    }
+    g_statusBusy.clear(std::memory_order_release);
 }
 
 // Relee la asignación como mucho una vez por segundo. Formato: "PID RANURA" por línea (ranura 0–3).
@@ -164,7 +214,7 @@ int CurrentSlot() {
         fclose(f);
     }
     g_slot.store(slot, std::memory_order_relaxed);
-    WriteStatus(slot);
+    MaybeWriteStatus(slot, now);
     return slot;
 }
 
@@ -189,6 +239,7 @@ extern "C" {
 
 DWORD WINAPI SF_XInputGetState(DWORD userIndex, XInputState* state) {
     static auto fn = Resolve<GetStateFn>("XInputGetState");
+    g_reads.fetch_add(1, std::memory_order_relaxed);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -199,6 +250,7 @@ DWORD WINAPI SF_XInputGetState(DWORD userIndex, XInputState* state) {
 DWORD WINAPI SF_XInputGetStateEx(DWORD userIndex, XInputState* state) {
     static auto fn = Resolve<GetStateFn>(MAKEINTRESOURCEA(100));
     static auto fallback = Resolve<GetStateFn>("XInputGetState");
+    g_reads.fetch_add(1, std::memory_order_relaxed);
     DWORD physical = 0;
     if (!Map(userIndex, &physical))
         return kNotConnected;

@@ -8,7 +8,7 @@
 
 ## Integración continua
 
-- `.github/workflows/build.yml` (cada push a `main` y PR): pruebas .NET + Python, `check_docs`, publicación autónoma, prueba de humo de `SplitForge.Diagnostico.exe` y artefacto **SplitForge-win-x64** (30 días).
+- `.github/workflows/build.yml` (cada push a `main` o a una rama de trabajo, y cada PR): pruebas .NET + Python, `check_docs`, publicación autónoma, prueba de humo de `SplitForge.Diagnostico.exe` y artefacto **SplitForge-win-x64** (30 días).
 - `.github/workflows/release.yml` (etiquetas `v*`): pruebas, publicación, `SplitForge-vX.Y.Z-win-x64.zip` + `.sha256` y release de GitHub.
 
 ### Publicar una versión
