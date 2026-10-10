@@ -1,64 +1,53 @@
-# SplitForge — Repositorio completo v0.6.0 + documentación
+# SplitForge
 
-**Versión de código: 0.6.0 (sin cambios funcionales).** Esta distribución incorpora `CLAUDE.md`, memoria del proyecto en `docs/`, plantillas y validación de documentación. No requiere volver a instalar SDL si tu `.venv` ya funciona.
+**Pantalla dividida local para juegos de Steam compatibles en una sola PC con Windows**: cada jugador con su mando y su parte de la pantalla, en la misma partida cuando el juego lo permite de forma legítima.
 
-**Empezar:** [`CLAUDE.md`](CLAUDE.md) · [`docs/README.md`](docs/README.md) · [`docs/01-MEMORIA.md`](docs/01-MEMORIA.md) · [`docs/02-ARQUITECTURA.md`](docs/02-ARQUITECTURA.md).
+> **Versión 0.7.0 · experimental.** Reconstruida en **.NET 10 + SDL3 + WPF** para eficiencia y fluidez. El prototipo Python 0.6 (validado con dos PS4) sigue en el repositorio como referencia.
+> **Todavía no hay ningún juego comercial validado con dos jugadores.** 7 Days to Die tiene un adaptador experimental.
 
-Para arrancar en Windows: ejecutar `Iniciar_SplitForge.bat`. Si no hay entorno, ejecutar `Instalar_Todo.bat`; para pruebas `run_tests.bat`. Es un paquete **completo de código fuente**, no un `.exe` autónomo.
+## Descargar y usar (sin instalar nada)
 
----
+1. En GitHub abre **Actions** → la última ejecución verde de **Compilar y probar** → descarga el artefacto **SplitForge-win-x64** (o la página **Releases** cuando haya una versión etiquetada).
+2. Descomprime y ejecuta **`SplitForge.exe`**. Incluye todo (runtime de .NET y SDL3).
 
-# SplitForge v0.6.0 — Inspección y distribución controlada de juegos Steam
+| Pestaña | Para qué sirve |
+| --- | --- |
+| 01 MANDOS | Mandos en vivo (SDL3, hilo de hasta 1000 Hz, funciona con el juego en primer plano), perfiles, aprender botones, identificar cada mando con su luz |
+| 02 MUNDO COMPARTIDO | Laboratorio de dos jugadores en un mismo mundo (simulación a 120 Hz, visores con GPU) |
+| 03 VENTANAS ABIERTAS | Distribuir 2–4 ventanas cualesquiera, con o sin bordes, y restaurarlas |
+| 04 STEAM | Biblioteca instalada y diagnóstico de solo lectura |
+| 05 VENTANAS STEAM | Distribuir clientes de un mismo juego (procesos distintos del mismo .exe) |
+| 06 7 DAYS TO DIE | Preflight, servidor dedicado local aislado, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida y diagnóstico |
 
-> **Estado: prototipo.** El laboratorio de dos jugadores funciona con mandos PS4 según la prueba del usuario. **Todavía no existe un adaptador certificado de pantalla dividida para 7 Days to Die, GTA V, No Man's Sky u otro juego comercial.** La v0.6 no puede forzar dos instancias Steam, evitar cuentas, convertir un juego de un jugador en cooperativo ni redirigir dos mandos dentro de un juego ajeno.
+Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | mandos | steam | ventanas`.
 
-## Novedades
+## 7 Days to Die con dos jugadores: qué hace falta
 
-* **06 VENTANAS STEAM:** selecciona un juego Steam instalado y detecta las ventanas visibles de los procesos cuyo ejecutable pertenece a su carpeta de instalación. Usa funciones Win32 de consulta de procesos, sin inyección ni permisos de escritura.
-* **Comprobación de procesos separados:** requiere que existan **dos PID diferentes ejecutando el mismo archivo .exe**. Si solo hay un cliente, el programa lo indica y no permite distribuir dos jugadores incorrectamente.
-* **Revalidación:** justo antes de mover ventanas, comprueba si siguen existiendo y si pertenecen al juego elegido. Al detener la sesión, intenta devolver las ventanas a sus posiciones originales **sin cerrar procesos Steam**.
-* **Analizar_Ventanas_Steam.bat:** herramienta de diagnóstico de 7 Days to Die (AppID 251570) con salida JSON en el Escritorio. No se exportan rutas absolutas ni títulos de ventana, que podrían contener datos de usuario.
-* **Sin cambios** en la capa SDL, calibración PS4 ni laboratorio del mundo compartido que ya funcionan.
+1. **Una cuenta de Steam con el juego por jugador.** SplitForge no usa emuladores de Steam ni duplica cuentas.
+2. **El servidor dedicado gratuito** «7 Days to Die Dedicated Server» (Steam → Biblioteca → Herramientas). SplitForge lo arranca con configuración y guardados propios.
+3. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
+4. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
+5. **Pendiente:** que cada mando controle solo su ventana dentro del juego (módulo nativo C++). Para diseñarlo hace falta el informe `SplitForge.Diagnostico.exe 7dtd` con el juego abierto.
 
-## Instalar como parche desde v0.5.0
+## Desarrollo
 
-1. Cierra SplitForge, detén el mundo compartido y haz copia de seguridad de la carpeta de v0.5.
-2. Extrae `SplitForge_Parche_v0.5.0_a_v0.6.0.zip` y copia **su contenido** encima de tu carpeta actual, reemplazando archivos.
-3. Conserva `.venv` y `%LOCALAPPDATA%\SplitForge\settings.json`. **No reinstales Python, pygame-ce ni SDL.**
-4. Ejecuta `Iniciar_SplitForge.bat` como de costumbre. La interfaz debe indicar **0.6.0**.
-5. Comprueba la pestaña **02 MUNDO COMPARTIDO** con tus dos controles PS4 para descartar regresiones.
+```powershell
+dotnet test SplitForge.slnx -c Release     # pruebas .NET
+Compilar_SplitForge.bat                    # pruebas + publish\SplitForge autónomo
+```
 
-## Primera prueba con un juego Steam real
+Requiere el SDK de .NET 10. Detalles en [`docs/10-DESARROLLO.md`](docs/10-DESARROLLO.md).
 
-1. Abre un juego instalado desde Steam como haces normalmente. **Una sola instancia está bien para el diagnóstico**. Recomendamos, si lo permite, modo ventana o ventana sin bordes.
-2. En SplitForge abre **06 VENTANAS STEAM**.
-3. Pulsa **1 · Actualizar biblioteca** y selecciona el juego instalado.
-4. Pulsa **2 · Analizar ventanas**.
-5. Si indica `UNO_O_MAS_SIN_PAREJA`, **es un resultado esperado**: se ha detectado el proceso, pero **NO** existe todavía un par de clientes autorizados. No pulses o intentes forzar dos lanzamientos de Steam.
-6. Solo si tú ya dispones de **dos clientes legítimos del mismo juego** que pueden ejecutarse a la vez y ambas ventanas están abiertas, el programa podría indicar `DOS_CLIENTES_DETECTADOS`. Entonces **3 · Distribuir 2 clientes** solo organiza visualmente esas ventanas; **NO** logra que compartan partida ni aisla los mandos.
-7. Al terminar, pulsa **Restaurar posiciones originales**; evita cerrar el programa abruptamente mientras reorganiza ventanas.
-
-## Informe dirigido a 7 Days to Die
-
-En la carpeta de SplitForge ejecuta `Analizar_Ventanas_Steam.bat` (solo lectura). Guardará `SplitForge_Reporte_Ventanas_Steam.json` en el Escritorio (o en la carpeta actual si no hay Escritorio). Adjunta ese archivo para conocer si la instalación y su ventana real son detectables.
-
-También puedes ejecutar el diagnóstico general `Escanear_Steam.bat`, que identifica el AppID y la versión instalada. **El informe no verifica el multijugador offline.** Si 7 Days to Die no está instalado, la utilidad indicará cero resultados para ese título; no es un fallo de dependencias.
+**Empezar a leer:** [`CLAUDE.md`](CLAUDE.md) · [`docs/README.md`](docs/README.md) · [`docs/01-MEMORIA.md`](docs/01-MEMORIA.md) · [`docs/02-ARQUITECTURA.md`](docs/02-ARQUITECTURA.md).
 
 ## Límites y precauciones
 
-* Una ventana de juego de Steam **no es una instancia cooperativa**. Dos clientes pueden necesitar dos identidades autorizadas y una conexión a un mismo servidor LAN u online.
-* El modo sin Internet depende del juego: que Steam tenga Modo sin conexión no garantiza LAN funcional ni autenticación offline para dos personas.
-* Sin redirección independiente de controladores a cada juego externo, dos mandos podrían controlar el mismo cliente, o ninguno.
-* No se modifican ejecutables Steam, DRM, antitrampas, cuentas ni guardados. No se lanzan dos ejecutables Steam desde el nuevo asistente.
-* Algunas ventanas protegidas o a pantalla completa exclusiva impiden cambios de tamaño. Windows no siempre permite consultar el ejecutable de procesos elevados o protegidos. En ese caso la utilidad mostrará que no se detecta la ventana: no es necesariamente ausencia del juego.
-* **Se probó la interfaz bajo Linux con pantalla virtual y pruebas unitarias simuladas**. El acceso Win32 a procesos Steam y el comportamiento del juego requieren prueba física en Windows 11.
+- Una ventana de un juego **no es** una instancia cooperativa; dos clientes necesitan identidades autorizadas y la misma partida.
+- El modo sin conexión de Steam no crea LAN ni autenticación para dos personas.
+- No se modifican ejecutables, DRM, antitrampas, cuentas ni guardados de los juegos. No se cierran juegos ajenos.
+- Pantalla completa exclusiva y procesos elevados pueden impedir mover ventanas: usa modo ventana o sin bordes del propio juego.
+- Configuración en `%LOCALAPPDATA%\SplitForge\settings.v2.json`; el `settings.json` del prototipo no se toca.
 
-## Verificación técnica
+## Prototipo Python 0.6 (referencia)
 
-* 72 pruebas automáticas de regresión (10 añadidas en v0.6).
-* Prueba de apertura de interfaz Tk sobre pantalla virtual: seis pestañas disponibles.
-* Pruebas específicas: rutas Windows, límites de carpetas, 2 ventanas/1 PID, 2 PID/1 ejecutable, ejecutables distintos, ventana sustituida, acceso denegado y privacidad del JSON.
-
-## Siguiente hito (requiere datos reales)
-
-Diseñar el primer adaptador verificado sobre el juego que tengas instalado (idealmente 7 Days to Die) según `SplitForge_Reporte_Steam.json` y `SplitForge_Reporte_Ventanas_Steam.json`: validar lanzamiento legítimo, cliente(s) admitidos, modo de partida común, límites de Steam, entrada separada y rendimiento. El servidor dedicado de 7DTD sería una línea de investigación, pero **no sustituye ni crea por sí solo una segunda cuenta o cliente**.
+`Iniciar_SplitForge.bat`, `Instalar_Todo.bat`, `run_tests.bat` y los diagnósticos `.bat` siguen funcionando con su `.venv`. Ver [`docs/15-HISTORIAL.md`](docs/15-HISTORIAL.md).

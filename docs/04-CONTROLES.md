@@ -1,53 +1,58 @@
-# Controles PS4, SDL y separación de jugadores
+# Controles PS4, SDL3 y separación de jugadores
 
-## Estado comprobado en el equipo de referencia
+## Estado comprobado en el equipo de referencia (prototipo Python)
 
-- Dos mandos Bluetooth figuraron como `Wireless Controller` en Windows y como `PS4 Controller` en SDL.
-- `pygame-ce 2.5.8` utiliza SDL 2.32.10 en el entorno reportado por el usuario.
-- La vía `pygame.joystick` detectó ambos (`get_count() == 2`) y finalmente permitió movimientos separados.
-- El **laboratorio** puede asignar un identificador distinto a J1/J2 y reenviar cada estado al mundo compartido.
+- Dos mandos Bluetooth como `Wireless Controller` en Windows y `PS4 Controller` en SDL2 (pygame-ce 2.5.8).
+- La vía `pygame.joystick` detectó ambos y permitió movimientos separados en el laboratorio.
 - Esto **no** equivale a redirigir mandos dentro de juegos de Steam de terceros.
 
-## Ruta real de entrada
+## Ruta de entrada en 0.7 (.NET + SDL3)
 
 ```mermaid
 sequenceDiagram
     participant P as PS4 BT
-    participant S as SDL Joystick
-    participant C as ControllerManager
-    participant M as SessionManager
-    participant W as SharedWorld
-    participant V as Visores P1/P2
-    P->>S: ejes/botones
-    S->>C: joystick.get_axis/button
-    C->>M: {id: PadState}
-    M->>W: J1 y J2 independientes
-    W->>V: instantánea única
+    participant S as SDL3 (HIDAPI/RawInput)
+    participant I as SdlInputService (hilo propio ≤1000 Hz)
+    participant L as Simulación (hilo 120 Hz)
+    participant U as Interfaz WPF (33 ms)
+    P->>S: informes HID
+    I->>S: SDL_PollEvent + lectura de ejes/botones
+    I-->>I: PadInterpreter + perfil → PadState
+    I-->>L: InputSnapshot inmutable (Volatile)
+    I-->>U: InputSnapshot inmutable
+    L->>L: LabSession.Step(J1, J2)
 ```
 
-`ControllerManager.choose_read_path()` usa `joystick` por defecto para nombres PS4/DualShock/Wireless Controller, aun cuando SDL ofrezca GameController. Otros mandos pueden usar mapeo normalizado. Si SDL falla totalmente, existe fallback WinMM (limitado). **No mezclar** los dos lectores para el mismo dispositivo: crea duplicación.
+- **Un solo hilo toca SDL.** Publica una instantánea nueva solo cuando cambia algo (sin basura a 1 kHz) y al menos una vez por segundo.
+- **Eventos en segundo plano** (`SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS=1`): imprescindible, el juego tendrá el foco.
+- **Frecuencia:** plazos absolutos con `SDL_DelayNS` (temporizador de alta resolución de SDL3, sin girar la CPU). Medido: 1000 Hz en Linux tras la corrección; la primera versión midió 646 Hz en la VM de Windows de la CI por acumulación de retrasos (corregido, pendiente de volver a medir en el PC del propietario).
+- **Hotplug:** `SDL_EVENT_JOYSTICK_ADDED/REMOVED`; un mando desconectado deja de aparecer y el jugador queda en `SIN LECTURA`; nunca se intercambian J1/J2 en silencio.
+- **Identificación física:** `IdentifyPlayer` enciende la barra de luz del PS4 con el color del jugador (J1 turquesa, J2 naranja, J3 violeta, J4 amarillo), fija el índice de jugador y vibra 250 ms.
+
+## Política de lectura (ADR-002, vigente)
+
+`ReadPathPolicy.Choose`: en modo **Auto**, nombres PS4/DualShock/Wireless Controller/PlayStation → **joystick directo** con perfil aprendido; el resto usa la ruta **Gamepad** estándar de SDL si existe. Modos manuales: Joystick / Gamepad. En SDL3 la ruta Gamepad para PS4 es sólida (HIDAPI); conviene probarla con «Lector: Gamepad» y, si funciona en el PC del propietario, plantear cambiar el valor por defecto con un ADR.
 
 ## Calibración
 
-- Ejes X/Y: zona muerta (`normalize_axis`, por defecto 0.14), inversión y mapeo.
-- Acciones: Cruz/R2 o botones asignados como `a_pressed`, `dash_pressed`, `shield_pressed`.
-- El índice físico del botón no es universal; aprenderlo con el usuario.
-- R2 puede ser un eje analógico: guardar reposo, dirección y umbral (`analog_trigger_pressed`).
-- Mando desconectado: reportar `SIN LECTURA`, no intercambiar J1/J2 por una reenumeración silenciosa.
+- Ejes X/Y: zona muerta por eje 0,14 y reescalado (`AxisMath.Normalize`, idéntico al prototipo), inversión opcional.
+- Acciones: disparo (Cruz o R2 analógico), impulso, escudo; índices aprendidos con «Aprender».
+- R2 analógico: se guardan reposo, dirección y umbral 0,60 (`AnalogTriggerPressed`).
+- Perfil por GUID de modelo (los dos PS4 comparten perfil). Los GUID de SDL3 pueden diferir de los de SDL2: hay que recalibrar una vez en la 0.7.
+- Perfil inválido para el dispositivo → sin estado (`SIN LECTURA`) hasta recalibrar; nunca índices fuera de rango.
 
 ## Pruebas manuales mínimas
 
-1. `joy.cpl`: ambos figuran y cada uno responde en *Propiedades → Probar*.
-2. Diagnóstico SDL desde carpeta raíz en PowerShell:
+1. `joy.cpl`: ambos figuran y responden en *Propiedades → Probar*.
+2. `SplitForge.Diagnostico.exe mandos`: aparecen los dos y cambian X/Y **con otra ventana en primer plano**.
+3. Pestaña **01 MANDOS**: estado en vivo; frecuencia del hilo cercana a 1000 Hz; «Identificar» enciende las luces.
+4. Pestaña **02 MUNDO COMPARTIDO**: cada mando mueve **su** nave; disparo, escudo e impulso por separado.
+5. Desconectar/reconectar uno; reasignar en vivo.
 
-   ```powershell
-   .\.venv\Scripts\python.exe -c "import pygame; pygame.init(); pygame.joystick.init(); print(pygame.joystick.get_count()); [print(i, pygame.joystick.Joystick(i).get_name()) for i in range(pygame.joystick.get_count())]"
-   ```
-3. SplitForge pestaña **01 CONTROLES**: los dos aparecen; X/Y cambia en tiempo real.
-4. Selección J1/J2: cada uno con un ID distinto. Iniciar **02 MUNDO COMPARTIDO**.
-5. Cada mando mueve **su** personaje, sin mover el otro; disparo, escudo e impulso por separado.
-6. Desconectar/reconectar uno; verificar estado reportado y reasignación explícita.
+## Camino pendiente para juegos de Steam (módulo nativo C++)
 
-## Camino pendiente para juegos de Steam
+Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input), mientras que XInput funciona en segundo plano. Antes de escribir el módulo nativo hay que saber qué API usa cada juego: `SplitForge.Diagnostico.exe 7dtd` lista los módulos de entrada cargados (XInput, DirectInput, HID, Windows.Gaming.Input, SDL, overlay de Steam, EAC). Opciones según la evidencia:
 
-Un broker nativo **podría** requerir control de visibilidad de mandos y asignación por proceso mediante mecanismos permitidos. **No existe hoy** en SplitForge. Antes de elegir driver o técnica, realizar una prueba legal por juego, determinar cómo lee input y analizar si admite usuarios separados. Steam Input puede reconocer un mando sin exponerlo a SDL del modo esperado. Nunca intervenir en protecciones antitrampas ni asumir que un driver virtual resuelve el problema de multijugador.
+- **XInput:** filtro por proceso (cada cliente ve solo su ranura), con PS4 expuestos como mandos XInput (Steam Input o DS4Windows) y sin duplicados.
+- **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
+- Nunca intervenir en antitrampas activos ni instalar drivers de kernel por defecto.

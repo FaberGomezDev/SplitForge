@@ -133,10 +133,11 @@ public sealed unsafe class SdlInputService : IDisposable
         long sequence = 0, loops = 0;
         var rateWindow = Stopwatch.StartNew();
         double measured = 0;
+        // Plazos absolutos: si una espera se pasa, la siguiente es más corta y la frecuencia media se mantiene.
+        var next = SDL_GetTicksNS();
         SDL_Event e;
         while (!_stop)
         {
-            var start = SDL_GetTicksNS();
             while (_commands.TryDequeue(out var command))
                 command();
             while (SDL_PollEvent(&e))
@@ -165,9 +166,12 @@ public sealed unsafe class SdlInputService : IDisposable
                 Publish(++sequence, measured);
                 changed = false;
             }
-            var elapsed = SDL_GetTicksNS() - start;
-            if (elapsed < period)
-                SDL_DelayNS(period - elapsed); // Temporizador de alta resolución de SDL3, sin girar la CPU.
+            next += period;
+            var now = SDL_GetTicksNS();
+            if (next > now)
+                SDL_DelayNS(next - now); // Temporizador de alta resolución de SDL3, sin girar la CPU.
+            else if (now - next > 5 * period)
+                next = now; // Muy atrasado (equipo cargado): resincronizar sin ráfagas.
         }
     }
 

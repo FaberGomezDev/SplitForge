@@ -51,6 +51,8 @@ public static unsafe class LabViewer
                 }
                 Draw(renderer, player, reader.Latest(MaxAge));
                 SDL_RenderPresent(renderer);
+                if (reader.Ended && reader.Latest(MaxAge) is null)
+                    running = false; // El anfitrión cerró el canal (o terminó): el visor no queda huérfano.
                 if (maxFrames > 0 && ++frames >= maxFrames)
                     break;
             }

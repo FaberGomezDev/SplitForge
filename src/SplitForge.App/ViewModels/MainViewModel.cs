@@ -42,7 +42,9 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _log = new SessionLog(Path.Combine(_dataFolder, "splitforge-net.log"));
         _log.Written += line => Application.Current?.Dispatcher.BeginInvoke(() => AppendLog(line));
         _input = new SdlInputService(_settings.InputMode, _settings.Mappings, _settings.InputRateHz, _log.Write);
-        _sessions = new SessionManager(_windows, new SystemProcessLauncher(), _log.Write);
+        var recovery = Path.Combine(_dataFolder, SessionRecovery.FileName);
+        SessionRecovery.RecoverAfterCrash(recovery, _windows, _log.Write);
+        _sessions = new SessionManager(_windows, new SystemProcessLauncher(), _log.Write, recoveryFile: recovery);
         _server = new SevenDaysServer(new SystemProcessLauncher(), _log.Write);
 
         _orientationStacked = _settings.Orientation == SplitOrientation.Stacked;

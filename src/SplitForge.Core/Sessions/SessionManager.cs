@@ -31,7 +31,7 @@ public sealed class ActiveSession(SessionKind kind, LayoutOptions layout)
 /// juegos externos (pueden estar guardando); solo termina visores propios tras un cierre normal fallido.
 /// </summary>
 public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launcher, Action<string> log,
-    Func<long>? clockMs = null) : IDisposable
+    Func<long>? clockMs = null, string? recoveryFile = null) : IDisposable
 {
     public const string LabWindowTitlePrefix = "SplitForge MUNDO COMPARTIDO - Jugador ";
     public const int LabWindowTimeoutMs = 12_000;
@@ -191,6 +191,8 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
         if (s is null)
             return;
         Active = null;
+        if (recoveryFile is not null)
+            SessionRecovery.Clear(recoveryFile);
         foreach (var saved in s.Saved.Values.Reverse())
         {
             try
@@ -228,6 +230,18 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
         {
             if (!session.Saved.ContainsKey(hwnd))
                 session.Saved[hwnd] = windows.Capture(hwnd);
+        }
+        // Ventanas externas: guardar la copia de seguridad ANTES de tocarlas.
+        if (recoveryFile is not null && session.Kind == SessionKind.Attached)
+        {
+            try
+            {
+                SessionRecovery.Save(recoveryFile, session.Saved.Values);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                log($"Aviso: no se pudo guardar la copia de recuperación de ventanas: {ex.Message}");
+            }
         }
         for (var i = 0; i < handles.Count; i++)
             windows.Place(handles[i], regions[i], session.Layout.Borderless);

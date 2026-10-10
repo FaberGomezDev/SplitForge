@@ -1,63 +1,62 @@
 # Roadmap técnico con puertas de aceptación
 
-> La versión de código continúa siendo **0.6.0**. Las fases no están terminadas salvo mención explícita. El número de versión futuro es **tentativo**, no una promesa.
+> Código **0.7.0**. Las fases no están terminadas salvo mención explícita. Las versiones futuras son tentativas.
 
-## P0 — Preservar el laboratorio estable
+## P0 — Base técnica eficiente y laboratorio estable
 
-- [x] Dos PS4 Bluetooth leídos con SDL en equipo del usuario.
+- [x] Dos PS4 Bluetooth leídos con SDL en el equipo del usuario (prototipo Python).
 - [x] Mundo simulado una sola vez, dos visores y estados separados.
-- [x] Pruebas unitarias de regresión y diagnóstico de Steam.
-- [ ] Formalizar y automatizar pruebas Windows end-to-end repetibles (captura P1/P2, reinicio, reconexión, restauración de ventanas).
-- [ ] Agregar logging estructurado con correlación por sesión, sin datos privados.
+- [x] Reconstrucción en .NET 10 + SDL3 + WPF (ADR-010): entrada en hilo dedicado, simulación a 120 Hz, IPC binario, visores con GPU.
+- [x] Pruebas automáticas (106 xUnit + 77 unittest) y CI en Windows con paquete autónomo.
+- [x] Registro local con identificador de sesión, sin datos privados.
+- [ ] **Validar la 0.7 en el PC del propietario** (W01–W07 de `07-PRUEBAS.md`).
+- [ ] Automatizar pruebas Windows end-to-end (captura de ventanas, reconexión).
 
-**Criterio de salida:** dos jugadores mueven y disparan por separado durante sesión sostenida, repetible tras reinicio, sin cambiar mandos ni perder ventanas.
+**Criterio de salida:** dos jugadores mueven y disparan por separado en la 0.7 durante una sesión sostenida, repetible tras reinicio, sin cambiar mandos ni perder ventanas.
 
-## P1 — Elegir juego Steam realmente instalado
+## P1 — Juego real elegido: 7 Days to Die
 
-- [ ] Obtener reportes Steam de la PC de pruebas.
-- [ ] Elegir título y build exacta, revisar EULA/requisitos/servidor y dos identidades legítimas si procede.
-- [ ] Verificar si modo offline/LAN existe realmente en ese build con dos clientes.
-- [ ] Registrar un manifiesto de investigación: requisitos, bloqueos y alternativa legal.
+- [x] Juego instalado en el PC de pruebas; arranca sin EAC con la opción oficial.
+- [x] Escenario legítimo definido: servidor dedicado oficial + un cliente por cuenta (ADR-013).
+- [x] Preflight, servidor local aislado, Sandboxie-Plus para el Steam del jugador 2, pantalla dividida (implementado, sin validar).
+- [ ] `SplitForge_Reporte_7DTD.json` con uno y con dos clientes abiertos (APIs de mando, ¿la ventana sin foco sigue funcionando?).
+- [ ] **Segunda cuenta de Steam con 7DTD** (bloqueante para dos jugadores reales).
 
-**Criterio de salida:** existe un escenario realista, documentado y permitido para la prueba de dos jugadores; si no, cambiar de juego.
+**Criterio de salida:** dos clientes con cuentas distintas conectados al servidor local de SplitForge.
 
-## P2 — Primer adaptador comercial (candidato 7DTD)
+## P2 — Un mando por ventana dentro del juego (módulo nativo C++)
 
-- [ ] Implementar `GameAdapter` con preflight / start / health / stop / restore, manteniendo modo solo lectura hasta preflight satisfactorio.
-- [ ] Probar dos clientes autorizados que compartan **la misma partida**.
-- [ ] Determinar y validar mecanismo por juego de separación de entrada.
-- [ ] Ubicar ventanas, restaurar posiciones, proteger guardados y detectar fallos.
-- [ ] Verificar en Windows 11 con dos PS4 reales.
+- [ ] Elegir método según el diagnóstico (filtro XInput por proceso; simulación de foco si el juego exige foco).
+- [ ] Implementar `native/` en C++20 con ADR, pruebas y activación solo con EAC desactivado por la opción oficial.
+- [ ] Reversible: instalar/retirar con consentimiento, sin modificar archivos existentes del juego.
+- [ ] Verificar en Windows 11 con dos PS4 reales: cada mando controla solo su cliente.
 
-**Criterio de salida:** una partida de juego comercial con P1 y P2 visibles entre sí, entrada aislada y cierre seguro. Si depende de Internet, rotular claramente `ONLINE REQUIRED`.
+**Criterio de salida:** una partida de 7DTD con J1 y J2 visibles entre sí, entrada aislada y cierre seguro → estado `INPUT_AISLADO_VALIDADO`.
 
 ## P3 — Instrumentación y optimización
 
-- [ ] Crear medición repetible de frametimes, tiempo CPU por proceso, RAM, presupuesto/uso VRAM y pérdidas de input.
-- [ ] Perfiles `Rendimiento / Equilibrado / Calidad` únicamente con parámetros que el juego soporte.
-- [ ] Comparar contra Nucleus con mismas condiciones; publicar datos y variabilidad.
-- [ ] Estudiar composición GPU opcional **solo si** reduce problemas medidos.
+- [ ] Frametimes por instancia (PresentMon/ETW), CPU, RAM, VRAM y latencia de entrada.
+- [ ] Perfiles Rendimiento / Equilibrado / Calidad solo con opciones que el juego soporte.
+- [ ] Comparar con Nucleus Co-op en las mismas condiciones; publicar datos y variabilidad.
 
 **Criterio de salida:** métricas respaldadas por evidencia, sin declarar FPS hipotéticos.
 
 ## P4 — Plataforma extensible y distribución
 
-- [ ] Manifiestos versionados, validación de contratos, plugin sandbox/permissions según riesgo.
-- [ ] Actualizador seguro/firmado, diagnósticos de usuario, empaquetado ejecutable.
-- [ ] Nuevos juegos con matriz de compatibilidad por build, pruebas de regresión automatizadas.
-- [ ] 3–4 jugadores solo si recursos y juegos permiten esa cantidad.
+- [x] Paquete autónomo win-x64 en cada push (artefacto) y releases con etiqueta `v*`.
+- [ ] Firma de código del ejecutable; actualizador seguro.
+- [ ] Más adaptadores con matriz de compatibilidad por build; 3–4 jugadores donde el juego y los recursos lo permitan.
 
 ## Evitar estos anti-patrones
 
-- Lanzar dos ejecutables Steam “a la fuerza” como sustituto de coop.
-- Usar un controlador virtual sin comprobar que no mueve ambos clientes.
-- Reescribir en C++ porque “es más rápido” sin perf profiling.
-- Detectar dos ventanas y anunciar compatibilidad verificada.
+- Emuladores de Steam o «una sola copia para varios jugadores».
+- Lanzar dos ejecutables Steam a la fuerza como sustituto del multijugador.
+- Un mando virtual sin comprobar que no mueve ambos clientes.
+- Detectar dos ventanas y anunciar compatibilidad.
 - Probar solo con pruebas simuladas y declarar funcional Windows/Steam.
 
 ## Orden concreto del próximo sprint
 
-1. Analizar reportes locales Steam y escoger juego real.
-2. Especificar preflight verificable y estados `BLOQUEADO` / `EXPERIMENTAL` / `VALIDADO`.
-3. Agregar tests sobre casos de error / replay de reportes sin datos privados.
-4. **Solo entonces** implementar adapter piloto, no duplicar aún sesiones de Steam de forma general.
+1. Propietario: descargar `SplitForge-win-x64`, validar mandos y laboratorio, enviar `SplitForge_Reporte_7DTD.json`.
+2. Con el informe: ADR del método de aislamiento y primera versión del módulo nativo.
+3. Con la segunda cuenta: prueba real de dos jugadores y registro de evidencias en `05-INTEGRACION-STEAM.md`.

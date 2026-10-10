@@ -1,25 +1,25 @@
 # Riesgos y preguntas abiertas
 
-Estas preguntas deben resolverse con evidencia concreta antes de programar una integración comercial, no con suposiciones.
+Resolver con evidencia concreta antes de programar sobre suposiciones.
 
-## Datos de juego de referencia
+## 7 Days to Die (prioritario)
 
-- ¿Cuál es el primer juego **instalado** en el PC de pruebas? Obtener `SplitForge_Reporte_Steam.json`.
-- ¿Qué versión/build exacta, ejecutables y launchers presenta? Obtener informe de ventanas y verificar visualmente.
-- ¿Permite dos instancias/clientes **autorizados**, posiblemente con cuentas diferentes, en la misma computadora?
-- ¿Permite conexión a la misma sesión LAN sin Internet, o necesita plataformas/autenticación online?
-- ¿Qué ocurre con el guardado local al abrir dos clientes? No probar sin respaldo.
-- ¿Existe una opción oficial (si procede) para jugar en modo privado sin protecciones online activadas? Nunca bypassear.
+- ¿Qué APIs de mando carga 7DTD en el PC del propietario? → `SplitForge.Diagnostico.exe 7dtd` (con uno y con dos clientes).
+- ¿La ventana **sin foco** sigue simulando el juego y leyendo mandos? (Unity puede pausar o ignorar la entrada en segundo plano).
+- ¿Abre 7DTD una segunda instancia en la misma sesión de Windows (con otra cuenta en Sandboxie-Plus u otro usuario)?
+- ¿Steam Input captura los PS4 en ambos Steam? ¿Conviene desactivarlo para 7DTD y exponer los PS4 como XInput (DS4Windows) para el filtro por proceso?
+- ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam?
+- Segunda cuenta de Steam con el juego: **pendiente del propietario**.
 
 ## Diseño técnico
 
-- ¿Cómo se separa físicamente la visibilidad de cada mando para el cliente seleccionado sin interferir con Steam Input o seguridad del juego?
-- ¿Qué identificador estable se usa tras reconexión Bluetooth sin almacenar seriales en reportes?
-- ¿Cómo negociar fullscreen/borderless, DPI y múltiple monitor sin perder ventana?
-- ¿Qué hacer si la GUI muere y quedan dos clientes abiertos?
-- ¿Cómo soportar rendimiento variable de un mismo juego con 8 GB VRAM sin conjeturas?
-- ¿Necesitamos compositor GPU? Decidir tras pruebas, no antes.
+- Método del módulo nativo: filtro XInput por proceso, simulación de foco, o ambos (según el diagnóstico).
+- Identificador estable tras reconexión Bluetooth sin guardar seriales en reportes (hoy: reasignación explícita).
+- Fullscreen exclusivo, DPI mixto y varios monitores (hoy: área útil del monitor principal).
+- ~~Cierre de golpe con clientes sin bordes~~ → resuelto: `SessionRecovery` guarda posiciones/estilos y los restaura al siguiente arranque si el handle sigue siendo del mismo proceso.
+- Medir el rendimiento con dos instancias en 8 GB de VRAM antes de proponer perfiles.
+- ¿Ruta Gamepad de SDL3 para PS4 como valor por defecto? (probar en hardware).
 
 ## Prioridad
 
-P0: mantener los dos mandos y mundo compartido funcionales. P1: seleccionar un juego y establecer legalidad y escenario. P2: dos clientes y mundo real. P3: optimización. P4: plataforma de adaptadores y distribución instalable.
+P0: validar la 0.7 en el PC del propietario. P1: diagnóstico 7DTD y segunda cuenta. P2: módulo nativo de un mando por ventana. P3: métricas. P4: firma y distribución.

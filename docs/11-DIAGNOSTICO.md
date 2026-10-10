@@ -1,44 +1,42 @@
 # Guía de diagnóstico basada en evidencias
 
-## A. Los mandos PS4 no aparecen
+Herramienta principal (0.7): `SplitForge.Diagnostico.exe` en la carpeta del paquete (o `dotnet run --project src/SplitForge.Diagnostico -- <comando>`). Todos los comandos son de **solo lectura**.
 
-1. Abrir `Win + R` → `joy.cpl`. Comprobar que ambos figuren y pulsen botones en *Probar*.
-2. Desde el `.venv` de SplitForge ejecutar:
+## A. Los mandos no aparecen
 
-   ```powershell
-   .\.venv\Scripts\python.exe -c "import pygame; pygame.init(); pygame.joystick.init(); print('SDL', pygame.get_sdl_version(), 'MANDOS', pygame.joystick.get_count()); [print(i, pygame.joystick.Joystick(i).get_name()) for i in range(pygame.joystick.get_count())]"
-   ```
-3. Si SDL = 0 y Windows = 2, investigar enumeración/Steam Input/conexión Bluetooth, **no reinstalar pygame-ce automáticamente**.
-4. Si SDL = 2 pero GUI = 0, ejecutar diagnóstico del motor:
-
-   ```powershell
-   .\.venv\Scripts\python.exe -c "from splitforge.gamepads import ControllerManager; m=ControllerManager(); print(m.backend_name, m.warning, [(p.instance_id,p.name) for p in m.devices()]); m.close()"
-   ```
-5. Si GUI lista ambos pero no registra X/Y: alternar `Lector SDL` → `joystick`, revisar `Escanear_Movimiento.bat` y archivos del usuario; no cambiar los drivers del sistema sin diagnóstico.
+1. `Win + R` → `joy.cpl`: ambos deben figurar y responder en *Probar*.
+2. `SplitForge.Diagnostico.exe mandos --segundos 20`: muestra el motor (`SDL3 x.y.z`), cada mando, su ruta de lectura y los cambios en vivo.
+3. Si Windows ve 2 y SDL3 ve 0: revisar Bluetooth/Steam Input (Steam puede capturar los mandos si está abierto con «PlayStation Configuration Support»). **No reinstalar drivers** sin evidencia.
+4. Si aparece «No se encontró SDL3 nativo»: el paquete está incompleto; vuelve a descomprimirlo (debe existir `SDL3.dll` junto al `.exe`).
+5. Prototipo Python: los pasos de `Diagnostico_Mandos.bat` siguen siendo válidos.
 
 ## B. Ambos aparecen, uno deja de moverse
 
-- Verificar ID asignado a J1/J2. Tras reconexión los IDs pueden cambiar.
-- Probar movimiento en pestaña Controles por separado.
-- En Mundo Compartido mirar línea de estado `P1`/`P2`, `X`/`Y` y `SIN LECTURA`.
-- Usar «Reasignar mandos» si hubo nueva enumeración; observar si segundo mando mueve actor equivocado.
-- Si el segundo mando funciona en UI pero no en mundo, instrumentar `SessionManager.route_shared_inputs()` y pruebas con estados sintéticos **antes** de cambiar SDL.
+- Pestaña 01: ¿su estado en vivo cambia? Si dice `SIN LECTURA`, el perfil es inválido para ese modelo → recalibrar.
+- Tras reconectar, el ID cambia: reasignar en 02 («Reasignar mandos en vivo»).
+- Probar «Lector: Gamepad» y «Joystick» para comparar.
+- Si la UI lo ve pero el laboratorio no: revisar la línea `P1/P2` (señal que llega a la simulación).
 
 ## C. Disparo / gatillo no responden
 
-- Usar función «Aprender» con botón Cruz o R2 en el mando afectado.
-- Evaluar lectura como botón digital o eje analógico (reposo, dirección, umbral).
-- Comprobar estado `a_pressed` y resultado en mundo compartido.
+- «Aprender» con Cruz o R2 en el mando afectado; R2 se calibra como eje (reposo, dirección, umbral).
+- En modo Gamepad el disparo es el botón Sur (Cruz) fijo.
 
 ## D. Steam aparece pero el juego no se divide
 
-- Detectar biblioteca no significa que el juego esté abierto.
-- Una ventana o un PID no es dos clientes.
-- Dos ventanas del mismo proceso tampoco son dos clientes distintos.
-- Dos PID del mismo ejecutable **solo permiten organización visual**; aún faltan mandos aislados y partida común.
-- Fullscreen exclusivo o procesos elevados pueden no permitir reubicación/inspección; usar opciones normales de ventana del propio juego si existen.
-- Si requiere cuentas diferentes o modo online, no forzar una sesión offline inexistente.
+- Detectar la biblioteca no significa que el juego esté abierto.
+- Una ventana o un PID no es dos clientes; dos ventanas del mismo proceso tampoco.
+- 2–4 PID del mismo exe **solo** permiten organizar ventanas; faltan mandos aislados y partida común.
+- Pantalla completa exclusiva o procesos elevados pueden impedir mover la ventana: usar modo ventana/sin bordes del propio juego.
 
-## E. Reportes seguros
+## E. 7 Days to Die
 
-Usar `Escanear_Steam.bat` y `Analizar_Ventanas_Steam.bat`. Compartir solo archivos JSON generados por esas utilidades; revisar contenido si han sido editadas por terceros. No compartir `settings.json`, logs completos, capturas con nombres de usuario ni rutas personales.
+1. Pestaña 06 → «Comprobar»: revisa cada línea del preflight.
+2. Servidor que no llega a «LISTO»: ver el registro en la propia pestaña (también en `%LOCALAPPDATA%\SplitForge\7dtd\logs`). La primera vez puede tardar varios minutos generando el mundo. Comprobar que el puerto (26900 por defecto) no esté en uso.
+3. Cliente que no conecta: ¿EAC coincide con el servidor? (servidor sin EAC ⇒ cliente con «Launch game without EAC»). ¿Misma versión de juego y servidor? Actualiza ambos en Steam.
+4. `SplitForge.Diagnostico.exe 7dtd` con el juego abierto: guarda `SplitForge_Reporte_7DTD.json` con las APIs de mando cargadas por cada cliente. Si dice «Windows denegó la lectura de módulos», EAC está activo.
+5. Anotar si la ventana **sin foco** sigue procesando el juego y los mandos: es la clave para el módulo nativo.
+
+## F. Reportes seguros
+
+Compartir solo los JSON generados (`SplitForge_Reporte_*.json`); revisarlos si alguien los editó. No compartir `settings*.json`, registros completos, capturas con nombres de usuario ni rutas personales.

@@ -2,29 +2,37 @@
 
 ## Versión y naturaleza del paquete
 
-Esta entrega es **SplitForge 0.6.0 (código original) + repositorio documental**. No modifica el número mostrado por la GUI porque no altera su funcionalidad. El paquete es **fuente completo**, no binario `.exe` autocontenido.
+- Código **0.7.0** (`Directory.Build.props` → `<Version>`; también en `MainViewModel.Version` y `app.manifest`).
+- `0.x` = experimental. `MAJOR.MINOR.PATCH` estable desde el primer adaptador validado en hardware.
+- El paquete de usuario es una **publicación .NET autónoma win-x64** (incluye runtime, WPF y `SDL3.dll`): no requiere instalar nada.
 
-## Política propuesta
+## Integración continua
 
-- `MAJOR.MINOR.PATCH` desde el primer adaptador estable. Hasta entonces `0.x` experimental.
-- `0.6.0+docs` es designación de distribución documental, no un nuevo parche funcional.
-- Mantener `CLAUDE.md`, README, memoria y changelog sincronizados con el código.
+- `.github/workflows/build.yml` (cada push a `main` y PR): pruebas .NET + Python, `check_docs`, publicación autónoma, prueba de humo de `SplitForge.Diagnostico.exe` y artefacto **SplitForge-win-x64** (30 días).
+- `.github/workflows/release.yml` (etiquetas `v*`): pruebas, publicación, `SplitForge-vX.Y.Z-win-x64.zip` + `.sha256` y release de GitHub.
 
-## Checklist para release Windows
+### Publicar una versión
 
-1. Ejecutar `python -m unittest discover -s tests -v`; registrar cantidad y resultado.
-2. Ejecutar `python tools/check_docs.py` y resolver enlaces rotos.
-3. En una PC Windows 11, probar arranque, mandos PS4, mundo compartido, cierre y restauración.
-4. Validar los reportes Steam con datos de prueba, verificar que no filtran rutas/cuentas.
-5. Probar instalación limpia de `.venv` con Python compatible y wheel `pygame-ce` si se requiere.
-6. Empaquetar **sin** `.venv`, `__pycache__`, `.git`, `.pyc`, settings, logs, reportes ni secretos.
-7. Generar SHA-256 del ZIP y documentar cambios y limitaciones.
-8. No declarar un adaptador como validado antes de probarlo en build real y hardware real.
+```powershell
+git tag v0.7.0
+git push origin v0.7.0
+```
 
-## Cómo instalar paquete completo sobre una instalación probada
+## Checklist antes de etiquetar
 
-**No sobrescribir a ciegas** la carpeta que ya tiene `.venv` y settings. Descomprimir en carpeta nueva y, si se desea aprovechar Python ya instalado, crear un nuevo entorno o copiar la carpeta `.venv` del mismo intérprete únicamente tras comprobación de compatibilidad. La configuración `%LOCALAPPDATA%` se conserva por separado.
+1. `dotnet test SplitForge.slnx -c Release` y `python -m unittest discover -s tests -v` en verde; anotar conteos.
+2. `python tools/check_docs.py` sin errores.
+3. En Windows 11 con dos PS4: W01–W07 de `07-PRUEBAS.md` como mínimo.
+4. Informes Steam/7DTD revisados: sin rutas, cuentas ni títulos.
+5. Actualizar `01-MEMORIA.md`, `15-HISTORIAL.md` y, si aplica, `05-INTEGRACION-STEAM.md`.
+6. No declarar un adaptador validado sin build real, hardware real y evidencias.
 
-## Cómo actualizar la memoria de próxima sesión
+## Compatibilidad con instalaciones existentes
 
-Aplicar [`templates/ENTREGA.md`](templates/ENTREGA.md): qué cambió, por qué, qué pruebas, restricciones nuevas, cuál es el siguiente paso. No permitir que documentación prometa funcionalidades futuras como actuales.
+- El prototipo Python y su `.venv` siguen funcionando en la misma carpeta del repositorio (`Iniciar_SplitForge.bat`).
+- La 0.7 no modifica `settings.json`; usa `settings.v2.json` e importa orientación, separación y modo de lectura la primera vez.
+- Los perfiles de botones deben recalibrarse una vez (los GUID de SDL3 pueden diferir de SDL2).
+
+## Cómo actualizar la memoria de la próxima sesión
+
+Aplicar [`templates/ENTREGA.md`](templates/ENTREGA.md): qué cambió, por qué, pruebas, restricciones nuevas y siguiente paso. No permitir que la documentación prometa funciones futuras como actuales.

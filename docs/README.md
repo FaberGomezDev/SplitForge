@@ -1,37 +1,39 @@
 # Documentación de SplitForge
 
-> Fuente de verdad **versionada** del repositorio. Base de código 0.6.0; edición documental añadida sin modificar la lógica probada.
+> Fuente de verdad **versionada** del repositorio. Código **0.7.0** (.NET 10 + SDL3); el prototipo Python 0.6.0 se conserva como referencia validada.
 
 ## Lectura recomendada
 
 | Documento | Contenido |
 | --- | --- |
-| [`01-MEMORIA.md`](01-MEMORIA.md) | Historia real, pruebas del usuario, problemas resueltos y pendientes |
-| [`02-ARQUITECTURA.md`](02-ARQUITECTURA.md) | Arquitectura actual, diseño objetivo, diagramas y límites |
-| [`03-MODULOS.md`](03-MODULOS.md) | Responsabilidades y contratos de cada módulo existente |
-| [`04-CONTROLES.md`](04-CONTROLES.md) | PS4 por Bluetooth, SDL/WinMM, calibración y aislamiento real pendiente |
-| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Capacidades y puerta de aceptación por juego, matriz preliminar |
-| [`06-PLAN-DE-DESARROLLO.md`](06-PLAN-DE-DESARROLLO.md) | Fases futuras, hitos de aceptación y prioridades |
-| [`07-PRUEBAS.md`](07-PRUEBAS.md) | Pruebas automáticas/manuales, métricas y regresiones |
+| [`01-MEMORIA.md`](01-MEMORIA.md) | Historia real, pruebas del usuario, problemas resueltos y estado para la siguiente sesión |
+| [`02-ARQUITECTURA.md`](02-ARQUITECTURA.md) | Arquitectura actual 0.7, diseño objetivo, diagramas y límites |
+| [`03-MODULOS.md`](03-MODULOS.md) | Responsabilidades y contratos de cada proyecto y tipo público |
+| [`04-CONTROLES.md`](04-CONTROLES.md) | PS4 por Bluetooth, SDL3 en hilo dedicado, calibración y aislamiento pendiente |
+| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Estados por juego, adaptador 7DTD (servidor oficial + cuentas separadas), lo que no se hará |
+| [`06-PLAN-DE-DESARROLLO.md`](06-PLAN-DE-DESARROLLO.md) | Fases, hitos de aceptación y prioridades |
+| [`07-PRUEBAS.md`](07-PRUEBAS.md) | Pruebas automáticas (xUnit, unittest, CI) y matriz manual en Windows |
 | [`08-SEGURIDAD.md`](08-SEGURIDAD.md) | Privacidad, DRM, antitrampas, guardados y procesos externos |
-| [`09-RENDIMIENTO.md`](09-RENDIMIENTO.md) | Métricas, perfiles y optimización para hardware de referencia |
-| [`10-DESARROLLO.md`](10-DESARROLLO.md) | Primer arranque, estructura, estilo, contribuciones |
-| [`11-DIAGNOSTICO.md`](11-DIAGNOSTICO.md) | Árbol de diagnóstico de mandos, Steam y ventanas |
+| [`09-RENDIMIENTO.md`](09-RENDIMIENTO.md) | Decisiones de rendimiento tomadas y métricas pendientes |
+| [`10-DESARROLLO.md`](10-DESARROLLO.md) | Requisitos, primer arranque, estructura, convenciones |
+| [`11-DIAGNOSTICO.md`](11-DIAGNOSTICO.md) | Árbol de diagnóstico de mandos, Steam, ventanas y 7DTD |
 | [`12-DECISIONES.md`](12-DECISIONES.md) | Registro de decisiones arquitectónicas (ADR) |
-| [`13-FLUJOS-Y-DATOS.md`](13-FLUJOS-Y-DATOS.md) | Flujo de procesos, datos y comunicación local |
-| [`14-VERSIONADO-Y-RELEASE.md`](14-VERSIONADO-Y-RELEASE.md) | Cómo empaquetar, probar y publicar releases |
+| [`13-FLUJOS-Y-DATOS.md`](13-FLUJOS-Y-DATOS.md) | Flujos de procesos, hilos, IPC y persistencia |
+| [`14-VERSIONADO-Y-RELEASE.md`](14-VERSIONADO-Y-RELEASE.md) | Versionado, CI, artefactos y releases |
 | [`15-HISTORIAL.md`](15-HISTORIAL.md) | Hitos históricos y notas para próximas sesiones |
 | [`16-PENDIENTES.md`](16-PENDIENTES.md) | Riesgos y preguntas abiertas sin suposiciones |
-| [`plans/7-days-to-die-original.md`](plans/7-days-to-die-original.md) | Plan existente heredado del prototipo |
-| [`templates/ADAPTADOR.md`](templates/ADAPTADOR.md) | Plantilla obligatoria para perfiles/handlers de juegos |
+| [`plans/7-days-to-die-original.md`](plans/7-days-to-die-original.md) | Plan de investigación heredado del prototipo |
+| [`templates/ADAPTADOR.md`](templates/ADAPTADOR.md) | Plantilla obligatoria para adaptadores de juegos |
 | [`templates/ENTREGA.md`](templates/ENTREGA.md) | Plantilla para actualizar memoria/handoff |
 
 ## Estado actual de un vistazo
 
-**Comprobado por el usuario:** dos mandos PS4 detectados y funcionales dentro del laboratorio de un único mundo local (v0.4). También indicó que v0.5 funcionó. La v0.6 tiene pruebas automáticas y requiere contraste contra juegos Steam reales en el equipo.
+**Comprobado por el usuario (prototipo Python):** dos PS4 por Bluetooth funcionales en el laboratorio de un mundo compartido (v0.4) y detección Steam (v0.5).
 
-**Implementado en el código:** lectura de mandos, selección P1/P2, demostración compartida con IPC por stdin, biblioteca Steam pasiva, evaluación de instalaciones, identificación conservadora de dos procesos y disposición/restauración de ventanas.
+**Implementado en 0.7 (.NET):** entrada SDL3 en hilo dedicado de hasta 1000 Hz con eventos en segundo plano; laboratorio con simulación a 120 Hz en su hilo y visores SDL3/Direct3D; IPC binario versionado; distribución de 2 a 4 ventanas con modo sin bordes reversible; biblioteca Steam y preflight; inspección de clientes; adaptador experimental de 7 Days to Die (servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida); diagnóstico de APIs de mando de 7DTD; CI en Windows con paquete autónomo.
 
-**No implementado/verificado:** coop local de 7 Days to Die u otro título comercial, ejecución múltiple Steam autorizada, redirección de mandos dentro de clientes comerciales, emparejamiento LAN automático, presupuesto de VRAM dinámico, aplicación nativa C++/C#.
+**Verificado automáticamente:** 106 pruebas xUnit + 77 unittest; CI en Windows verde (SDL3 3.5.0 inicializa); en Linux el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
-> Una carpeta `docs/` no sustituye las pruebas: documenta los contratos y el conocimiento acumulado. Para agentes, leer también [`../CLAUDE.md`](../CLAUDE.md).
+**No implementado / no verificado:** la 0.7 en el hardware del propietario; un mando por ventana **dentro** de juegos comerciales (módulo nativo C++ pendiente de evidencia); dos jugadores reales en 7DTD (requiere segunda cuenta con el juego); métricas de FPS/VRAM.
+
+> `docs/` no sustituye las pruebas: documenta contratos y conocimiento acumulado. Para agentes, leer también [`../CLAUDE.md`](../CLAUDE.md).

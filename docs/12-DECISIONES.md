@@ -1,39 +1,59 @@
 # Registro de decisiones (ADR)
 
-Formato: **ID · estado · decisión · por qué · consecuencias**. Revisar este archivo antes de modificar límites arquitectónicos.
+Formato: **ID · estado · decisión · por qué · consecuencias**. Revisar antes de modificar límites arquitectónicos.
 
-## ADR-001 · Aceptada · Prototipo Python/Tkinter + SDL
+## ADR-001 · Sustituida por ADR-010 · Prototipo Python/Tkinter + SDL
 
-Se conserva Python 3.11+, Tkinter y pygame-ce/SDL2 en fase prototipo porque está comprobado en el entorno del usuario. Evitar migrar por gusto a C++/C#; esa migración podría considerarse con benchmarks sobre módulos que lo requieran.
+Se usó Python 3.11+, Tkinter y pygame-ce/SDL2 en la fase de prototipo porque funcionó en el entorno del usuario. Sustituida el 2026-10-10: el propietario exigió las mejores tecnologías para eficiencia y fluidez. El prototipo se conserva como referencia validada.
 
-## ADR-002 · Aceptada · SDL Joystick directo por defecto para PS4
+## ADR-002 · Aceptada · Joystick directo por defecto para PS4
 
-La ruta SDL GameController podía enumerar pero no entregar correctamente ejes en el prototipo anterior. PS4/DualShock/Wireless Controller usa joystick directo en modo `auto`; botones aprendidos por dispositivo, no índices asumidos. Consecuencia: mantener test de detección, movimiento y botones.
+La ruta GameController del prototipo enumeraba sin entregar ejes. PS4/DualShock/Wireless Controller usa joystick directo en modo Auto; botones aprendidos. Se mantiene en la 0.7 con SDL3 hasta probar la ruta Gamepad en el hardware del propietario.
 
 ## ADR-003 · Aceptada · Estado autoritativo único del laboratorio
 
-Un padre calcula `SharedWorld` y difunde instantáneas por stdin a dos visores. Evita dos universos simulados inconexos y no requiere servicio de red. Consecuencia: demo no reproduce todavía networking/latencia de clientes Steam.
+Un anfitrión calcula `SharedWorld` y difunde instantáneas a dos visores. Evita dos universos inconexos y no requiere red.
 
 ## ADR-004 · Aceptada · Inspección Steam sin modificación
 
-Manifestos Steam, carpetas y procesos se leen; no se cambia contenido del juego. El lanzamiento por URI es de una sola instancia. Consecuencia: la detección no concede estado `COMPATIBLE`.
+Manifiestos, carpetas y procesos se leen; no se cambia contenido del juego. La detección no concede `COMPATIBLE`.
 
-## ADR-005 · Aceptada · Organizar ventanas solo con dos PID del mismo EXE
+## ADR-005 · Aceptada (ampliada) · Organizar ventanas solo de procesos distintos del mismo EXE
 
-Rechazar dos HWND de un PID y procesos de ejecutables distintos para no presentar split-screen falso. Revalidar HWND/PID/EXE justo antes de mover. No cerrar procesos externos. Consecuencia: los juegos con arquitectura launcher/subprocesos distinta requieren adaptador específico.
+Se rechazan dos HWND de un PID y ejecutables distintos. 0.7: hasta 4 clientes, ordenados por PID, revalidados justo antes de mover. No se cierran procesos externos.
 
-## ADR-006 · Aceptada · Ninguna evasión DRM / antitrampas
+## ADR-006 · Aceptada · Ninguna evasión de DRM / antitrampas
 
-No forzar sesiones protegidas ni duplicar licencias/cuentas. Cualquier compatibilidad debe apoyarse en modos admitidos y clientes autorizados. Consecuencia: algunos títulos nunca serán soportados sin cambios oficiales.
+No forzar sesiones protegidas ni duplicar licencias/cuentas. Solo modos admitidos y clientes autorizados. Algunos títulos nunca serán soportados sin cambios oficiales.
 
-## ADR-007 · Propuesta · Adaptadores versionados por juego
+## ADR-007 · Aceptada (mínima) · Adaptadores versionados por juego
 
-Antes de desarrollar un adaptador, separar preflight, start, monitor, stop y restore con flags por build y evidencia de pruebas. Pendiente de implementación y aprobación. Riesgo: complejidad excesiva para el primer título; empezar por un contrato mínimo.
+Implementado el contrato mínimo `IGameAdapter` (manifiesto + preflight de solo lectura) y el primer adaptador (7DTD). Estado máximo automático `INSPECCIONADO`; los superiores requieren evidencia física registrada.
 
-## ADR-008 · Propuesta · Telemetría reproducible antes de optimización
+## ADR-008 · Propuesta · Telemetría reproducible antes de optimizar
 
-Instrumentar tiempos de fotograma, procesos y VRAM antes de construir compositor GPU, afinidades o servicios nativos. Pendiente de mediciones. Evita decisiones basadas en conjeturas.
+Instrumentar frametimes, procesos y VRAM antes de compositor, afinidades o servicios nativos de rendimiento.
 
-## ADR-009 · Propuesta · Empaquetado `.exe` independiente
+## ADR-009 · Aceptada (parcial) · Paquete ejecutable
 
-Estudiar PyInstaller o equivalente solo después de que funcione el primer adaptador en Windows; fijar versiones, hashes y validar licencias de dependencias. No está implementado.
+Implementado como publicación .NET autónoma win-x64 en la CI (sin instalar nada). Pendiente: firma de código y actualizador.
+
+## ADR-010 · Aceptada · .NET 10 + SDL3 + WPF, con C++ para piezas nativas
+
+**Decisión:** reconstruir SplitForge en C# / .NET 10 (LTS) con WPF (renderizado por GPU) y SDL3; C++20 solo para componentes nativos justificados (aislamiento de entrada dentro del juego, captura de frametimes). **Por qué:** el propietario pidió las mejores tecnologías para eficiencia y fluidez; Tkinter acoplaba la entrada al temporizador de la interfaz (~60 Hz) y dibujaba por software; Python no sirve para hooks nativos. .NET da hilos reales, interop Win32 directa (`LibraryImport`), publicación autónoma y es el ecosistema habitual de herramientas de este tipo en Windows. **Consecuencias:** nueva solución `SplitForge.slnx`; el prototipo Python queda como referencia con sus pruebas en la CI; configuración propia `settings.v2.json`.
+
+## ADR-011 · Aceptada · Entrada SDL3 en un hilo dedicado
+
+Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo plano) y publica instantáneas inmutables. La UI y la simulación solo leen. **Consecuencia:** una ventana bloqueada no afecta a la entrada; cualquier llamada nueva a SDL de mandos debe ir por la cola de comandos del servicio.
+
+## ADR-012 · Aceptada · IPC binario versionado "último fotograma gana"
+
+`[u32 longitud][SFW1 v1 …]` con validación estricta; el escritor descarta fotogramas viejos. Sustituye a las líneas JSON. **Consecuencia:** cualquier cambio de formato sube `WorldCodec.Version`.
+
+## ADR-013 · Aceptada · 7 Days to Die mediante servidor dedicado oficial y cuentas separadas
+
+**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; cada jugador usa su propia cuenta de Steam (segunda sesión de Steam en otro usuario de Windows o Sandboxie-Plus); EAC solo se desactiva con la opción oficial. **Rechazado:** el emulador Goldberg (lo que usa Nucleus Co-op para «una sola copia»), el modo sin conexión con una sola cuenta y Remote Play Together (no aplica a 7DTD en PC). **Consecuencia:** dos jugadores reales requieren dos licencias; SplitForge lo indica antes de empezar.
+
+## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
+
+Cada push a `main` ejecuta pruebas .NET y Python, valida docs, publica win-x64 autónomo, ejecuta una prueba de humo y sube el artefacto `SplitForge-win-x64`. Las etiquetas `v*` crean una release con ZIP y SHA-256.

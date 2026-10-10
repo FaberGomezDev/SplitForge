@@ -1,50 +1,60 @@
 # Desarrollo y ejecución
 
-## Requisitos
+## Usar SplitForge sin compilar (recomendado)
 
-- Windows 10/11 (Windows 11 es el equipo de pruebas disponible).
-- Python >=3.11 con Tkinter y venv (en el equipo de referencia se usó Python 3.13).
-- Para PS4 genérico por Bluetooth: `pygame-ce==2.5.8` que ya incorpora SDL en el wheel Windows.
-- Conectar dos mandos; Steam solo es necesario para la evaluación de biblioteca/juegos reales.
+1. GitHub → pestaña **Actions** → última ejecución verde de «Compilar y probar» → artefacto **SplitForge-win-x64** (o la página **Releases** si hay una versión etiquetada).
+2. Descomprimir en una carpeta nueva y ejecutar `SplitForge.exe`. No necesita Python, .NET ni SDL instalados.
 
-## Primer arranque desde ZIP completo
+## Requisitos para desarrollar
 
-1. Descomprimir en una **carpeta nueva**, evitando mezclar con archivos de otra release.
-2. Ejecutar `Instalar_Todo.bat` **solo** si no tienes `.venv` con pygame-ce funcionando en ese directorio; si se migran archivos desde instalación anterior, conservarla sin publicar el ZIP con el entorno binario.
-3. Ejecutar `Iniciar_SplitForge.bat`.
-4. En **01 CONTROLES**, confirmar X/Y y asignar mandos distintos. Probar **02 MUNDO COMPARTIDO**.
-5. Para Steam usar pestañas **05 STEAM** y **06 VENTANAS STEAM**. No simular compatibilidad por ver una carpeta/ventana.
+- Windows 10/11 x64 (para ejecutar la app); Linux o Windows para compilar y probar Core.
+- **SDK de .NET 10** (`global.json` admite 10.0.1xx o superior de la misma versión principal). Visual Studio 2026/2022 17.14+ o VS Code con C# Dev Kit.
+- Python 3.11+ solo para el prototipo y `tools/check_docs.py`.
 
-> Esta es una **versión completa de código fuente**, no un `.exe` autónomo. Python y pygame-ce se instalan localmente si no están disponibles. No ejecutar `Instalar_SDL_Opcional.bat` si el entorno ya reconoce los mandos.
-
-## Ejecutar pruebas
+## Compilar y ejecutar
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe tools\check_docs.py
+dotnet test SplitForge.slnx -c Release
+dotnet run --project src/SplitForge.App
+dotnet run --project src/SplitForge.Diagnostico -- mandos
+Compilar_SplitForge.bat        # pruebas + publish\SplitForge (autónomo)
+Iniciar_SplitForge_NET.bat     # compila si hace falta y abre SplitForge.exe
 ```
 
-En entorno de desarrollo distinto de Windows se pueden ejecutar tests Python puros pero **no** validar interfaz Win32 o hardware.
+En Linux: `dotnet build` compila también la app WPF (`EnableWindowsTargeting`). SDL3 trae `libSDL3.so`, así que el hilo de entrada y el visor se pueden probar (`demo-frames | visor-lab 1` con `xvfb-run`). No valida Win32 ni hardware.
+
+## Estructura
+
+```
+SplitForge.slnx            solución .NET
+src/SplitForge.Core        lógica pura (sin dependencias de Windows)
+src/SplitForge.Windows     interop Win32
+src/SplitForge.Input       SDL3 (hilo de entrada)
+src/SplitForge.LabViewer   visor SDL3
+src/SplitForge.App         WPF → SplitForge.exe
+src/SplitForge.Diagnostico consola → SplitForge.Diagnostico.exe
+tests/SplitForge.Tests     xUnit
+docs/                      memoria y arquitectura
+launcher.py, splitforge/   prototipo Python 0.6 (referencia)
+```
 
 ## Convenciones
 
-- Python 3.11+ y biblioteca estándar donde sea posible; imports explícitos, type hints, `dataclasses` para DTOs.
-- Módulos gui/steam/windows/gamepads desacoplados, no poner políticas de un juego en GUI.
-- Tests nuevos para cada corrección; mockear Win32, Steam y GPIO/HID cuando no haya acceso al hardware.
-- Errores con mensajes legibles para usuario, log estructurado sin datos sensibles.
-- README y docs en español. Comentarios y nombres de APIs del estándar se mantienen en inglés cuando mejore trazabilidad.
-- Antes de una migración profunda crear ADR documentando coste, alternativa y pruebas.
+- C# moderno: espacios de nombres por archivo, `record` para datos, `nullable` activado, **advertencias como errores**.
+- Interop con `LibraryImport` (generado en compilación) y `[SupportedOSPlatform("windows")]`.
+- Paquetes con versiones centralizadas en `Directory.Packages.props`; versiones fijas y con al menos dos semanas de antigüedad.
+- Lógica en `Core` con pruebas; Win32/SDL3 como capas finas.
+- Ningún trabajo pesado en el hilo de la interfaz.
+- Textos de UI, docs y commits en español; identificadores de código en inglés.
+- Antes de una migración profunda: ADR con coste, alternativa y pruebas.
 
-## Entorno Python y settings
+## Datos locales
 
-- `.venv/` es local, ignorado por Git y no incluido en el ZIP.
-- Configuración y log: `%LOCALAPPDATA%\SplitForge\settings.json`, `splitforge.log`.
-- Los reportes se generan en el Escritorio cuando es posible; no commitearlos.
+- `%LOCALAPPDATA%\SplitForge\settings.v2.json` (0.7) — `settings.json` es del prototipo y no se toca.
+- `%LOCALAPPDATA%\SplitForge\splitforge-net.log` (rota a `.old` al superar 2 MB).
+- `%LOCALAPPDATA%\SplitForge\7dtd\` — configuración, guardados y registros del servidor local.
+- Los reportes se guardan en el Escritorio; no commitearlos (`.gitignore`).
 
 ## Archivos importantes
 
-- `CLAUDE.md`: reglas para agente.
-- `README.md`: manual breve de v0.6.
-- `docs/`: memoria permanente y arquitectura.
-- `tests/`: suite regresión.
-- `tools/check_docs.py`: valida referencias Markdown dentro del repo.
+- `CLAUDE.md`: reglas para agentes. `README.md`: manual breve. `docs/`: memoria. `tools/check_docs.py`: valida enlaces.

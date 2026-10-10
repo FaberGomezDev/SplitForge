@@ -1,56 +1,68 @@
 # Estrategia de pruebas y criterios de evidencia
 
-## Suite automática actual
-
-Pruebas estándar sin instalaciones nuevas (pueden ejecutarse en SO diferente para lógica pura):
+## Suites automáticas
 
 ```sh
-python -m unittest discover -s tests -v
-python tools/check_docs.py
+dotnet test SplitForge.slnx -c Release          # 106 pruebas xUnit (Core)
+python -m unittest discover -s tests -v         # 77 pruebas del prototipo Python
+python tools/check_docs.py                      # enlaces y documentos obligatorios
 ```
 
-En Windows, utilizar preferiblemente `\.venv\Scripts\python.exe` y `run_tests.bat`.
+Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos procesos Steam reales ni dos PS4 en Windows. Anotar el conteo real al entregar, nunca copiarlo sin ejecutar.
 
-La v0.6 original registró **72 pruebas automáticas**; eso verifica lógica aislada y mocks, **no** dos procesos Steam reales ni DOS PS4 en Windows. Esta edición de documentación añade comprobaciones de docs. Anotar conteo real de la versión empaquetada, nunca copiar el número sin ejecutar.
+### Cobertura .NET (tests/SplitForge.Tests)
 
-### Cobertura existente
+- Distribución 2–4 jugadores, área útil desplazada, sin solapes, validaciones.
+- Parser KeyValues (anidación, escapes, comentarios, condicionales, profundidad acotada).
+- Biblioteca Steam (manifiestos sin modificar, bibliotecas modernas/antiguas, índice en `config/`).
+- Preflight (sin declarar cooperativo, rutas fuera de `common`, recorrido `..`, enlaces simbólicos, AppID desconocido, URI).
+- Rutas Windows y ventanas de juego (2 ventanas/1 PID rechazado, 2–4 PID mismo exe, revalidación, privacidad del informe).
+- Mandos (zona muerta, flancos, perfiles, R2 analógico, Y arriba, política PS4, dos PS4 iguales independientes).
+- Mundo compartido (mismo snapshot, disparo por flanco, desconexión, dt acotado, escudo).
+- IPC binario (ida y vuelta, corrupción, truncado UTF-8, último fotograma gana, pipe real de extremo a extremo).
+- Sesiones (colocar/restaurar, sin bordes, 4 ventanas, rollback, relayout, laboratorio con títulos exactos, cierre y gracia, fallo a medio lanzar, recuperación tras cierre inesperado validando el PID).
+- Adaptador 7DTD (preflight, configuración del servidor, escape XML, opciones inválidas, apagado ordenado con telnet falso, salida inesperada).
+- Configuración (importación de la versión Python sin tocarla, ida y vuelta, archivo dañado, saneado).
+- Diagnóstico de módulos de entrada.
 
-- Lectura/normalización/configuración de gamepads.
-- Aprendizaje de botones y gatillo analógico.
-- Serialización/lectura de input; transmisión al mundo compartido.
-- Geometría de pantalla, ciclo de sesiones y seguridad de cierre.
-- Steam library/preflight con rutas y manifests simulados.
-- Steam windows: dos HWND/1 PID rechazado; dos PID/mismo exe admitidos para ordenar ventanas; revalidación; errores de permiso; JSON privado.
-- Instalación de dependencias (sin ejecutar descargas reales en test).
+### CI (`.github/workflows/build.yml`, windows-latest)
 
-## Matriz de pruebas manuales Windows requerida
+Pruebas .NET y Python, documentación, publicación autónoma win-x64 y **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows.
+
+### Pruebas de humo en Linux (desarrollo)
+
+- `SplitForge.Diagnostico mandos`: SDL3 3.5.0, hilo a 1000 Hz tras la corrección de plazos absolutos.
+- `demo-frames | visor-lab 1` bajo `xvfb-run`: el visor dibuja correctamente ambos jugadores, orbe, disparos y escudo (captura revisada).
+
+## Matriz de pruebas manuales en Windows (0.7)
 
 | ID | Escenario | Criterio |
 | --- | --- | --- |
-| W01 | Arranque limpio | GUI abre con Python + pygame-ce adecuados |
-| W02 | 2 PS4 Bluetooth | Detecta ambos como mandos distintos y el movimiento es visible |
-| W03 | P1/P2 | Mando de P1 no mueve actor P2 y viceversa |
-| W04 | Acciones | Disparo/impulso/escudo son independientes y visibles |
-| W05 | Reinicio + reconexión | Identificadores pueden cambiar; reassign explícito reestablece entrada |
-| W06 | Mundo compartido | Ambas ventanas observan los dos actores y el mismo objeto compartido |
-| W07 | Dividir pantalla | Vertical/horizontal sin ventanas perdidas; restaurar al cerrar |
-| W08 | Biblioteca Steam | Juegos instalados se detectan en bibliotecas secundarias |
+| W01 | Arranque limpio del paquete | `SplitForge.exe` abre sin instalar nada |
+| W02 | 2 PS4 Bluetooth | Ambos aparecen en 01 MANDOS con estado en vivo; hilo ≈1000 Hz |
+| W03 | Segundo plano | `SplitForge.Diagnostico.exe mandos` responde con otra ventana enfocada |
+| W04 | Identificar | Las luces de los PS4 cambian al color de cada jugador |
+| W05 | Laboratorio | Cada mando mueve solo su nave; acciones independientes; dos visores colocados |
+| W06 | Reconexión | Reasignación en vivo restablece la entrada |
+| W07 | Distribución | 2–4 ventanas lado a lado/arriba-abajo, sin bordes, restauración exacta |
+| W08 | Biblioteca Steam | Juegos en bibliotecas secundarias detectados |
 | W09 | Steam 1 cliente | Detecta una ventana/PID pero NO permite pareja falsa |
-| W10 | Steam 2 clientes legítimos | Solo ordena si hay 2 PID del mismo ejecutable, revalida antes de mover |
-| W11 | Error/pérdida de ventana | Restauración best effort; no mata procesos ajenos |
-| W12 | Informes | JSON sin rutas personales, cuentas, ventanas ni identificadores privados |
+| W10 | Steam 2 clientes | Solo distribuye procesos del mismo exe, revalida antes de mover |
+| W11 | Servidor 7DTD | Arranca, llega a LISTO, guardados en `%LOCALAPPDATA%\SplitForge\7dtd`, apagado ordenado |
+| W12 | Cliente 7DTD | Un cliente sin EAC se une a `127.0.0.1:26900` |
+| W13 | Diagnóstico 7DTD | Informe con APIs de mando; sin rutas ni títulos |
+| W14 | Dos cuentas 7DTD | Dos clientes en la misma partida (requiere segunda cuenta) |
+| W15 | Cierre | Cerrar SplitForge restaura ventanas y apaga el servidor propio |
 
-**Resultado físico conocido:** usuario confirmó laboratorio v0.4 y detección Steam v0.5; faltan resultados de varias filas en v0.6.
+**Resultado físico conocido:** laboratorio v0.4 y Steam v0.5 confirmados en el prototipo. La 0.7 no tiene filas confirmadas todavía.
 
-## Benchmark cuando exista primer adaptador
+## Benchmark cuando exista el primer adaptador validado
 
-- Misma build, resolución, presets, escena, mandos, red/servidor, número de jugadores y herramientas.
-- Varios intentos de orden alterno SplitForge ↔ baseline para minimizar calentamiento/deriva.
-- Registrar: FPS promedio, 1% low, frametime P50/P95/P99, memoria RAM, VRAM/presupuesto, CPU por proceso, cierre y fallos.
-- Registrar sobrecarga del **launcher** separada de la del propio juego.
-- Informar mínimos, medianas, dispersión, configuración y fallas; no confundir mejora de pantalla con FPS más altos.
-- Umbrales de éxito futuros se establecen después del benchmark base; objetivo sugerido: cero controles cruzados, sin pérdida de guardados, menos fallas, sobrecarga marginal medible.
+- Misma build, resolución, presets, escena, mandos, red y número de jugadores.
+- Intentos alternos SplitForge ↔ referencia para minimizar deriva.
+- FPS medio, 1 % low, frametime P50/P95/P99, RAM, VRAM, CPU por proceso, fallos.
+- Sobrecarga del lanzador separada de la del juego.
 
 ## Evidencias por cambio
 
-Cada PR/entrega debe adjuntar: prueba ejecutada y conteo, sistema donde corrió, escenario real o mock, incidencia/caso regresivo, archivos cambiados y estado de validación de hardware. Se registran en `01-MEMORIA.md` y `15-HISTORIAL.md`.
+Cada entrega adjunta: pruebas ejecutadas y conteo, sistema, escenario real o simulado, archivos cambiados y estado de validación de hardware. Se registran en `01-MEMORIA.md` y `15-HISTORIAL.md`.

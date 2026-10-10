@@ -1,42 +1,43 @@
-# Rendimiento y optimización: hipótesis vs mediciones
+# Rendimiento y optimización: decisiones vs mediciones
 
 ## Equipo de referencia
 
-- CPU AMD Ryzen 7 7700X (8 núcleos / 16 hilos).
-- GPU NVIDIA RTX 4060, 8 GB VRAM en la variante de referencia.
-- 32 GB RAM, dos controles PS4, Windows 11.
+Ryzen 7 7700X (8C/16T), RTX 4060 8 GB, 32 GB RAM, dos PS4, Windows 11. No se ha medido todavía el rendimiento de **dos instancias de un juego** en este equipo.
 
-No se ha medido todavía rendimiento de **dos instancias Steam** sobre este equipo. Los objetivos siguientes son decisiones de diseño, no resultados.
+## Decisiones de rendimiento ya tomadas en 0.7 (con su porqué)
 
-## Políticas propuestas
-
-- **Equilibrado (predeterminado):** primero estabilidad y frametime sostenido; resolución del juego reducida por región y calidad intermedia cuando sea admisible.
-- **Rendimiento:** límite de FPS y textura/contenido gráfico más conservador, según opciones expuestas por el juego.
-- **Calidad:** más calidad si no produce saturación de RAM/VRAM ni tirones.
-
-No cambiar valores de un juego mediante manipulación de memoria, DLLs o flags no documentados. Priorizar opciones accesibles por ajustes normales y perfiles permitidos.
-
-## Qué medir
-
-| Métrica | Técnica de medición futura | Riesgo |
+| Decisión | Motivo | Evidencia |
 | --- | --- | --- |
-| FPS/frametime por instancia | PresentMon u otra herramienta compatible / trazas disponibles | Promedios esconden tirones |
-| 1% low y P95/P99 | Distribución de frametimes, no solo FPS medios | Variabilidad por escena/carga |
-| Uso VRAM y presupuesto | DXGI/telemetría sistema cuando esté soportado | 2 instancias duplican recursos |
-| RAM por proceso | Contadores de proceso/Working Set/Commit | 32 GB no garantizan suficiencia universal |
-| CPU/GPU | Contadores y timeline por instancia | Afinidad fija puede empeorar planificación |
-| Input → efecto | Prueba fotograma y estados con timestamps | El IPC extra añade trabajo |
-| Inicio/cierre y fallos | Logs de sesión estructurados | Hotspots de launcher, pérdida de guardados |
+| .NET 10 en lugar de Python/Tkinter | JIT/AOT, hilos reales sin GIL, interop Win32 directa | ADR-010 |
+| Entrada SDL3 en hilo propio a ≤1000 Hz | Latencia de entrada independiente de la interfaz (antes 60 Hz con fluctuaciones del temporizador Tk) | 1000 Hz medidos en Linux; 646 Hz en la VM Windows antes de corregir la acumulación de retrasos |
+| Publicación de instantáneas solo con cambios | Sin basura a 1 kHz cuando no se toca el mando | Diseño |
+| Esperas con temporizador de alta resolución (`SDL_DelayNS`, `CREATE_WAITABLE_TIMER_HIGH_RESOLUTION`) | Precisión de ~1 ms sin girar la CPU (no robar núcleos al juego) | Diseño; medir en el PC del propietario |
+| Simulación del laboratorio a 120 Hz en su hilo | Estable aunque la UI se bloquee (diálogos) | Diseño |
+| IPC binario de ~100 bytes por fotograma, último gana | Sin análisis de texto, sin latencia acumulada | Pruebas de IPC |
+| Visores con renderizador SDL3 (Direct3D) y vsync | GPU en lugar de lienzo de software | Captura bajo Xvfb |
+| Ventanas nativas sin bordes, sin compositor | Cero copias de fotogramas | ADR (compositor solo con evidencia) |
+| Prioridad de hilos AboveNormal solo en entrada/simulación, sin afinidad fija | Evitar empeorar el planificador | Pendiente de A/B |
+
+## Qué medir (pendiente)
+
+| Métrica | Técnica | Riesgo |
+| --- | --- | --- |
+| FPS/frametime por instancia | PresentMon / ETW | Promedios esconden tirones |
+| 1 % low, P95/P99 | Distribución de frametimes | Variabilidad por escena |
+| VRAM y presupuesto | DXGI / contadores del sistema | Dos instancias duplican recursos (8 GB) |
+| RAM por proceso | Working Set / Commit | — |
+| CPU por proceso e hilo | Contadores / ETW | — |
+| Entrada → efecto | Marcas de tiempo en `InputSnapshot` y en el juego | — |
+| Frecuencia real del hilo de entrada | Mostrada en 01 MANDOS y en `mandos` | Temporizadores del sistema |
 
 ## Estrategia de optimización
 
-1. Perfilado sobre escena y build repetibles; fijar baseline.
-2. Reducir primero **sobrecarga del launcher** (event loop, polling, colas, ventanas).
-3. Monitorizar VRAM: para 8 GB preferir presupuestos preventivos, degradación explícita en vez de falta de memoria.
-4. No fijar CPU affinity ni prioridad agresiva sin evidencia A/B.
-5. Usar ventanas nativas/Win32 antes de construir un compositor que duplique copias o readbacks.
-6. Solo después considerar componentes C++ nativos y medir la ganancia real.
+1. Perfilado sobre escena y build repetibles; fijar referencia.
+2. Reducir primero la sobrecarga del lanzador (ya en hilos dedicados y sin sondeos innecesarios).
+3. Para 8 GB de VRAM: presupuestos preventivos y degradación explícita mediante opciones del propio juego.
+4. Sin afinidad ni prioridad agresiva sin A/B.
+5. Componentes C++ solo donde el perfilado o la funcionalidad (aislamiento de entrada) lo justifiquen.
 
 ## Aceptación de mejoras
 
-Cada optimización tendrá: hipótesis, métrica, baseline, ensayo A/B, variabilidad, regresiones de control/estabilidad y rollback. Una mejora solo es "superior a Nucleus" donde haya datos repetibles y evidencia del mismo juego y hardware.
+Cada optimización: hipótesis, métrica, referencia, ensayo A/B, variabilidad, regresiones y vuelta atrás. «Superior a Nucleus» solo con datos repetibles del mismo juego y hardware.

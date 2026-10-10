@@ -5,7 +5,8 @@ using SplitForge.Core.Windows;
 namespace SplitForge.Core.Sessions;
 
 /// <summary>Posición, estado y estilo originales de una ventana, para restaurarla al detener.</summary>
-public sealed record WindowSnapshot(nint Handle, Region Bounds, bool Maximized, bool Minimized, long Style, long ExStyle);
+/// <remarks>El PID permite comprobar, tras un cierre inesperado, que el handle sigue siendo la misma ventana.</remarks>
+public sealed record WindowSnapshot(nint Handle, Region Bounds, bool Maximized, bool Minimized, long Style, long ExStyle, int Pid = 0);
 
 /// <summary>Operaciones de ventana que SplitForge necesita. Win32 en Windows; falsas en pruebas.</summary>
 public interface IWindowSystem
@@ -19,6 +20,9 @@ public interface IWindowSystem
     void RequestClose(nint handle);
     /// <summary>Área útil del monitor principal (sin barra de tareas), en píxeles físicos.</summary>
     Region PrimaryWorkArea();
+
+    /// <summary>PID dueño de la ventana, o null si ya no existe.</summary>
+    int? ProcessId(nint handle);
 }
 
 public sealed record LaunchSpec(

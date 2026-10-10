@@ -16,7 +16,12 @@ internal sealed class FakeWindowSystem : IWindowSystem
 
     public IReadOnlyList<WindowInfo> EnumerateWindows() => [.. Windows];
 
-    public WindowSnapshot Capture(nint handle) => new(handle, new Region(10, 20, 640, 480), false, false, 0x10CF0000, 0);
+    public Dictionary<nint, int> Owners { get; } = [];
+
+    public WindowSnapshot Capture(nint handle) =>
+        new(handle, new Region(10, 20, 640, 480), false, false, 0x10CF0000, 0, Owners.GetValueOrDefault(handle, 77));
+
+    public int? ProcessId(nint handle) => Owners.TryGetValue(handle, out var pid) ? pid : null;
 
     public void Place(nint handle, Region region, bool borderless)
     {

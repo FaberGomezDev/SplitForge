@@ -140,4 +140,57 @@ public class SessionTests
         Assert.False(m.Active!.Pending);
         Assert.Contains(_logs, l => l.Contains("a tiempo"));
     }
+
+    [Fact]
+    public void RecoveryFileExistsOnlyWhileExternalWindowsAreModified()
+    {
+        using var tmp = new TempDir();
+        var file = tmp.Combine(SessionRecovery.FileName);
+        var m = new SessionManager(_windows, _launcher, _logs.Add, () => _now, file);
+        _windows.Owners[11] = 1001;
+        _windows.Owners[22] = 1002;
+        m.Attach([11, 22], SideBySide with { Borderless = true });
+        var saved = SessionRecovery.Load(file);
+        Assert.Equal(2, saved.Count);
+        Assert.Equal(1001, saved.Single(x => x.Handle == 11).Pid);
+        m.Stop();
+        Assert.False(File.Exists(file));
+    }
+
+    [Fact]
+    public void RecoverAfterCrashRestoresOnlyWindowsOfTheSameProcess()
+    {
+        using var tmp = new TempDir();
+        var file = tmp.Combine(SessionRecovery.FileName);
+        var m = new SessionManager(_windows, _launcher, _logs.Add, () => _now, file);
+        _windows.Owners[11] = 1001;
+        _windows.Owners[22] = 1002;
+        _windows.Owners[33] = 1003;
+        m.Attach([11, 22, 33], SideBySide with { Borderless = true });
+        // "Cierre inesperado": no se llama a Stop. Luego 22 se cerró y su handle es de otro proceso; 33 ya no existe.
+        _windows.Owners[22] = 9999;
+        _windows.Owners.Remove(33);
+        var fresh = new FakeWindowSystem();
+        foreach (var (h, pid) in _windows.Owners)
+            fresh.Owners[h] = pid;
+        Assert.Equal(1, SessionRecovery.RecoverAfterCrash(file, fresh, _logs.Add));
+        Assert.Equal([(nint)11], fresh.Restored.Select(r => r.Handle));
+        Assert.False(File.Exists(file));
+        Assert.Equal(0, SessionRecovery.RecoverAfterCrash(file, fresh, _logs.Add)); // Sin archivo: nada que hacer.
+    }
+
+    [Fact]
+    public void LabSessionsDoNotWriteRecoveryFile()
+    {
+        using var tmp = new TempDir();
+        var file = tmp.Combine(SessionRecovery.FileName);
+        var m = new SessionManager(_windows, _launcher, _logs.Add, () => _now, file);
+        m.StartLab(_ => new LaunchSpec("v", []), 1, 2, SideBySide);
+        var p = _launcher.Started.Select(x => x.Process.Id).ToList();
+        _windows.Windows.Add(new(900, p[0], SessionManager.LabWindowTitle(1)));
+        _windows.Windows.Add(new(901, p[1], SessionManager.LabWindowTitle(2)));
+        m.Tick();
+        Assert.Equal(2, _windows.Placed.Count);
+        Assert.False(File.Exists(file));
+    }
 }

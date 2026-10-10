@@ -61,8 +61,9 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
         var (style, ex) = _framed.TryGetValue(handle, out var original)
             ? original
             : (Native.GetWindowLongPtr(handle, Native.GWL_STYLE), Native.GetWindowLongPtr(handle, Native.GWL_EXSTYLE));
+        Native.GetWindowThreadProcessId(handle, out var pid);
         return new WindowSnapshot(handle, new Region(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top),
-            Native.IsZoomed(handle) != 0, Native.IsIconic(handle) != 0, style, ex);
+            Native.IsZoomed(handle) != 0, Native.IsIconic(handle) != 0, style, ex, (int)pid);
     }
 
     public void Place(nint handle, Region region, bool borderless)
@@ -119,6 +120,14 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
             throw new InvalidOperationException("No se pudo leer el monitor principal.");
         var w = info.rcWork;
         return new Region(w.Left, w.Top, w.Right - w.Left, w.Bottom - w.Top);
+    }
+
+    public int? ProcessId(nint handle)
+    {
+        if (Native.IsWindow(handle) == 0)
+            return null;
+        Native.GetWindowThreadProcessId(handle, out var pid);
+        return (int)pid;
     }
 
     private static void Move(nint handle, Region region)
