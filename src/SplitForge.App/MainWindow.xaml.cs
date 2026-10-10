@@ -13,6 +13,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        // Ajustar a pantallas pequeñas: nunca más grande que el área útil del monitor.
+        var area = SystemParameters.WorkArea;
+        Width = Math.Min(Width, area.Width - 24);
+        Height = Math.Min(Height, area.Height - 24);
         _vm = new MainViewModel();
         DataContext = _vm;
         // Mantener visible la última línea del registro.
@@ -35,7 +39,9 @@ public partial class MainWindow : Window
         IsEnabled = false;
         await _vm.PrepareCloseAsync();
         _closingConfirmed = true;
-        Close();
+        // Si el apagado terminó al instante seguimos DENTRO de Closing, y WPF prohíbe Close() ahí:
+        // se programa para justo después.
+        _ = Dispatcher.BeginInvoke(Close);
     }
 
     protected override void OnClosed(EventArgs e)

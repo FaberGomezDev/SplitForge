@@ -47,6 +47,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          gh release create "${{ github.ref_name }}" artifacts/*.zip artifacts/*.sha256 `
-            --title "SplitForge ${{ github.ref_name }}" `
+          # Las versiones 0.x son experimentales: se publican como prerelease.
+          $extra = @()
+          if ("${{ github.ref_name }}".StartsWith("v0.")) { $extra += "--prerelease" }
+          gh release create "${{ github.ref_name }}" (Get-ChildItem artifacts/*.zip, artifacts/*.sha256).FullName `
+            --title "SplitForge ${{ github.ref_name }}" @extra `
             --notes "Paquete autónomo para Windows 10/11 x64. Descomprime y ejecuta SplitForge.exe. Ver LEEME.txt."

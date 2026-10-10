@@ -63,20 +63,35 @@ jobs:
           ./artifacts/SplitForge/SplitForge.Diagnostico.exe mandos --segundos 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Prueba de arranque de la interfaz (captura de pantalla)
+      - name: Prueba de arranque de la interfaz (capturas de cada pestaña)
         shell: pwsh
         run: |
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing, UIAutomationClient, UIAutomationTypes
+          New-Item -ItemType Directory -Force capturas | Out-Null
+          function Capture([string]$name) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $bmp.Save("$PWD/capturas/$name.png")
+          }
           $p = Start-Process artifacts/SplitForge/SplitForge.exe -PassThru
           Start-Sleep -Seconds 12
           if ($p.HasExited) { Write-Error "SplitForge.exe se cerró al arrancar (código $($p.ExitCode))"; exit 1 }
-          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
-          [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
-          New-Item -ItemType Directory -Force capturas | Out-Null
-          $bmp.Save("$PWD/capturas/interfaz.png")
+          $p.Refresh()
+          $root = [System.Windows.Automation.AutomationElement]::FromHandle($p.MainWindowHandle)
+          $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::TabItem)
+          $tabs = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)
+          Write-Host "Pestañas encontradas: $($tabs.Count)"
+          $i = 0
+          foreach ($t in $tabs) {
+            $i++
+            $t.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+            Start-Sleep -Milliseconds 1500
+            Capture ("pestana-{0}" -f $i)
+          }
+          if ($tabs.Count -ne 6) { Write-Error "Se esperaban 6 pestañas"; exit 1 }
           $p.CloseMainWindow() | Out-Null
-          if (-not $p.WaitForExit(15000)) { Write-Error "SplitForge.exe no se cerró de forma ordenada"; $p.Kill(); exit 1 }
+          if (-not $p.WaitForExit(20000)) { Capture "cierre-bloqueado"; Write-Error "SplitForge.exe no se cerró de forma ordenada"; $p.Kill(); exit 1 }
           Get-Content "$env:LOCALAPPDATA/SplitForge/splitforge-net.log" -Tail 20
 
       - uses: actions/upload-artifact@v6
