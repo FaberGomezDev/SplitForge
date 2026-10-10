@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>SplitForge</AssemblyName>
+    <RootNamespace>SplitForge.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>SplitForge.App.Program</StartupObject>
+    <Description>SplitForge: pantalla dividida local para juegos de Steam compatibles.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WPF omite System.IO de los using implícitos (choque con Shapes.Path); aquí no se usa Shapes. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SplitForge.Core\SplitForge.Core.csproj" />
+    <ProjectReference Include="..\SplitForge.Windows\SplitForge.Windows.csproj" />
+    <ProjectReference Include="..\SplitForge.Input\SplitForge.Input.csproj" />
+    <ProjectReference Include="..\SplitForge.LabViewer\SplitForge.LabViewer.csproj" />
+  </ItemGroup>
+
+</Project>

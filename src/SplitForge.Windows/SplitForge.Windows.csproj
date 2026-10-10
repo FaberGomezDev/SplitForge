@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SplitForge.Platform</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>Interop Win32 de SplitForge: ventanas, procesos, monitores, temporizador de alta resolución y Steam.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SplitForge.Core\SplitForge.Core.csproj" />
+  </ItemGroup>
+
+</Project>

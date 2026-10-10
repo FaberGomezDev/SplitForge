@@ -1,0 +1,61 @@
+name: Compilar y probar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Pruebas .NET
+        run: dotnet test SplitForge.slnx -c Release --blame-hang-timeout 60s --logger "console;verbosity=normal"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Pruebas del prototipo Python (referencia validada)
+        run: python -m unittest discover -s tests -v
+
+      - name: Documentación
+        run: python tools/check_docs.py
+
+      - name: Publicar SplitForge win-x64 (autónomo, sin instalar .NET)
+        shell: pwsh
+        run: |
+          dotnet publish src/SplitForge.App -c Release -r win-x64 --self-contained -o artifacts/SplitForge
+          dotnet publish src/SplitForge.Diagnostico -c Release -r win-x64 --self-contained -o artifacts/SplitForge
+          Copy-Item LEEME_DESCARGA.txt artifacts/SplitForge/LEEME.txt
+          Get-ChildItem artifacts/SplitForge -Filter *.pdb | Remove-Item
+
+      - name: Prueba de humo del ejecutable de diagnóstico
+        shell: pwsh
+        run: |
+          ./artifacts/SplitForge/SplitForge.Diagnostico.exe steam --salida artifacts/steam.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./artifacts/SplitForge/SplitForge.Diagnostico.exe mandos --segundos 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SplitForge-win-x64
+          path: artifacts/SplitForge
+          retention-days: 30

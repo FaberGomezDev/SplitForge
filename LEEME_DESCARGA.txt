@@ -1,0 +1,23 @@
+SplitForge 0.7 para Windows 10/11 (x64)
+=======================================
+
+Paquete autónomo: NO necesitas instalar Python, .NET ni SDL.
+
+1. Descomprime esta carpeta donde quieras (por ejemplo en Documentos\SplitForge).
+2. Ejecuta SplitForge.exe.
+   Si Windows SmartScreen avisa ("aplicación no reconocida"): Más información -> Ejecutar de todas formas.
+3. Pestaña 01 MANDOS: conecta tus mandos y comprueba que responden.
+4. Pestaña 02 MUNDO COMPARTIDO: prueba de dos jugadores con dos mandos.
+5. Pestaña 06 7 DAYS TO DIE: servidor local + pantalla dividida (ver requisitos en la propia pestaña).
+
+Diagnósticos (solo lectura), desde una consola en esta carpeta:
+  SplitForge.Diagnostico.exe 7dtd      -> informe de 7 Days to Die abierto (APIs de mando)
+  SplitForge.Diagnostico.exe mandos    -> prueba en vivo de los mandos con SDL3
+  SplitForge.Diagnostico.exe steam     -> juegos Steam instalados
+Los informes se guardan en el Escritorio y no incluyen rutas, cuentas ni títulos de ventana.
+
+Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
+La configuración de la versión Python (settings.json) no se modifica.
+
+Límites honestos: SplitForge no usa emuladores de Steam ni se salta licencias o antitrampas.
+Para que dos personas jueguen la misma partida, cada una necesita su propia cuenta con el juego.

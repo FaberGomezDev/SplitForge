@@ -1,0 +1,287 @@
+<Window x:Class="SplitForge.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Width="1120" Height="860" MinWidth="900" MinHeight="700"
+        WindowStartupLocation="CenterScreen">
+  <Grid Margin="18">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="140" />
+    </Grid.RowDefinitions>
+
+    <!-- Cabecera -->
+    <StackPanel Grid.Row="0" Margin="0,0,0,12">
+      <TextBlock Text="⚡ SplitForge" FontSize="26" FontWeight="Bold" Foreground="{StaticResource Accent}" />
+      <TextBlock Text="0.7.0 · .NET 10 + SDL3 · Pantalla dividida local para juegos de Steam compatibles" Style="{StaticResource Hint}" Margin="0,2,0,4" />
+      <TextBlock Text="{Binding InputSummary}" Foreground="{StaticResource Muted}" />
+    </StackPanel>
+
+    <TabControl Grid.Row="1">
+
+      <!-- 01 MANDOS -->
+      <TabItem Header="01  MANDOS">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Mandos detectados (SDL3, hilo dedicado de alta frecuencia)" />
+            <TextBlock Style="{StaticResource Hint}" Text="La lectura funciona aunque otra ventana (el juego) tenga el foco. Mueve el stick y pulsa botones para comprobar la respuesta en vivo." />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+              <TextBlock Text="Lector:" VerticalAlignment="Center" Margin="0,0,8,0" />
+              <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode}" Width="130" Margin="0,0,8,0" />
+              <Button Content="Aplicar modo" Command="{Binding ApplyModeCommand}" />
+              <Button Content="Identificar mandos (luz + vibración)" Command="{Binding IdentifyCommand}" />
+              <TextBlock Text="Auto = PS4 por joystick directo · Xbox estándar" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
+            </StackPanel>
+            <ListView ItemsSource="{Binding Pads}" SelectedItem="{Binding SelectedPad}" MinHeight="120" MaxHeight="220">
+              <ListView.View>
+                <GridView>
+                  <GridViewColumn Header="Mando" Width="260" DisplayMemberBinding="{Binding Label}" />
+                  <GridViewColumn Header="Tipo" Width="170" DisplayMemberBinding="{Binding Kind}" />
+                  <GridViewColumn Header="Lectura" Width="80" DisplayMemberBinding="{Binding Path}" />
+                  <GridViewColumn Header="Estado en vivo" Width="440" DisplayMemberBinding="{Binding Live}" />
+                </GridView>
+              </ListView.View>
+            </ListView>
+            <Border Style="{StaticResource PanelBorder}">
+              <TextBlock Style="{StaticResource Mono}" Text="{Binding SelectedPad.Raw, FallbackValue='Selecciona un mando.'}" />
+            </Border>
+
+            <TextBlock Style="{StaticResource Heading}" Text="Perfil del mando seleccionado" Margin="0,10,0,4" />
+            <TextBlock Style="{StaticResource Hint}" Text="El índice físico de Cruz no es universal: pulsa Aprender y después el botón. Para disparar se acepta Cruz o R2 (gatillo analógico). Los mandos del mismo modelo comparten perfil." />
+            <WrapPanel>
+              <StackPanel Margin="0,0,18,8">
+                <TextBlock Text="Eje X" />
+                <ComboBox ItemsSource="{Binding AxisChoices}" SelectedItem="{Binding MapAxisX}" Width="70" />
+              </StackPanel>
+              <StackPanel Margin="0,0,24,8">
+                <TextBlock Text="Eje Y" />
+                <ComboBox ItemsSource="{Binding AxisChoices}" SelectedItem="{Binding MapAxisY}" Width="70" />
+              </StackPanel>
+              <StackPanel Margin="0,0,18,8">
+                <TextBlock Text="Disparo (Cruz / R2)" />
+                <StackPanel Orientation="Horizontal">
+                  <ComboBox ItemsSource="{Binding ButtonChoices}" SelectedItem="{Binding MapFire}" Width="60" Margin="0,0,6,0" />
+                  <Button Content="Aprender" Command="{Binding LearnCommand}" CommandParameter="fire" />
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Margin="0,0,18,8">
+                <TextBlock Text="Impulso (Círculo)" />
+                <StackPanel Orientation="Horizontal">
+                  <ComboBox ItemsSource="{Binding ButtonChoices}" SelectedItem="{Binding MapDash}" Width="60" Margin="0,0,6,0" />
+                  <Button Content="Aprender" Command="{Binding LearnCommand}" CommandParameter="dash" />
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Margin="0,0,18,8">
+                <TextBlock Text="Escudo (Cuadrado)" />
+                <StackPanel Orientation="Horizontal">
+                  <ComboBox ItemsSource="{Binding ButtonChoices}" SelectedItem="{Binding MapShield}" Width="60" Margin="0,0,6,0" />
+                  <Button Content="Aprender" Command="{Binding LearnCommand}" CommandParameter="shield" />
+                </StackPanel>
+              </StackPanel>
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,6">
+              <CheckBox Content="Invertir X" IsChecked="{Binding InvertX}" />
+              <CheckBox Content="Invertir Y" IsChecked="{Binding InvertY}" />
+              <Button Content="Guardar perfil" Command="{Binding SaveMappingCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding CaptureStatus}" Foreground="{StaticResource Accent}" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 02 MUNDO COMPARTIDO -->
+      <TabItem Header="02  MUNDO COMPARTIDO">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Laboratorio: 2 perspectivas, 1 misma partida" />
+            <TextBlock Style="{StaticResource Hint}" Text="Un solo mundo simulado a 120 Hz en su propio hilo; dos ventanas (SDL3 + Direct3D) dibujan la misma instantánea. Sirve para validar mandos y pantalla dividida. No es un juego de Steam." />
+            <TextBlock Text="1. Asigna un mando distinto a cada jugador (sus luces se pondrán turquesa y naranja)." />
+            <TextBlock Text="2. Stick: mover · Cruz/R2: disparo · Círculo: impulso · Cuadrado: escudo." />
+            <TextBlock Text="3. Si un jugador deja de moverse, mira su línea abajo y reasigna sin reiniciar." Margin="0,0,0,10" />
+            <Grid Margin="0,0,0,10">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <TextBlock Text="Mando del jugador 1:" Margin="0,4,10,4" VerticalAlignment="Center" />
+              <ComboBox Grid.Column="1" ItemsSource="{Binding Pads}" DisplayMemberPath="Label" SelectedItem="{Binding LabPlayer1}" Margin="0,4" />
+              <TextBlock Grid.Row="1" Text="Mando del jugador 2:" Margin="0,4,10,4" VerticalAlignment="Center" />
+              <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Pads}" DisplayMemberPath="Label" SelectedItem="{Binding LabPlayer2}" Margin="0,4" />
+            </Grid>
+            <StackPanel Orientation="Horizontal">
+              <Button Content="▶  INICIAR MUNDO COMPARTIDO" Style="{StaticResource PrimaryButton}" Command="{Binding StartLabCommand}" />
+              <Button Content="Reasignar mandos en vivo" Command="{Binding ReassignLabCommand}" />
+            </StackPanel>
+            <TextBlock Text="Señal real que llega a la simulación:" Foreground="{StaticResource Muted}" FontWeight="SemiBold" Margin="0,16,0,4" />
+            <Border Style="{StaticResource PanelBorder}">
+              <TextBlock Style="{StaticResource Mono}" FontSize="14" Text="{Binding LabStatus}" />
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 03 VENTANAS -->
+      <TabItem Header="03  VENTANAS ABIERTAS">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Organizar ventanas que ya estén abiertas" />
+            <TextBlock Style="{StaticResource Hint}" Text="Selecciona de 2 a 4 ventanas con Ctrl + clic, en el orden J1, J2, J3, J4. Solo se cambia su tamaño y posición; sus procesos nunca se cierran." />
+            <Button Content="↻  Actualizar lista" Command="{Binding RefreshWindowsCommand}" HorizontalAlignment="Left" Margin="0,0,0,8" />
+          </StackPanel>
+          <ListBox x:Name="WindowsList" Grid.Row="1" ItemsSource="{Binding VisibleWindows}" DisplayMemberPath="Label" SelectionMode="Extended" />
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+            <Button Content="▦  DISTRIBUIR SELECCIONADAS" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding AttachWindowsCommand}" CommandParameter="{Binding SelectedItems, ElementName=WindowsList}" />
+            <TextBlock Text="Recomendado: juegos en modo ventana. La pantalla completa exclusiva puede ignorar el cambio." Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- 04 STEAM -->
+      <TabItem Header="04  STEAM">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Biblioteca Steam y diagnóstico" />
+            <TextBlock Style="{StaticResource Hint}" Text="Solo INSPECCIONA tus juegos: no habilita cuentas, no separa mandos y no certifica modo sin conexión." />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+              <Button Content="↻  Escanear Steam" Command="{Binding ScanSteamCommand}" />
+              <Button Content="Guardar reporte sin datos personales" Command="{Binding ExportSteamCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding SteamSummary}" Foreground="{StaticResource Muted}" Margin="0,0,0,6" />
+          </StackPanel>
+          <ListView Grid.Row="1" ItemsSource="{Binding SteamGames}" SelectedItem="{Binding SelectedSteamGame}">
+            <ListView.View>
+              <GridView>
+                <GridViewColumn Header="AppID" Width="90" DisplayMemberBinding="{Binding AppId}" />
+                <GridViewColumn Header="Juego" Width="380" DisplayMemberBinding="{Binding Name}" />
+                <GridViewColumn Header="Estado de investigación" Width="360" DisplayMemberBinding="{Binding Phase}" />
+              </GridView>
+            </ListView.View>
+          </ListView>
+          <Border Grid.Row="2" Style="{StaticResource PanelBorder}">
+            <TextBlock Style="{StaticResource Mono}" Foreground="#D7E5F5" Text="{Binding SteamDetail}" />
+          </Border>
+          <StackPanel Grid.Row="3" Orientation="Horizontal">
+            <Button Content="Abrir carpeta del juego" Command="{Binding OpenGameFolderCommand}" />
+            <Button Content="Abrir en Steam (1 instancia)" Command="{Binding LaunchSteamCommand}" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- 05 VENTANAS STEAM -->
+      <TabItem Header="05  VENTANAS STEAM">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Clientes de un mismo juego Steam" />
+            <TextBlock Style="{StaticResource Hint}" Text="Inspecciona procesos YA abiertos. Solo distribuye ventanas de procesos distintos que ejecutan el mismo .exe, y lo revalida justo antes de moverlas." />
+            <ComboBox ItemsSource="{Binding SteamGames}" DisplayMemberPath="Label" SelectedItem="{Binding WindowsGame}" Margin="0,0,0,8" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+              <Button Content="Analizar ventanas" Command="{Binding AnalyzeGameWindowsCommand}" />
+              <Button Content="Distribuir clientes" Style="{StaticResource PrimaryButton}" Command="{Binding TileGameWindowsCommand}" />
+            </StackPanel>
+            <Border Style="{StaticResource PanelBorder}">
+              <TextBlock Style="{StaticResource Mono}" Foreground="#D7E5F5" Text="{Binding GameWindowsReport}" />
+            </Border>
+            <TextBlock Style="{StaticResource Warning}" Text="Para jugar juntos, cada cliente necesita su cuenta legítima y unirse a la misma partida. Dos ventanas no garantizan dos jugadores ni funcionamiento sin Internet." />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 06 7 DAYS TO DIE -->
+      <TabItem Header="06  7 DAYS TO DIE">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="7 Days to Die · adaptador experimental" />
+            <TextBlock Style="{StaticResource Hint}" Text="Camino legítimo: servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por cuenta de Steam + pantalla dividida. Sin emuladores de Steam." />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <Button Content="↻  Comprobar" Command="{Binding CheckSevenCommand}" />
+              <Button Content="Guardar diagnóstico 7DTD" Command="{Binding ExportSevenCommand}" />
+              <TextBlock Text="{Binding SevenState}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding SevenChecks}" Margin="0,0,0,8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,3">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="28" />
+                      <ColumnDefinition Width="300" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Icon}" Foreground="{Binding Color}" FontWeight="Bold" FontSize="15" />
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Foreground="{StaticResource Muted}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Style="{StaticResource Heading}" Text="1 · Servidor local" FontSize="15" />
+            <WrapPanel Margin="0,0,0,6">
+              <TextBlock Text="Puerto" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBox Text="{Binding ServerPort, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="0,0,14,0" />
+              <TextBlock Text="Jugadores" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <ComboBox ItemsSource="{Binding PlayerCounts}" SelectedItem="{Binding ServerMaxPlayers}" Width="60" Margin="0,0,14,0" />
+              <TextBlock Text="Contraseña (opcional)" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBox Text="{Binding ServerPassword, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,14,0" />
+              <CheckBox Content="Servidor con EAC" IsChecked="{Binding ServerEac}" />
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <Button Content="▶  Iniciar servidor local" Style="{StaticResource PrimaryButton}" Command="{Binding StartServerCommand}" />
+              <Button Content="■  Detener servidor" Command="{Binding StopServerCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding ServerStatus}" Foreground="{StaticResource Accent}" FontWeight="SemiBold" />
+            <Border Style="{StaticResource PanelBorder}" MaxHeight="150">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Style="{StaticResource Mono}" FontSize="11" Foreground="#9EB0C8" Text="{Binding ServerLog}" />
+              </ScrollViewer>
+            </Border>
+
+            <TextBlock Style="{StaticResource Heading}" Text="2 · Clientes (una cuenta Steam por jugador)" FontSize="15" Margin="0,8,0,4" />
+            <TextBlock Text="{Binding JoinInstructions}" Margin="0,0,0,6" />
+            <Button Content="Abrir Steam del jugador 2 (Sandboxie-Plus)" Command="{Binding OpenSecondSteamCommand}" HorizontalAlignment="Left" Margin="0,0,0,6" />
+
+            <TextBlock Style="{StaticResource Heading}" Text="3 · Pantalla dividida" FontSize="15" Margin="0,8,0,4" />
+            <StackPanel Orientation="Horizontal">
+              <Button Content="▦  Dividir pantalla con los clientes" Style="{StaticResource PrimaryButton}" Command="{Binding TileSevenCommand}" />
+              <Button Content="⇄  Intercambiar J1 / J2" Command="{Binding SwapSevenCommand}" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource Warning}" Text="Pendiente: un mando por ventana DENTRO del juego (módulo nativo C++). Guarda el diagnóstico con los dos clientes abiertos para elegir el método según las APIs de mando que carga 7DTD." />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+
+    <!-- Opciones de distribución y estado -->
+    <WrapPanel Grid.Row="2" Margin="0,12,0,8" VerticalAlignment="Center">
+      <TextBlock Text="Distribución:" VerticalAlignment="Center" Margin="0,0,10,0" />
+      <RadioButton Content="Lado a lado" IsChecked="{Binding OrientationSideBySide}" GroupName="orientation" />
+      <RadioButton Content="Arriba / abajo" IsChecked="{Binding OrientationStacked}" GroupName="orientation" />
+      <TextBlock Text="Separación:" VerticalAlignment="Center" Margin="6,0,8,0" />
+      <ComboBox ItemsSource="{Binding Gutters}" SelectedItem="{Binding Gutter}" Width="60" Margin="0,0,14,0" />
+      <CheckBox Content="Sin bordes" IsChecked="{Binding Borderless}" />
+      <Button Content="Reaplicar distribución" Command="{Binding RelayoutCommand}" />
+      <Button Content="Restaurar / detener sesión" Command="{Binding StopCommand}" />
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
+    </WrapPanel>
+
+    <Border Grid.Row="3" Style="{StaticResource PanelBorder}" Margin="0">
+      <ListBox x:Name="LogList" ItemsSource="{Binding LogLines}" FontFamily="Consolas" FontSize="11" Foreground="#C5D6EB" Background="Transparent" />
+    </Border>
+  </Grid>
+</Window>

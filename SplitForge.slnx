@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SplitForge.App/SplitForge.App.csproj" />
+    <Project Path="src/SplitForge.Core/SplitForge.Core.csproj" />
+    <Project Path="src/SplitForge.Diagnostico/SplitForge.Diagnostico.csproj" />
+    <Project Path="src/SplitForge.Input/SplitForge.Input.csproj" />
+    <Project Path="src/SplitForge.LabViewer/SplitForge.LabViewer.csproj" />
+    <Project Path="src/SplitForge.Windows/SplitForge.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SplitForge.Tests/SplitForge.Tests.csproj" />
+  </Folder>
+</Solution>

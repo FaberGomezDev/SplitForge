@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SplitForge.Core</RootNamespace>
+    <Description>Lógica pura de SplitForge: distribución, Steam, ventanas, entrada, laboratorio, sesiones y adaptadores.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SplitForge.Tests" />
+  </ItemGroup>
+
+</Project>

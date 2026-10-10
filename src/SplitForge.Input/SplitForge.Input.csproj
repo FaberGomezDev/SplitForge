@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SplitForge.Input</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>Entrada SDL3 de SplitForge en un hilo dedicado de alta frecuencia, independiente de la interfaz.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ppy.SDL3-CS" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SplitForge.Core\SplitForge.Core.csproj" />
+  </ItemGroup>
+
+</Project>

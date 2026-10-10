@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SplitForge.Diagnostico</RootNamespace>
+    <AssemblyName>SplitForge.Diagnostico</AssemblyName>
+    <Description>Diagnósticos de SplitForge de solo lectura: Steam, ventanas, 7 Days to Die y mandos SDL3.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SplitForge.Core\SplitForge.Core.csproj" />
+    <ProjectReference Include="..\SplitForge.Windows\SplitForge.Windows.csproj" />
+    <ProjectReference Include="..\SplitForge.Input\SplitForge.Input.csproj" />
+    <ProjectReference Include="..\SplitForge.LabViewer\SplitForge.LabViewer.csproj" />
+  </ItemGroup>
+
+</Project>
