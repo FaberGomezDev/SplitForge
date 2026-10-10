@@ -23,7 +23,7 @@ public static class ResearchProfiles
         [SevenDaysToDie] = new(SevenDaysToDie, "7 Days to Die", "Adaptador experimental (servidor local)",
             ["7DaysToDie.exe"],
             "Multijugador por servidor: cada jugador necesita su propia cuenta Steam con el juego. Aislamiento de mandos aún no validado.",
-            "Usar la pestaña 7 DAYS TO DIE: servidor dedicado local aislado y unión a 127.0.0.1. Sin emuladores de Steam."),
+            "Usar la pestaña 7 DAYS TO DIE: servidor dedicado local aislado y unión a 127.0.0.1."),
         [SevenDaysToDieDedicatedServer] = new(SevenDaysToDieDedicatedServer, "7 Days to Die Dedicated Server", "Herramienta del adaptador 7DTD",
             ["7DaysToDieServer.exe"],
             "Servidor oficial gratuito; permite una partida común en esta PC sin hospedar desde un cliente.",

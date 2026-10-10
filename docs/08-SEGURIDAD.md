@@ -2,7 +2,7 @@
 
 ## Principios obligatorios
 
-- No manipular DRM, licencias, tokens, sesiones de cuentas ni antitrampas. **Prohibidos los emuladores de Steam** (Goldberg u otros) y cualquier sustitución de `steam_api*.dll`.
+- No manipular DRM, licencias, tokens, sesiones de cuentas ni antitrampas.
 - No duplicar la identidad de una cuenta (p. ej. dos clientes con la misma cuenta en modo sin conexión).
 - EAC solo se desactiva con la **opción oficial** del juego («Launch game without EAC»); nunca por otros medios.
 - No modificar binarios de Steam ni instalar drivers de kernel por defecto.

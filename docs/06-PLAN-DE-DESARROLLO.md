@@ -49,7 +49,6 @@
 
 ## Evitar estos anti-patrones
 
-- Emuladores de Steam o «una sola copia para varios jugadores».
 - Lanzar dos ejecutables Steam a la fuerza como sustituto del multijugador.
 - Un mando virtual sin comprobar que no mueve ambos clientes.
 - Detectar dos ventanas y anunciar compatibilidad.

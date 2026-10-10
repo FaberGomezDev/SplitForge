@@ -52,7 +52,7 @@ Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo
 
 ## ADR-013 · Aceptada · 7 Days to Die mediante servidor dedicado oficial y cuentas separadas
 
-**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; cada jugador usa su propia cuenta de Steam (segunda sesión de Steam en otro usuario de Windows o Sandboxie-Plus); EAC solo se desactiva con la opción oficial. **Rechazado:** el emulador Goldberg (lo que usa Nucleus Co-op para «una sola copia»), el modo sin conexión con una sola cuenta y Remote Play Together (no aplica a 7DTD en PC). **Consecuencia:** dos jugadores reales requieren dos licencias; SplitForge lo indica antes de empezar.
+**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; cada jugador usa su propia cuenta de Steam (segunda sesión de Steam en otro usuario de Windows o Sandboxie-Plus); EAC solo se desactiva con la opción oficial. **Descartado:** el modo sin conexión con una sola cuenta y Remote Play Together (no aplica a 7DTD en PC). **Consecuencia:** dos jugadores reales requieren dos licencias; SplitForge lo indica antes de empezar.
 
 ## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
 

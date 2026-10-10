@@ -22,9 +22,8 @@ Camino **legítimo** elegido (ADR-013):
 | Apagado | `shutdown` por telnet local, espera hasta 45 s y solo entonces termina el proceso propio | — |
 | Mandos | Identifica físicamente cada mando (luz/vibración). **Filtro XInput por proceso (experimental, ADR-015)**: instalar, asignar J1/J2 a ranuras y retirar, sin sobrescribir archivos del juego | Clientes sin EAC; PS4 como XInput (Steam Input o DS4Windows); diagnóstico `7dtd` para confirmar que carga XInput |
 
-### Lo que NO se hará (y por qué)
+### Alternativas descartadas para 7DTD
 
-- **Emulador de Steam (Goldberg u otros)**: es lo que permite a Nucleus Co-op usar «una sola copia», pero sustituye `steam_api64.dll` para eludir la licencia. Prohibido (ADR-006, ADR-013).
 - **Modo sin conexión con una sola cuenta**: misma identidad dos veces; la partida no lo admite y duplicar identidad está prohibido.
 - **Remote Play Together**: requiere multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
 

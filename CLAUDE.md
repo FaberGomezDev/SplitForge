@@ -33,7 +33,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 - Detección ≠ lectura ≠ asignación. PS4 usa joystick directo en modo Auto (ADR-002); el índice de Cruz se aprende, no se asume.
 - Separar siempre **hecho comprobado / supuesto / objetivo futuro** en código, interfaz, docs y commits.
 - Nunca declarar compatible un juego por detectar su instalación, un proceso o dos ventanas. Estado máximo automático: `INSPECCIONADO`.
-- **Prohibido:** emuladores de Steam (Goldberg u otros), bypass de DRM/licencias, duplicar identidad de una cuenta, evasión o desactivación no oficial de antitrampas. EAC solo se desactiva con la **opción oficial** del juego. Ver `docs/08-SEGURIDAD.md`.
+- **Prohibido:** bypass de DRM/licencias, duplicar identidad de una cuenta, evasión o desactivación no oficial de antitrampas. EAC solo se desactiva con la **opción oficial** del juego. Ver `docs/08-SEGURIDAD.md`.
 - No cerrar a la fuerza procesos externos. Solo se terminan procesos **creados por SplitForge** (visores, servidor 7DTD) tras un cierre normal fallido.
 - No modificar carpetas de juegos. El servidor 7DTD usa configuración y guardados **propios** en `%LOCALAPPDATA%\SplitForge\7dtd`.
 - No tocar `.venv` ni `%LOCALAPPDATA%\SplitForge\settings.json` (versión Python). La versión .NET usa `settings.v2.json`.

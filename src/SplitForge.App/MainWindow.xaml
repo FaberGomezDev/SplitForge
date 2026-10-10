@@ -216,7 +216,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
             <TextBlock Style="{StaticResource Heading}" Text="7 Days to Die · adaptador experimental" />
-            <TextBlock Style="{StaticResource Hint}" Text="Camino legítimo: servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por cuenta de Steam + pantalla dividida. Sin emuladores de Steam." />
+            <TextBlock Style="{StaticResource Hint}" Text="Camino legítimo: servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por cuenta de Steam + pantalla dividida." />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
               <Button Content="↻  Comprobar" Command="{Binding CheckSevenCommand}" />
               <Button Content="Guardar diagnóstico 7DTD" Command="{Binding ExportSevenCommand}" />

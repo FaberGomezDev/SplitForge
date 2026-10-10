@@ -22,5 +22,5 @@ los clientes de 7DTD sin EAC; nunca sobrescribe archivos del juego y se retira c
 Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
 La configuración de la versión Python (settings.json) no se modifica.
 
-Límites honestos: SplitForge no usa emuladores de Steam ni se salta licencias o antitrampas.
+Límites honestos: SplitForge no se salta licencias ni antitrampas.
 Para que dos personas jueguen la misma partida, cada una necesita su propia cuenta con el juego.

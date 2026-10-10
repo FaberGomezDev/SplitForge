@@ -33,7 +33,7 @@ public sealed record SevenDaysServerOptions
 
 /// <summary>
 /// Adaptador experimental de 7 Days to Die. Camino legítimo: un servidor dedicado oficial local con
-/// guardados aislados y dos clientes, cada uno con SU cuenta Steam. Sin emuladores de Steam.
+/// guardados aislados y dos clientes, cada uno con SU cuenta Steam.
 /// </summary>
 public sealed class SevenDaysToDieAdapter : IGameAdapter
 {

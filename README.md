@@ -23,7 +23,7 @@ Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | mand
 
 ## 7 Days to Die con dos jugadores: qué hace falta
 
-1. **Una cuenta de Steam con el juego por jugador.** SplitForge no usa emuladores de Steam ni duplica cuentas.
+1. **Una cuenta de Steam con el juego por jugador**, cada una con su propia sesión.
 2. **El servidor dedicado gratuito** «7 Days to Die Dedicated Server» (Steam → Biblioteca → Herramientas). SplitForge lo arranca con configuración y guardados propios.
 3. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
 4. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
