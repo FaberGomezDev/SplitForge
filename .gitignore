@@ -1,0 +1,32 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Binaries / packaging
+build/
+dist/
+*.egg-info/
+*.exe
+*.whl
+*.zip
+
+# Local reports and logs (may contain user data)
+SplitForge_Reporte_*.json
+Reporte_*.txt
+*.log
+settings.json
+.env
+.env.*
+
+# Tools / editors
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,5 @@
+Coloca aquí el archivo .whl oficial de pygame-ce correspondiente a tu Python.
+Python 3.13 x64 (Windows 11): pygame_ce-2.5.8-cp313-cp313-win_amd64.whl
+URL oficial: https://pypi.org/project/pygame-ce/2.5.8/#files
+Ejecuta Instalar_Todo.bat de nuevo para instalar sin Internet.
+SDL ya viene incluido en pygame-ce para Windows; no descargues SDL2.dll por separado.

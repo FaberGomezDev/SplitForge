@@ -1,0 +1,2 @@
+# pygame-ce wheel contiene las bibliotecas SDL2 para Windows
+pygame-ce==2.5.8
