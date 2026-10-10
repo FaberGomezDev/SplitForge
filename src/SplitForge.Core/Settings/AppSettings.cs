@@ -6,6 +6,17 @@ using SplitForge.Core.Layout;
 
 namespace SplitForge.Core.Settings;
 
+/// <summary>Identidades del emulador de Steam educativo (EXPERIMENTAL, ADR-016). Sin datos personales: IDs ficticios locales.</summary>
+public sealed record SteamEmuOptions
+{
+    public string SteamId1 { get; init; } = "76561198000000001";
+    public string SteamId2 { get; init; } = "76561198000000002";
+    public string Persona1 { get; init; } = "SplitForgeJ1";
+    public string Persona2 { get; init; } = "SplitForgeJ2";
+    public int AppId { get; init; } = 251570;
+    public string EmulatorDll { get; init; } = "";
+}
+
 public sealed record AppSettings
 {
     public SplitOrientation Orientation { get; init; } = SplitOrientation.SideBySide;
@@ -15,6 +26,7 @@ public sealed record AppSettings
     public int InputRateHz { get; init; } = 1000;
     public Dictionary<string, ControllerMapping> Mappings { get; init; } = [];
     public SevenDaysServerOptions SevenDays { get; init; } = new();
+    public SteamEmuOptions SteamEmu { get; init; } = new();
 }
 
 /// <summary>
@@ -100,5 +112,6 @@ public static class SettingsStore
         Orientation = Enum.IsDefined(s.Orientation) ? s.Orientation : SplitOrientation.SideBySide,
         Mappings = s.Mappings ?? [],
         SevenDays = s.SevenDays ?? new SevenDaysServerOptions(),
+        SteamEmu = s.SteamEmu ?? new SteamEmuOptions(),
     };
 }

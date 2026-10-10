@@ -20,7 +20,9 @@
 | `SplitForge.App` | WPF + ViewModel por pestañas; `--lab-viewer N` | Bloqueos de UI (no hacer trabajo pesado en el hilo de UI) |
 | `SplitForge.Diagnostico` | `steam`, `ventanas`, `7dtd`, `mandos` (+ `demo-frames`, `visor-lab` para pruebas) | Privacidad de informes |
 | `Core.Adapters.XInputFilter` | Instalar/retirar el filtro nativo (manifiesto + SHA-256), asignaciones PID → ranura, estado por proceso | Archivos del juego (nunca sobrescribir) |
+| `Core.Adapters.SteamEmulator` | Emulador de Steam educativo (ADR-016): instalar/restaurar con copia de seguridad + SHA-256, config JSON por identidad, lanzamiento de instancias con variable de entorno | Archivos del juego, EAC, identidades |
 | `native/SplitForge.XInputFilter` (C++20) | DLL con la API de XInput (8 funciones + ordinales 100–103); cada proceso ve solo su ranura asignada | Compatibilidad por juego, foco |
+| `native/SplitForge.SteamEmu` (C++20) | DLL que reimplementa el contrato ABI de `steam_api64.dll` (API plana + interfaces + callbacks + P2P multicast local); experimental, se eliminará tras el experimento | ABI del SDK, NetworkingSockets sin implementar, EAC |
 
 ## Tipos públicos importantes
 
@@ -30,7 +32,8 @@ public readonly record struct PadState(uint DeviceId, float LX = 0, float LY = 0
                                        bool Connected = true, bool Dash = false, bool Shield = false);
 public sealed record WindowSnapshot(nint Handle, Region Bounds, bool Maximized, bool Minimized, long Style, long ExStyle);
 public sealed record LaunchSpec(string FileName, IReadOnlyList<string> Arguments, string? WorkingDirectory = null,
-                                bool RedirectInput = false, bool NoWindow = false);
+                                 bool RedirectInput = false, bool NoWindow = false,
+                                 IReadOnlyDictionary<string, string>? EnvironmentVariables = null);
 ```
 
 - `SessionManager.StartLab(viewerSpec, j1, j2, layout)` exige dos mandos distintos; `RouteLab(states, dt)` se llama desde el hilo de simulación.

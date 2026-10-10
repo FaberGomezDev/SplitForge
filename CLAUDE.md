@@ -51,6 +51,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
 | `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `mandos` |
 | `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015); CMake + prueba de humo |
+| `native/SplitForge.SteamEmu` | C++20: emulador educativo temporal de `steam_api64.dll` (ADR-016); integrado en la pestaña 07 y publicado como `native\SplitForge.SteamEmu`; **eliminar tras el experimento** |
 | `tests/SplitForge.Tests` | xUnit (Core) |
 | `launcher.py`, `splitforge/`, `tests/test_*.py` | Prototipo Python 0.6 (referencia; no ampliar salvo diagnósticos) |
 

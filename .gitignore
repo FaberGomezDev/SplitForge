@@ -28,6 +28,7 @@ artifacts/
 publish/
 x64/
 *.pdb
+native/build*/
 
 # Local reports and logs (may contain user data)
 SplitForge_Reporte_*.json

@@ -287,6 +287,55 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
+
+      <!-- 07 EMULADOR STEAM -->
+      <TabItem Header="07  EMULADOR STEAM">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <TextBlock Style="{StaticResource Heading}" Text="Emulador de Steam · experimental y educativo" />
+            <TextBlock Style="{StaticResource Hint}" Text="Sustituye temporalmente steam_api64.dll del juego por una versión emulada con identidad local: dos instancias de 7DTD en la misma PC con identidades distintas y P2P local. La DLL original queda respaldada y se restaura con un botón." />
+            <TextBlock Style="{StaticResource Warning}" Text="EXPERIMENTAL: el juego NO hablará con Steam. Solo sin EAC y sin cuentas reales. Restaura antes de verificar archivos en Steam. Nada de VAC." Margin="0,0,0,8" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <Button Content="Instalar emulador en 7DTD" Style="{StaticResource PrimaryButton}" Command="{Binding InstallSteamEmuCommand}" />
+              <Button Content="Restaurar DLL original" Command="{Binding RestoreSteamEmuCommand}" />
+              <Button Content="Seleccionar DLL…" Command="{Binding PickSteamEmuDllCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding SteamEmuStatus}" Foreground="{StaticResource Muted}" Margin="0,0,0,10" />
+
+            <TextBlock Style="{StaticResource Heading}" Text="Identidades locales (ficticias)" FontSize="15" />
+            <Grid Margin="0,0,0,8">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="140" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <TextBlock Text="AppID del juego" VerticalAlignment="Center" Margin="0,4,10,4" />
+              <TextBox Grid.Column="1" Text="{Binding SteamEmuAppId, UpdateSourceTrigger=PropertyChanged}" Width="90" HorizontalAlignment="Left" Margin="0,4" />
+              <TextBlock Grid.Row="1" Text="Jugador 1" VerticalAlignment="Center" Margin="0,4,10,4" />
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Persona1, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4" />
+              <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding SteamId1, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,0,4" />
+              <TextBlock Grid.Row="2" Text="Jugador 2" VerticalAlignment="Center" Margin="0,4,10,4" />
+              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Persona2, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4" />
+              <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding SteamId2, UpdateSourceTrigger=PropertyChanged}" Margin="4,4,0,4" />
+            </Grid>
+            <TextBlock Text="Cada jugador guarda en %LOCALAPPDATA%\SplitForge\steamemu\AppID-J1 y AppID-J2." Foreground="{StaticResource Muted}" Margin="0,0,0,8" />
+
+            <TextBlock Style="{StaticResource Heading}" Text="Lanzar (con Steam cerrado)" FontSize="15" />
+            <TextBlock Style="{StaticResource Hint}" Text="No abras el juego desde Steam ni con EAC: usa estos botones. Las dos instancias comparten puerto multicast y se descubren en local (P2P)." Margin="0,0,0,6" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+              <Button Content="▶  Lanzar J1" Command="{Binding LaunchSteamEmu1Command}" />
+              <Button Content="▶  Lanzar J2" Command="{Binding LaunchSteamEmu2Command}" />
+              <Button Content="▶  Lanzar J1 y J2" Style="{StaticResource PrimaryButton}" Command="{Binding LaunchSteamEmuBothCommand}" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource Hint}" Text="Límites: interfaces sin implementar (NetworkingSockets) devuelven vacío; P2P sin cifrado ni fiabilidad; si el multiplayer de tu versión de 7DTD depende de SteamNetworkingSockets, las instancias no se verán. Log: %LOCALAPPDATA%\SplitForge\steamemu.log." />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
     </TabControl>
 
     <!-- Opciones de distribución y estado -->

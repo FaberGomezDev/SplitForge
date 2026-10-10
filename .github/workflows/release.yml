@@ -26,6 +26,13 @@ jobs:
           cmake --build native/build --config Release
           ctest --test-dir native/build -C Release --output-on-failure
 
+      - name: Módulo nativo C++ (emulador de Steam educativo) y su prueba de humo
+        shell: pwsh
+        run: |
+          cmake -S native/SplitForge.SteamEmu -B native/build-steamemu -A x64
+          cmake --build native/build-steamemu --config Release
+          ctest --test-dir native/build-steamemu -C Release --output-on-failure
+
       - name: Pruebas .NET
         run: dotnet test SplitForge.slnx -c Release --blame-hang-timeout 60s
 
@@ -36,6 +43,8 @@ jobs:
           dotnet publish src/SplitForge.Diagnostico -c Release -r win-x64 --self-contained -o artifacts/SplitForge
           New-Item -ItemType Directory -Force artifacts/SplitForge/native | Out-Null
           Copy-Item native/build/Release/SplitForge.XInputFilter.dll artifacts/SplitForge/native/
+          New-Item -ItemType Directory -Force artifacts/SplitForge/native/SplitForge.SteamEmu | Out-Null
+          Copy-Item native/build-steamemu/Release/steam_api64.dll artifacts/SplitForge/native/SplitForge.SteamEmu/
           Copy-Item LEEME_DESCARGA.txt artifacts/SplitForge/LEEME.txt
           Get-ChildItem artifacts/SplitForge -Filter *.pdb | Remove-Item
           $zip = "artifacts/SplitForge-${{ github.ref_name }}-win-x64.zip"

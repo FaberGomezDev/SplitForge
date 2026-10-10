@@ -49,6 +49,36 @@ AMPLIACIÓN (mismo día): recuperación de ventanas tras cierre inesperado; filt
   (native/SplitForge.XInputFilter, ADR-015) con instalación reversible desde la pestaña 06 y prueba de humo en la CI.
 ```
 
+## 2026-10-10 · Emulador de Steam educativo (temporal)
+
+```text
+FECHA: 2026-10-10
+RELEASE/COMMIT: sin commit aún (cambios sin confirmar)
+OBJETIVO: experimento educativo a petición del propietario: reimplementar la técnica de Goldberg
+  (sustituir steam_api64.dll) para estudiar cómo una copia se hace pasar por varias identidades.
+CAMBIOS EFECTIVOS: native/SplitForge.SteamEmu (C++20): API plana completa, ISteamClient/User/Friends/
+  Utils/Apps/UserStats/Matchmaking/Networking/RemoteStorage/UGC/Inventory/HTTP/Screenshots/Controller/
+  Input/GameServer con vtables ABI del SDK; callbacks y call results; P2P UDP multicast local;
+  stats/logros y nube en %LOCALAPPDATA%\SplitForge\steamemu; instalador reversible
+  tools/SteamEmu_Instalar.ps1; CI: build+ctest del módulo.
+  Integración en la interfaz (petición del propietario): Core.Adapters.SteamEmulator (instalar/
+  restaurar con copia de seguridad + SHA-256, config JSON, LaunchSpec con variables de entorno),
+  pestaña 07 «EMULADOR STEAM» (instalar/restaurar, identidades J1/J2, lanzar instancias), DLL
+  publicada en native\SplitForge.SteamEmu del paquete.
+  Documentación: ADR-016, MEMORIA, HISTORIAL.
+EVIDENCIA AUTOMÁTICA: ctest steamemu_humo en Windows real de este PC: dos procesos con identidades
+  distintas, callback de stats, stats.json persistido, nube ida y vuelta, P2P entre procesos OK.
+EVIDENCIA EN WINDOWS REAL: la prueba de humo se ejecutó en el PC de desarrollo (no en el del propietario).
+  NO probado con 7DTD real ni con dos jugadores.
+NUEVOS RIESGOS: sustituir la DLL puede incumplir los términos de Steam; nada de EAC/VAC; restaurar
+  antes de verificar archivos en Steam; el orden de vtables sigue el SDK público (colas de interfaces
+  nuevas no probadas).
+LIMITACIONES EXPLÍCITAS: NetworkingSockets/Messages y otras interfaces sin implementar (nullptr);
+  P2P sin cifrado ni fiabilidad; alcance misma PC/LAN por multicast.
+PRÓXIMO PASO: si el propietario quiere, instalar en 7DTD sin EAC y probar dos instancias; en cualquier
+  caso, ELIMINAR el módulo tras el experimento (decisión del propietario).
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

@@ -125,6 +125,7 @@ public sealed partial class MainViewModel
         foreach (var check in preflight.Checks)
             SevenChecks.Add(new CheckRow(check));
         RefreshFilterStatus();
+        RefreshSteamEmuStatus();
         SevenState = preflight.State == CompatibilityState.Bloqueado
             ? "BLOQUEADO: falta 7 Days to Die."
             : $"Estado: {preflight.State.ToString().ToUpperInvariant()} (experimental). Nunca se marca compatible sin prueba física.";

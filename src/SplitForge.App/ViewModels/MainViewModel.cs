@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitWindows();
         InitSteam();
         InitSevenDays();
+        InitSteamEmu();
 
         _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
         _timer.Tick += (_, _) => OnTick();
@@ -188,6 +189,15 @@ public sealed partial class MainViewModel : Observable, IDisposable
             InputMode = _input.Mode,
             Mappings = new(_input.Mappings),
             SevenDays = ServerOptions(),
+            SteamEmu = new SteamEmuOptions
+            {
+                SteamId1 = SteamId1,
+                SteamId2 = SteamId2,
+                Persona1 = Persona1,
+                Persona2 = Persona2,
+                AppId = SteamEmuAppId,
+                EmulatorDll = SteamEmuDllPath,
+            },
         };
         try
         {

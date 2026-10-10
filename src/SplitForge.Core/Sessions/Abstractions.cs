@@ -30,7 +30,8 @@ public sealed record LaunchSpec(
     IReadOnlyList<string> Arguments,
     string? WorkingDirectory = null,
     bool RedirectInput = false,
-    bool NoWindow = false);
+    bool NoWindow = false,
+    IReadOnlyDictionary<string, string>? EnvironmentVariables = null);
 
 public interface IChildProcess : IDisposable
 {
@@ -60,6 +61,11 @@ public sealed class SystemProcessLauncher : IProcessLauncher
         };
         foreach (var arg in spec.Arguments)
             info.ArgumentList.Add(arg);
+        if (spec.EnvironmentVariables is not null)
+        {
+            foreach (var (key, value) in spec.EnvironmentVariables)
+                info.Environment[key] = value;
+        }
         var process = Process.Start(info) ?? throw new InvalidOperationException($"No se pudo iniciar {Path.GetFileName(spec.FileName)}.");
         return new SystemChildProcess(process, spec.RedirectInput);
     }

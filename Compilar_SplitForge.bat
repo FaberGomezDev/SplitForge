@@ -19,10 +19,10 @@ echo [3/3] Publicando SplitForge.Diagnostico.exe ...
 dotnet publish src\SplitForge.Diagnostico -c Release -r win-x64 --self-contained -o publish\SplitForge --nologo
 if errorlevel 1 goto :error
 copy /y LEEME_DESCARGA.txt publish\SplitForge\LEEME.txt >nul
-rem Modulo nativo C++ (opcional: requiere CMake y Visual Studio Build Tools con C++).
+rem Modulos nativos C++ (opcional: requieren CMake y Visual Studio Build Tools con C++).
 where cmake >nul 2>&1
 if errorlevel 1 (
-  echo [AVISO] Sin CMake: el filtro XInput nativo no se compila. Descargalo del paquete de GitHub Actions si lo necesitas.
+  echo [AVISO] Sin CMake: los modulos nativos no se compilan. Descargalos del paquete de GitHub Actions si los necesitas.
 ) else (
   cmake -S native\SplitForge.XInputFilter -B native\build -A x64 >nul && cmake --build native\build --config Release >nul
   if exist "native\build\Release\SplitForge.XInputFilter.dll" (
@@ -31,6 +31,14 @@ if errorlevel 1 (
     echo Filtro XInput nativo compilado.
   ) else (
     echo [AVISO] No se pudo compilar el filtro XInput nativo.
+  )
+  cmake -S native\SplitForge.SteamEmu -B native\build-steamemu -A x64 >nul && cmake --build native\build-steamemu --config Release >nul
+  if exist "native\build-steamemu\Release\steam_api64.dll" (
+    if not exist "publish\SplitForge\native\SplitForge.SteamEmu" mkdir "publish\SplitForge\native\SplitForge.SteamEmu"
+    copy /y native\build-steamemu\Release\steam_api64.dll publish\SplitForge\native\SplitForge.SteamEmu\ >nul
+    echo Emulador de Steam educativo compilado.
+  ) else (
+    echo [AVISO] No se pudo compilar el emulador de Steam educativo.
   )
 )
 echo.

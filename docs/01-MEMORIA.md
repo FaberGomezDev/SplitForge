@@ -36,6 +36,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 | 0.6.0+docs | `CLAUDE.md`, `docs/`, chequeo de documentación. | 75 pruebas |
 | 2026-10-10 | Repositorio en GitHub; diagnóstico Python `diagnostico_7dtd.py` (APIs de mando de 7DTD). | 77 pruebas Python |
 | **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; filtro XInput C++; CI Windows. | 112 xUnit; en la VM Windows de la CI: interfaz arranca y se cierra, 6 pestañas capturadas, enumeración Win32 real, SDL3 a 1000 Hz, filtro C++ probado; **sin prueba en el PC del propietario ni con mandos** |
+| 0.7.0+ | **Emulador de Steam educativo (temporal, ADR-016):** `native/SplitForge.SteamEmu`, reimplementación ABI de `steam_api64.dll` para estudiar la técnica de Goldberg; a petición del propietario, **integrado en la interfaz** (pestaña 07: instalar/restaurar, identidades J1/J2, lanzar instancias) y su DLL publicada en el paquete; se eliminará tras el experimento. | Prueba de humo en Windows real de este PC: dos procesos con identidades distintas, stats+callback, nube y P2P multicast local OK; **no probado con 7DTD real** |
 
 ## Incidente PS4: causa, corrección y reglas (siguen vigentes en 0.7)
 
@@ -68,6 +69,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide: mandos en «01 MANDOS» (incluida la frecuencia del hilo), laboratorio con dos PS4, distribución sin bordes y restauración.
 **P1:** con 7DTD abierto sin EAC (idealmente dos instancias), `SplitForge.Diagnostico.exe 7dtd` → `SplitForge_Reporte_7DTD.json`, y anotar si la ventana sin foco sigue funcionando. Si carga XInput, probar el filtro nativo (W16); si exige foco, añadir simulación de foco al módulo nativo.
 **P2:** prueba real de dos jugadores en la misma partida.
+**Experimental (temporal):** si se quiere probar el emulador de Steam con 7DTD, instalar con `tools\SteamEmu_Instalar.ps1` (sin EAC), lanzar la 2.ª instancia con `SPLITFORGE_STEAMEMU_CONFIG` propio y documentar; **eliminar el módulo tras el experimento** (decisión del propietario, ADR-016).
 
 ## Política de actualización de memoria
 
