@@ -36,7 +36,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 | v0.6 | Asociación HWND/PID/exe; dos procesos del mismo exe antes de distribuir. | 72 pruebas; sin aceptación física de dos clientes |
 | 0.6.0+docs | `CLAUDE.md`, `docs/`, chequeo de documentación. | 75 pruebas |
 | 2026-10-10 | Repositorio en GitHub; diagnóstico Python `diagnostico_7dtd.py` (APIs de mando de 7DTD). | 77 pruebas Python |
-| **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; CI Windows. | 112 xUnit; humo SDL3 en Linux; **sin prueba en el PC del propietario** |
+| **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; filtro XInput C++; CI Windows. | 112 xUnit; en la VM Windows de la CI: interfaz arranca y se cierra, 6 pestañas capturadas, enumeración Win32 real, SDL3 a 1000 Hz, filtro C++ probado; **sin prueba en el PC del propietario ni con mandos** |
 
 ## Incidente PS4: causa, corrección y reglas (siguen vigentes en 0.7)
 

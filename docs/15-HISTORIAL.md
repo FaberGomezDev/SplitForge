@@ -38,7 +38,9 @@ CAMBIOS EFECTIVOS: solución SplitForge.slnx (Core, Windows, Input, LabViewer, A
   CI Windows con paquete autónomo y releases por etiqueta; documentación actualizada (ADR-010…014).
 EVIDENCIA AUTOMÁTICA: 112 xUnit + 77 unittest; CI windows-latest verde (pruebas, publicación,
   humo: SDL3 3.5.0 inicializa en Windows); Linux: hilo de entrada 1000 Hz, visor dibujado bajo Xvfb.
-EVIDENCIA EN WINDOWS REAL (propietario): pendiente.
+EVIDENCIA EN WINDOWS (VM de la CI): interfaz WPF arranca, 6 pestañas capturadas, cierre ordenado,
+  EnumWindows real, SDL3 3.5.0 a 1000 Hz, filtro XInput C++ cargando la DLL real de System32.
+EVIDENCIA EN WINDOWS REAL (propietario, con mandos): pendiente.
 NUEVOS RIESGOS: perfiles de botones a recalibrar (GUID SDL3); Sandboxie y Steam; firewall al abrir el servidor.
 LIMITACIONES EXPLÍCITAS: sin aislamiento de mandos validado dentro del juego; dos jugadores requieren dos cuentas.
   Retirados a propósito: lanzamiento doble genérico de .exe y demo de dos mundos separados (siguen en el prototipo).

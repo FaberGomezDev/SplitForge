@@ -16,7 +16,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="140" />
+      <RowDefinition Height="105" />
     </Grid.RowDefinitions>
 
     <!-- Cabecera -->
@@ -217,11 +217,11 @@
           <StackPanel>
             <TextBlock Style="{StaticResource Heading}" Text="7 Days to Die · adaptador experimental" />
             <TextBlock Style="{StaticResource Hint}" Text="Camino legítimo: servidor dedicado oficial en esta PC (guardados aislados en la carpeta de SplitForge) + un cliente por cuenta de Steam + pantalla dividida. Sin emuladores de Steam." />
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
               <Button Content="↻  Comprobar" Command="{Binding CheckSevenCommand}" />
               <Button Content="Guardar diagnóstico 7DTD" Command="{Binding ExportSevenCommand}" />
-              <TextBlock Text="{Binding SevenState}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
             </StackPanel>
+            <TextBlock Text="{Binding SevenState}" Foreground="{StaticResource Muted}" Margin="0,0,0,6" />
             <ItemsControl ItemsSource="{Binding SevenChecks}" Margin="0,0,0,8">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
