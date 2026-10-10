@@ -1,9 +1,9 @@
-# Instalador/restaurador del emulador de Steam educativo (EXPERIMENTAL).
+# Instalador/restaurador del emulador de Steam (EXPERIMENTAL, ADR-016). Equivale a la pestaña 07 de SplitForge.
 # Uso:
 #   tools\SteamEmu_Instalar.ps1 -Juego "C:\...\7 Days To Die" -AppId 251570 -SteamId "76561198000000001" -Persona "SplitForgeJ1" -Accion Instalar
 #   tools\SteamEmu_Instalar.ps1 -Juego "C:\...\7 Days To Die" -Accion Restaurar
-# Solo para experimentación educativa con juegos propios y sin EAC. Restaurar antes de verificar
-# archivos en Steam. Reversible: copia de seguridad + SHA-256 + archivo de estado.
+# Requiere el juego sin EAC (opción oficial). Restaurar antes de verificar archivos en Steam.
+# Reversible: copia de seguridad + SHA-256 + archivo de estado.
 
 param(
     [Parameter(Mandatory = $true)]

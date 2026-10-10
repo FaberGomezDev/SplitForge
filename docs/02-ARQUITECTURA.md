@@ -21,16 +21,24 @@ flowchart TB
     UI --> ADAPT[SevenDaysToDieAdapter + SevenDaysServer]
     ADAPT --> SRV[7DaysToDieServer.exe oficial\nconfig y guardados propios]
     INSPECT --> WIN
+    UI --> FILTER[XInputFilter\ninstalar · asignar ranura por PID]
+    FILTER --> XDLL[SplitForge.XInputFilter.dll C++\nun mando por cliente]
+    UI --> EMU[SteamEmulator\ninstalar · identidades J1/J2 · lanzar]
+    EMU --> EDLL[steam_api64.dll emulada C++\nidentidad por instancia + P2P local]
+    UI --> LOCK[CursorLock + atajo Ctrl+Alt+L\nratón confinado a su ventana]
 ```
 
 - **Hilo de entrada:** único que llama a SDL3 para mandos; publica una instantánea inmutable solo cuando algo cambia. Activa `SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS` porque el juego tendrá el foco.
 - **Hilo de simulación:** `FixedRateLoop` a 120 Hz con temporizador de alta resolución de Windows (`CREATE_WAITABLE_TIMER_HIGH_RESOLUTION`), sin depender del tick de 15,6 ms ni de la interfaz.
 - **Interfaz WPF:** temporizador de 33 ms que solo refleja estado; la gestión de sesiones y del servidor se sondea a ~2 Hz.
 - **Visores:** el mismo `SplitForge.exe` con `--lab-viewer N`; reciben instantáneas binarias por stdin y dibujan con el renderizador de SDL3. **No son clientes Steam.**
-- **Ventanas:** se mueven con Win32 a 2–4 regiones del área útil del monitor principal; el modo sin bordes quita marco/título y se revierte al restaurar.
+- **Ventanas:** se mueven con Win32 a 2–4 regiones del área útil del monitor principal; el modo sin bordes quita marco/título y se revierte al restaurar. Cada ventana puede rellenar su región o mantener una proporción centrada. Si SplitForge se cierra de golpe, `SessionRecovery` restaura las ventanas al siguiente arranque.
+- **Ratón (ADR-017):** `CursorLock` confina el cursor a la ventana del jugador en primer plano con `ClipCursor`, reaplicado en el tick de la interfaz.
 - **Steam:** lectura de manifiestos con un parser KeyValues propio; preflight conservador; inspección de clientes.
 - **7DTD:** servidor dedicado oficial lanzado por SplitForge con `-configfile` propio (plantilla del servidor + ajustes de seguridad), guardados en `%LOCALAPPDATA%\SplitForge\7dtd\UserData`, apagado ordenado por telnet local.
-- **Almacenamiento:** `%LOCALAPPDATA%\SplitForge\settings.v2.json`, `splitforge-net.log`, `7dtd\`.
+- **Filtro XInput (ADR-015):** DLL C++ copiada en la carpeta del juego con los nombres de XInput que carga; cada proceso ve solo la ranura asignada a su PID.
+- **Emulador de Steam (ADR-016, componente principal):** sustituye `steam_api64.dll` del juego (con copia de seguridad) y da a cada instancia su identidad mediante `SPLITFORGE_STEAMEMU_CONFIG`, con P2P local por UDP multicast.
+- **Almacenamiento:** `%LOCALAPPDATA%\SplitForge\` con `settings.v2.json`, `splitforge-net.log`, `sesion-ventanas.json`, `7dtd\`, `xinput\`, `steamemu\` y `steamemu.log`.
 
 ### Características técnicas verificables
 
@@ -43,9 +51,9 @@ flowchart TB
 
 ## 2. Límites actuales
 
-- No hay redirección de un mando por instancia **dentro** de juegos de terceros (módulo nativo pendiente).
+- La redirección de un mando por instancia **dentro** de juegos de terceros existe solo como filtro XInput experimental, sin validar con dos clientes. Tampoco hay simulación de foco.
 - No hay compositor DirectX ni telemetría de frametimes/VRAM.
-- La segunda sesión de Steam depende de otro usuario de Windows o de Sandboxie-Plus; SplitForge no gestiona credenciales.
+- La segunda instancia necesita una identidad propia: el emulador de Steam, otro usuario de Windows o Sandboxie-Plus. Con 7DTD el emulador aún se cierra al iniciar, porque su API plana está incompleta. SplitForge no gestiona credenciales.
 - El protocolo de laboratorio no es una API de plugins.
 
 ## 3. Arquitectura objetivo modular (propuesta)
@@ -58,6 +66,9 @@ flowchart TB
     INPUT --> NATIVE[Módulo nativo C++ por cliente\nfiltro de mandos + foco]
     API --> PROCESS[Gestor de procesos y ventanas]
     API --> NET[Servidor/LAN admitido por el juego]
+    API --> IDENT[Identidad por instancia · emulador de Steam]
+    IDENT --> A
+    IDENT --> B
     API --> PERF[Telemetría · PresentMon/ETW]
     API --> SAFETY[Guardados, rollback y políticas]
     NATIVE --> A[Cliente J1]

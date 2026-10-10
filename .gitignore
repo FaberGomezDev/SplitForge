@@ -43,3 +43,6 @@ settings.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# Objetos de compilación C/C++ sueltos
+*.obj

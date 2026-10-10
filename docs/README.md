@@ -10,13 +10,13 @@
 | [`02-ARQUITECTURA.md`](02-ARQUITECTURA.md) | Arquitectura actual 0.7, diseño objetivo, diagramas y límites |
 | [`03-MODULOS.md`](03-MODULOS.md) | Responsabilidades y contratos de cada proyecto y tipo público |
 | [`04-CONTROLES.md`](04-CONTROLES.md) | PS4 por Bluetooth, SDL3 en hilo dedicado, calibración y aislamiento pendiente |
-| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Estados por juego y adaptador 7DTD (servidor oficial) |
+| [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md) | Estados por juego, adaptador 7DTD (servidor oficial) y emulador de Steam |
 | [`06-PLAN-DE-DESARROLLO.md`](06-PLAN-DE-DESARROLLO.md) | Fases, hitos de aceptación y prioridades |
-| [`07-PRUEBAS.md`](07-PRUEBAS.md) | Pruebas automáticas (xUnit, unittest, CI) y matriz manual en Windows |
+| [`07-PRUEBAS.md`](07-PRUEBAS.md) | Pruebas automáticas (xUnit, unittest, CTest, CI) y matriz manual en Windows |
 | [`08-SEGURIDAD.md`](08-SEGURIDAD.md) | Privacidad, EAC, guardados y procesos externos |
 | [`09-RENDIMIENTO.md`](09-RENDIMIENTO.md) | Decisiones de rendimiento tomadas y métricas pendientes |
 | [`10-DESARROLLO.md`](10-DESARROLLO.md) | Requisitos, primer arranque, estructura, convenciones |
-| [`11-DIAGNOSTICO.md`](11-DIAGNOSTICO.md) | Árbol de diagnóstico de mandos, Steam, ventanas y 7DTD |
+| [`11-DIAGNOSTICO.md`](11-DIAGNOSTICO.md) | Árbol de diagnóstico de mandos, Steam, ventanas, 7DTD y emulador |
 | [`12-DECISIONES.md`](12-DECISIONES.md) | Registro de decisiones arquitectónicas (ADR) |
 | [`13-FLUJOS-Y-DATOS.md`](13-FLUJOS-Y-DATOS.md) | Flujos de procesos, hilos, IPC y persistencia |
 | [`14-VERSIONADO-Y-RELEASE.md`](14-VERSIONADO-Y-RELEASE.md) | Versionado, CI, artefactos y releases |
@@ -30,14 +30,34 @@
 
 **Comprobado por el usuario (prototipo Python):** dos PS4 por Bluetooth funcionales en el laboratorio de un mundo compartido (v0.4) y detección Steam (v0.5).
 
-**Implementado en 0.7 (.NET):** entrada SDL3 en hilo dedicado de hasta 1000 Hz con eventos en segundo plano; laboratorio con simulación a 120 Hz en su hilo y visores SDL3/Direct3D; IPC binario versionado; distribución de 2 a 4 ventanas con modo sin bordes reversible y ajuste configurable (rellenar la región o mantener proporción 16:9/16:10/21:9/4:3 centrada), con resolución sugerida por panel; biblioteca Steam y preflight; inspección de clientes; adaptador experimental de 7 Days to Die (servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida); diagnóstico de APIs de mando de 7DTD; CI en Windows con paquete autónomo.
+**Implementado en 0.7 (.NET):**
+- Entrada SDL3 en un hilo dedicado de hasta 1000 Hz, con eventos en segundo plano.
+- Laboratorio con la simulación a 120 Hz en su propio hilo y visores SDL3/Direct3D, comunicados por IPC binario versionado.
+- Distribución de 2 a 4 ventanas con modo sin bordes reversible y ajuste configurable: rellenar la región o mantener la proporción 16:9, 16:10, 21:9 o 4:3 centrada, con resolución sugerida por panel.
+- Biblioteca Steam con preflight e inspección de clientes.
+- Adaptador experimental de 7 Days to Die: servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida y diagnóstico de las APIs de mando.
+- **Emulador de Steam, componente principal** (ADR-016, pestaña 07): da a cada instancia del juego una identidad distinta sin un segundo Steam (con 7DTD aún falla al iniciar; ver más abajo).
+- CI en Windows con paquete autónomo.
 
 **Evidencia real de 7DTD (2026-10-10, un cliente sin EAC):** carga `xinput1_3.dll` y `xinput1_4.dll`, DirectInput, HID e InControl; los dos mandos llegan a Windows como `Xbox 360 Controller` (XInput). Ver [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md).
 
-**Verificado automáticamente:** 126 pruebas xUnit + 77 unittest; CI en Windows verde (SDL3 3.5.0 inicializa); en Linux el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
+**Medido en el PC del propietario (2026-10-10, solo lectura):**
+- Hilo de entrada SDL3 3.5.0 a **1000 Hz**, sin mandos conectados.
+- 7DTD build `25661859`.
+- Servidor dedicado de 7DTD (AppID 294420) y Sandboxie-Plus **no instalados**.
+- Controladores ViGEmBus y HidHide instalados.
 
-**Experimental, sin validar en hardware:** filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo. Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L) para pantalla dividida.
+**Verificado automáticamente:** 158 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador. La CI en Windows está verde (run #16, `783da1d`, incluida la prueba de arranque que exige las 7 pestañas). En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
-**No implementado / no verificado:** la 0.7 en el hardware del propietario; simulación de foco para juegos que la exijan; dos jugadores reales en 7DTD; métricas de FPS/VRAM.
+**Experimental, sin validar en hardware:**
+- Filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
+- Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L, ADR-017) para pantalla dividida.
+- Emulador de Steam con 7DTD real (2026-10-10): carga las identidades J1/J2, pero el juego **se cierra al iniciar Steam**. Su API plana no recibe `self` y solo cubre 32 de las 866 entradas que usa Steamworks.NET. Sigue **instalado** en el juego (ver [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md)).
+
+**No implementado / no verificado:**
+- La 0.7 con mandos en el hardware del propietario.
+- Simulación de foco para juegos que la exijan.
+- Dos jugadores reales en 7DTD.
+- Métricas de FPS/VRAM.
 
 > `docs/` no sustituye las pruebas: documenta contratos y conocimiento acumulado. Para agentes, leer también [`../CLAUDE.md`](../CLAUDE.md).

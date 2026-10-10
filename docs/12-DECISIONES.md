@@ -48,11 +48,18 @@ Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo
 
 ## ADR-013 · Aceptada · 7 Days to Die mediante servidor dedicado oficial
 
-**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; el Steam del jugador 2 puede abrirse en otro usuario de Windows o en Sandboxie-Plus; EAC se desactiva con la opción oficial. **Descartado:** Remote Play Together (no aplica a 7DTD en PC).
+**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; el Steam del jugador 2 puede abrirse en otro usuario de Windows o en Sandboxie-Plus; EAC se desactiva con la opción oficial. **Descartado:** Remote Play Together (no aplica a 7DTD en PC). **Complemento (ADR-016):** la identidad del jugador 2 también puede venir del emulador de Steam, sin un segundo Steam. Falta comprobar si el servidor dedicado acepta identidades emuladas.
 
 ## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
 
-Cada push a `main` ejecuta el módulo nativo con su prueba de humo, pruebas .NET y Python, valida docs, publica win-x64 autónomo, ejecuta una prueba de humo y sube el artefacto `SplitForge-win-x64`. Las etiquetas `v*` crean una release con ZIP y SHA-256.
+Cada push a `main` (y cada PR) ejecuta:
+- los dos módulos nativos (filtro XInput y emulador de Steam) con sus pruebas de humo;
+- las pruebas .NET y Python, y la validación de docs;
+- la publicación win-x64 autónoma, con las dos DLL nativas;
+- la prueba de humo del diagnóstico y la prueba de arranque de la interfaz (7 pestañas);
+- la subida del artefacto `SplitForge-win-x64`.
+
+Las etiquetas `v*` crean una release con ZIP y SHA-256 (prerelease para `v0.*`).
 
 ## ADR-015 · Aceptada (experimental) · Filtro XInput por proceso como primer módulo nativo
 
@@ -64,9 +71,32 @@ Cada push a `main` ejecuta el módulo nativo con su prueba de humo, pruebas .NET
 
 **Pendiente:** prueba W16 con dos clientes (¿suben las lecturas en ambos?, ¿responde la ventana sin foco?).
 
-## ADR-016 · Aceptada (experimental, temporal) · Emulador de Steam educativo para estudiar la técnica de Goldberg
+## ADR-016 · Aceptada (experimental) · Emulador de Steam como componente principal (técnica de Goldberg)
 
-**Decisión:** componente C++ **temporal y educativo** (`native/SplitForge.SteamEmu`), creado a petición del propietario para experimentar con la técnica que usa Nucleus Co-op (Goldberg): una DLL que reimplementa el contrato ABI de `steam_api64.dll` (exportaciones planas, vtables de `SteamClient020`/`SteamUser023`/`SteamFriends017`/`SteamUtils010`/`SteamUserStats012`/`SteamMatchmaking009`/`SteamNetworking006`/`SteamRemoteStorage016`/…, callbacks y call results) para que una copia del juego arranque con **identidades distintas por proceso** definidas en un JSON (`SplitForge.SteamEmu.json` o `SPLITFORGE_STEAMEMU_CONFIG` por instancia). Incluye P2P local real por UDP multicast entre instancias del mismo PC/LAN, stats/logros persistidos en `%LOCALAPPDATA%\SplitForge\steamemu\<appid>`, nube en `remote\` e instalador/restaurador reversible (copia de seguridad + SHA-256). A petición del propietario, se **integra en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/restaurar, identidades J1/J2 y lanzamiento de las dos instancias) y su DLL se incluye en el paquete como `native\SplitForge.SteamEmu\steam_api64.dll`; sigue sin formar parte de la vía principal y **se eliminará tras el experimento**. **Límites asumidos:** NetworkingSockets/Messages y otras interfaces sin implementar devuelven `nullptr`; P2P sin cifrado ni fiabilidad; nada compatible con EAC/VAC. No altera la vía principal (ADR-013: servidor dedicado oficial y cuenta propia).
+**Decisión:** componente C++ (`native/SplitForge.SteamEmu`) con la técnica que usa Nucleus Co-op (Goldberg). Es una DLL que reimplementa el contrato ABI de `steam_api64.dll` para que una copia del juego arranque con **identidades distintas por proceso**, definidas en un JSON (`SplitForge.SteamEmu.json`, o `SPLITFORGE_STEAMEMU_CONFIG` por instancia). Reimplementa:
+- exportaciones planas;
+- vtables de `SteamClient020`, `SteamUser023`, `SteamFriends017`, `SteamUtils010`, `SteamUserStats012`, `SteamMatchmaking009`, `SteamNetworking006`, `SteamRemoteStorage016`…;
+- callbacks y call results.
+
+Incluye además:
+- P2P local real por UDP multicast entre instancias del mismo PC/LAN;
+- stats/logros y nube (`remote\`) en la carpeta de guardados de cada identidad, bajo `%LOCALAPPDATA%\SplitForge\steamemu\`;
+- instalador/restaurador reversible (copia de seguridad + SHA-256).
+
+Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/restaurar, identidades J1/J2 y lanzamiento de las dos instancias), y su DLL va en el paquete como `native\SplitForge.SteamEmu\steam_api64.dll`.
+
+**Estado (decisión del propietario, 2026-10-10):** pasa a ser un **componente principal y permanente** de SplitForge. Deja de ser temporal, no se eliminará y no se le añaden restricciones.
+
+**Límites técnicos:** NetworkingSockets/Messages y otras interfaces sin implementar devuelven `nullptr`; P2P sin cifrado ni fiabilidad; requiere el juego sin EAC.
+
+**Relación con ADR-013:** convive con el servidor dedicado oficial. El emulador aporta la identidad de cada instancia; falta comprobar si el servidor acepta esas identidades o si la partida debe alojarse por LAN/P2P.
+
+**Evidencia (2026-10-10):**
+- La prueba de humo pasa en el PC del propietario y en la CI.
+- Con 7DTD V 3.3.0 (b18), las dos instancias cargan sus identidades, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser`.
+- Causa: Steamworks.NET usa la API plana del SDK, que recibe `self` como primer argumento. El emulador exporta 32 funciones `SteamAPI_ISteamClient_*` sin `self` y ninguno de los métodos planos de las demás interfaces; 7DTD referencia 866.
+
+**Pendiente:** API plana completa para lo que 7DTD usa al arrancar, prueba de humo por la API plana y repetir W20.
 
 ## ADR-017 · Aceptada (experimental) · Bloqueo de ratón por ventana con ClipCursor
 

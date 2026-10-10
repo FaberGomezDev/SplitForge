@@ -100,10 +100,10 @@ public sealed partial class MainViewModel
         if (report.Clients.Any(c => c.Input?.AntiCheatLoaded == true))
             throw new InvalidOperationException("Hay un cliente de 7DTD con EAC activo. Ciérralo antes de instalar el emulador.");
         var dll = SteamEmuDll();
-        if (!Confirm("Emulador de Steam (experimental · educativo)",
-                "Se sustituirá temporalmente steam_api64.dll del juego por la versión emulada de SplitForge "
+        if (!Confirm("Emulador de Steam (experimental)",
+                "Se sustituirá steam_api64.dll del juego por la versión emulada de SplitForge "
                 + "(la original queda como copia de seguridad). El juego NO hablará con Steam y usará las identidades "
-                + "locales de esta pestaña.\n\nSOLO con el juego sin EAC y sin cuentas reales. ¿Instalar?"))
+                + "locales de esta pestaña.\n\nRequiere el juego sin EAC (opción oficial). ¿Instalar?"))
             return;
         var config = SteamEmulator.BuildConfig(SteamEmuAppId, SteamId1, Persona1,
             SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, 1));

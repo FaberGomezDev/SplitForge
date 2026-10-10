@@ -44,6 +44,16 @@ Herramienta principal (0.7): `SplitForge.Diagnostico.exe` en la carpeta del paqu
 5. `SplitForge.Diagnostico.exe xinput` muestra las ranuras XInput con mando, la ranura de cada pulsación en vivo y el estado del filtro en cada cliente. Ese estado sale de `%LOCALAPPDATA%\SplitForge\xinput\estado-PID-<dll>.txt` y, para el jugador 2, de la carpeta por defecto del sandbox `SplitForge_J2`. Si un cliente asignado tiene las «lecturas» en 0 mientras el juego responde al mando, el juego no lee por esa DLL.
 6. Anotar si la ventana **sin foco** sigue procesando el juego y los mandos: es la clave para el siguiente paso del módulo nativo.
 
-## F. Reportes seguros
+## F. Emulador de Steam (pestaña 07)
+
+1. La línea de estado de la pestaña dice si está instalado, con qué identidad y si la original está respaldada (`steam_api64_splitforge_original.dll`, junto a la DLL del juego; en 7DTD, `7DaysToDie_Data\Plugins\x86_64`).
+2. `%LOCALAPPDATA%\SplitForge\steamemu.log`: una línea `SteamAPI_Init` y otra «iniciado: app=… steamid=… persona=…» por instancia. Si no aparecen, el juego no cargó la DLL emulada.
+3. Registro de Unity del juego: `%USERPROFILE%\AppData\LocalLow\The Fun Pimps\7 Days To Die\Player.log` (y `Player-prev.log`). Si termina en `Crash!!!` con `steam_api64` arriba en la traza, el fallo está en el emulador.
+   - Caso conocido (2026-10-10): `SteamAPI_ISteamClient_GetISteamUser` ← `Steamworks.CSteamAPIContext:Init`. La causa es la API plana sin `self` (ver `05-INTEGRACION-STEAM.md`).
+4. «Ya hay una copia de seguridad»: el emulador ya está instalado; restaura primero.
+5. «La DLL instalada no coincide con la registrada»: algo (p. ej. una actualización o verificación de Steam) cambió la DLL. SplitForge no restaura para no pisar cambios ajenos; verifica los archivos del juego en Steam.
+6. Mientras el emulador esté instalado, el juego abierto desde Steam también usa la DLL emulada. Para jugar con normalidad, «Restaurar DLL original».
+
+## G. Reportes seguros
 
 Compartir solo los JSON generados (`SplitForge_Reporte_*.json`); revisarlos si alguien los editó. No compartir `settings*.json`, registros completos, capturas con nombres de usuario ni rutas personales.

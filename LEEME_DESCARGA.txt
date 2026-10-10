@@ -9,6 +9,7 @@ Paquete autónomo: NO necesitas instalar Python, .NET ni SDL.
 3. Pestaña 01 MANDOS: conecta tus mandos y comprueba que responden.
 4. Pestaña 02 MUNDO COMPARTIDO: prueba de dos jugadores con dos mandos.
 5. Pestaña 06 7 DAYS TO DIE: servidor local + pantalla dividida (ver requisitos en la propia pestaña).
+6. Pestaña 07 EMULADOR STEAM: dos instancias del juego con identidades distintas sin un segundo Steam.
 
 Diagnósticos (solo lectura), desde una consola en esta carpeta:
   SplitForge.Diagnostico.exe 7dtd      -> informe de 7 Days to Die abierto (APIs de mando y su origen)
@@ -23,9 +24,9 @@ copias anteriores del propio filtro) y se retira con "Quitar filtro". Con "Detec
 botón del mando de cada jugador para saber su ranura XInput; con los clientes abiertos y
 asignados, el estado muestra las "lecturas" de cada cliente.
 
-Emulador de Steam (experimental, educativo): pestaña 07. Sustituye temporalmente steam_api64.dll
-del juego (con copia de seguridad) para probar dos instancias con identidades locales; restaura
-siempre con "Restaurar DLL original". Solo sin EAC y sin cuentas reales.
+Emulador de Steam (experimental): pestaña 07, DLL en native\SplitForge.SteamEmu. Sustituye
+steam_api64.dll del juego (con copia de seguridad) para abrir dos instancias con identidades
+locales; "Restaurar DLL original" devuelve la original. Requiere el juego sin EAC.
 
 Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
 La configuración de la versión Python (settings.json) no se modifica.

@@ -2,7 +2,7 @@
 
 // Tipos ABI del cliente Steam (Steamworks SDK público). Solo lo necesario para que los
 // juegos enlacen contra esta DLL y para que las estructuras de callbacks coincidan byte a byte.
-// Nada de esto habla con Steam: es una reimplementación educativa del contrato.
+// Nada de esto habla con Steam: es una reimplementación propia del contrato.
 
 #include <cstdint>
 

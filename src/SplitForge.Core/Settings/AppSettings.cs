@@ -6,7 +6,7 @@ using SplitForge.Core.Layout;
 
 namespace SplitForge.Core.Settings;
 
-/// <summary>Identidades del emulador de Steam educativo (EXPERIMENTAL, ADR-016). Sin datos personales: IDs ficticios locales.</summary>
+/// <summary>Identidades del emulador de Steam (ADR-016). Sin datos personales: IDs ficticios locales.</summary>
 public sealed record SteamEmuOptions
 {
     public string SteamId1 { get; init; } = "76561198000000001";

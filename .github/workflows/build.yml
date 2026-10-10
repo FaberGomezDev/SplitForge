@@ -32,7 +32,7 @@ jobs:
           cmake --build native/build --config Release
           ctest --test-dir native/build -C Release --output-on-failure
 
-      - name: Módulo nativo C++ (emulador de Steam educativo, no se publica) y su prueba de humo
+      - name: Módulo nativo C++ (emulador de Steam) y su prueba de humo
         shell: pwsh
         run: |
           cmake -S native/SplitForge.SteamEmu -B native/build-steamemu -A x64

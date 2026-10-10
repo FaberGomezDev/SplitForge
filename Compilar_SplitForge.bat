@@ -36,9 +36,9 @@ if errorlevel 1 (
   if exist "native\build-steamemu\Release\steam_api64.dll" (
     if not exist "publish\SplitForge\native\SplitForge.SteamEmu" mkdir "publish\SplitForge\native\SplitForge.SteamEmu"
     copy /y native\build-steamemu\Release\steam_api64.dll publish\SplitForge\native\SplitForge.SteamEmu\ >nul
-    echo Emulador de Steam educativo compilado.
+    echo Emulador de Steam compilado.
   ) else (
-    echo [AVISO] No se pudo compilar el emulador de Steam educativo.
+    echo [AVISO] No se pudo compilar el emulador de Steam.
   )
 )
 echo.

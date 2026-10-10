@@ -296,9 +296,9 @@
       <TabItem Header="07  EMULADOR STEAM">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
-            <TextBlock Style="{StaticResource Heading}" Text="Emulador de Steam · experimental y educativo" />
-            <TextBlock Style="{StaticResource Hint}" Text="Sustituye temporalmente steam_api64.dll del juego por una versión emulada con identidad local: dos instancias de 7DTD en la misma PC con identidades distintas y P2P local. La DLL original queda respaldada y se restaura con un botón." />
-            <TextBlock Style="{StaticResource Warning}" Text="EXPERIMENTAL: el juego NO hablará con Steam. Solo sin EAC y sin cuentas reales. Restaura antes de verificar archivos en Steam. Nada de VAC." Margin="0,0,0,8" />
+            <TextBlock Style="{StaticResource Heading}" Text="Emulador de Steam · experimental" />
+            <TextBlock Style="{StaticResource Hint}" Text="Sustituye steam_api64.dll del juego por una versión emulada con identidad local: dos instancias de 7DTD en la misma PC con identidades distintas y P2P local. La DLL original queda respaldada y se restaura con un botón." />
+            <TextBlock Style="{StaticResource Warning}" Text="El juego no hablará con Steam: usa las identidades locales de abajo. Requiere el juego sin EAC (opción oficial). Restaura la DLL original antes de verificar archivos en Steam." Margin="0,0,0,8" />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
               <Button Content="Instalar emulador en 7DTD" Style="{StaticResource PrimaryButton}" Command="{Binding InstallSteamEmuCommand}" />
               <Button Content="Restaurar DLL original" Command="{Binding RestoreSteamEmuCommand}" />

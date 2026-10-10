@@ -9,6 +9,7 @@
 
 - Windows 10/11 x64 (para ejecutar la app); Linux o Windows para compilar y probar Core.
 - **SDK de .NET 10** (`global.json` admite 10.0.1xx o superior de la misma versión principal). Visual Studio 2026/2022 17.14+ o VS Code con C# Dev Kit.
+- Para los módulos nativos (filtro XInput y emulador de Steam): **CMake** y Visual Studio Build Tools con C++. Sin ellos, `Compilar_SplitForge.bat` avisa y omite las DLL nativas; el paquete de la CI ya las incluye.
 - Python 3.11+ solo para el prototipo y `tools/check_docs.py`.
 
 ## Compilar y ejecutar
@@ -34,6 +35,10 @@ src/SplitForge.LabViewer   visor SDL3
 src/SplitForge.App         WPF → SplitForge.exe
 src/SplitForge.Diagnostico consola → SplitForge.Diagnostico.exe
 tests/SplitForge.Tests     xUnit
+native/SplitForge.XInputFilter  C++20: filtro XInput por proceso (CMake + prueba de humo)
+native/SplitForge.SteamEmu      C++20: emulador de steam_api64.dll (CMake + prueba de humo)
+tools/                     check_docs.py, SteamEmu_Instalar.ps1
+.github/workflows/         build.yml (CI) y release.yml (etiquetas v*)
 docs/                      memoria y arquitectura
 launcher.py, splitforge/   prototipo Python 0.6 (referencia)
 ```
@@ -53,6 +58,9 @@ launcher.py, splitforge/   prototipo Python 0.6 (referencia)
 - `%LOCALAPPDATA%\SplitForge\settings.v2.json` (0.7) — `settings.json` es del prototipo y no se toca.
 - `%LOCALAPPDATA%\SplitForge\splitforge-net.log` (rota a `.old` al superar 2 MB).
 - `%LOCALAPPDATA%\SplitForge\7dtd\` — configuración, guardados y registros del servidor local.
+- `%LOCALAPPDATA%\SplitForge\sesion-ventanas.json` — solo mientras hay ventanas externas modificadas (recuperación tras cierre inesperado).
+- `%LOCALAPPDATA%\SplitForge\xinput\` — `asignacion.txt` (PID → ranura) y `estado-PID-<dll>.txt` de cada copia del filtro.
+- `%LOCALAPPDATA%\SplitForge\steamemu\` — `j1.json`/`j2.json` (identidades) y una carpeta de guardados por jugador (`<appid>-J1`, `<appid>-J2`); registro en `steamemu.log`.
 - Los reportes se guardan en el Escritorio; no commitearlos (`.gitignore`).
 
 ## Archivos importantes

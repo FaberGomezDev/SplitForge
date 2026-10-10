@@ -3,9 +3,11 @@
 ## Suites automáticas
 
 ```sh
-dotnet test SplitForge.slnx -c Release          # 126 pruebas xUnit (Core)
+dotnet test SplitForge.slnx -c Release          # 158 pruebas xUnit (Core; 128 métodos, las [Theory] cuentan por caso)
 cmake -S native/SplitForge.XInputFilter -B native/build -A x64 && cmake --build native/build --config Release
 ctest --test-dir native/build -C Release        # prueba de humo del filtro XInput (Windows)
+cmake -S native/SplitForge.SteamEmu -B native/build-steamemu -A x64 && cmake --build native/build-steamemu --config Release
+ctest --test-dir native/build-steamemu -C Release   # prueba de humo del emulador de Steam (Windows)
 python -m unittest discover -s tests -v         # 77 pruebas del prototipo Python
 python tools/check_docs.py                      # enlaces y documentos obligatorios
 ```
@@ -30,6 +32,12 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Tipo legible de mando (PS4/PS5/Xbox/estándar/genérico) y etiqueta de batería (porcentaje, cargando, cable, aviso de batería baja).
 - Atajo global de bloqueo (etiqueta Ctrl+Alt+L; modificadores que coinciden con los MOD_* de Win32).
 - Detección de la ranura XInput pulsada (flancos de botones, gatillos que cruzan el umbral, mandos recién conectados ignorados).
+- Emulador de Steam (.NET):
+  - instala con copia de seguridad, configuración y estado SHA-256, también con la estructura de plugins de Unity;
+  - se niega a instalar dos veces o sin DLL original;
+  - restaura sin dejar rastro y no pisa cambios ajenos;
+  - genera un JSON de identidad válido y valida la identidad;
+  - el lanzamiento lleva `SPLITFORGE_STEAMEMU_CONFIG`.
 - Filtro XInput (.NET): nunca sobrescribe DLL del juego; actualiza solo copias propias sin modificar; manifiesto coherente aunque falle una copia; nombres no permitidos rechazados antes de copiar; retira solo lo propio sin modificar; asignaciones válidas y únicas; estado por proceso vivo y por DLL (formato antiguo y nuevo, con lecturas); carpeta de estado de Sandboxie-Plus con nombres seguros.
 
 ### Filtro XInput nativo (C++)
@@ -41,9 +49,29 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - que cada copia escribe su `estado-PID-<dll>.txt` con ranura y lecturas;
 - que, al cambiar la asignación con el proceso abierto, el estado pasa a la ranura nueva. Compila sin avisos con MSVC `/W4 /WX` (CI) y MinGW `-Wall -Wextra -Werror` (Linux).
 
+### Emulador de Steam nativo (C++)
+
+`steamemu_humo` (CTest en la CI) lanza dos procesos que cargan la DLL con identidades distintas y verifica:
+- `SteamAPI_InitSafe`, SteamID, persona, AppID y propiedad de apps;
+- que `SteamInternal_ContextInit` resuelve la cadena de versiones;
+- el callback de stats y su persistencia, la nube y un intercambio P2P local.
+
+Superada en el PC del propietario (2026-10-10) y en la CI de Windows (runs #14 y #16). **No cubre** los métodos planos `SteamAPI_ISteam*` que usa Steamworks.NET. Por eso no detectó el fallo con 7DTD real (ver `05-INTEGRACION-STEAM.md`).
+
 ### CI (`.github/workflows/build.yml`, windows-latest)
 
-Módulo nativo C++ (MSVC `/W4 /WX` + CTest), pruebas .NET y Python, documentación, publicación autónoma win-x64, **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3) y **prueba de arranque de la interfaz**: abre `SplitForge.exe`, selecciona las 6 pestañas con UI Automation, guarda una captura de cada una (artefacto `captura-interfaz`) y exige un cierre ordenado. Esta prueba detectó y permitió corregir un fallo real de cierre (run #4). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz). Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
+Se ejecuta en cada push a `main`, en cada PR y a mano. Pasos:
+- Módulos nativos C++, filtro XInput y emulador de Steam (MSVC `/W4 /WX` + CTest).
+- Pruebas .NET y Python, y documentación.
+- Publicación autónoma win-x64 con las dos DLL nativas.
+- **Prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3).
+- **Prueba de arranque de la interfaz:** abre `SplitForge.exe`, selecciona las **7 pestañas** con UI Automation (falla si no son 7), guarda una captura de cada una (artefacto `captura-interfaz`, 7 días) y exige un cierre ordenado.
+
+Historial:
+- Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz).
+- Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
+- Run #4: la prueba de arranque detectó un fallo real de cierre, que se corrigió.
+- Run #16 (`783da1d`, `main` actual): verde.
 
 ### Pruebas de humo en Linux (desarrollo)
 
@@ -73,8 +101,15 @@ Módulo nativo C++ (MSVC `/W4 /WX` + CTest), pruebas .NET y Python, documentaci�
 | W17 | Ranuras XInput | «Detectar» (o `SplitForge.Diagnostico.exe xinput`) identifica la ranura de cada mando al pulsar un botón, también con otra ventana enfocada |
 | W18 | Bloqueo de ratón | Con pantalla dividida activa y el bloqueo (botón o Ctrl+Alt+L), el cursor no cruza a la otra ventana; al soltar o detener la sesión, vuelve a ser libre |
 | W19 | Ajuste a ventana | Con «Mantener proporción» la ventana conserva su forma sin deformarse; la resolución sugerida por panel coincide con lo que encaja en el juego en modo ventana |
+| W20 | Emulador de Steam | Instalar desde la pestaña 07; «Lanzar J1 y J2» abre dos instancias de 7DTD con identidades distintas que llegan al menú; se ven por LAN/P2P o entran al servidor local; «Restaurar DLL original» deja el juego como estaba |
 
-**Resultado físico conocido:** laboratorio v0.4 y Steam v0.5 confirmados en el prototipo. En la 0.7, W13 con un cliente (informe real del 2026-10-10); el resto sin confirmar.
+**Resultado físico conocido:**
+- Prototipo: laboratorio v0.4 y Steam v0.5 confirmados.
+- 0.7, PC del propietario (2026-10-10):
+  - W13 con un cliente (informe real).
+  - Parte de W02: hilo SDL3 a 1000 Hz, sin mandos.
+  - **W20 fallido:** las dos instancias cargan sus identidades, pero 7DTD se cierra al iniciar Steam (API plana del emulador; ver `05-INTEGRACION-STEAM.md`).
+- El resto, sin confirmar. W11, W12 y W14 requieren instalar antes el servidor dedicado (no instalado).
 
 ## Benchmark cuando exista el primer adaptador validado
 

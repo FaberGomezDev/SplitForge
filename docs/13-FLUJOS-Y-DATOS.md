@@ -8,6 +8,7 @@
 | `SplitForge.Input` | ≤1000 Hz | Único que llama a SDL3 para mandos; publica `InputSnapshot` |
 | `SplitForge.Lab` | 120 Hz | `LabSession.Step` + envío a visores (solo con laboratorio activo) |
 | `SplitForge.LabWriter.Pn` | según llegan fotogramas | Escribir el último fotograma en el stdin de cada visor |
+| Tareas en segundo plano de la pestaña 06 | a petición y en el refresco de estado | `XInputProbe` (ranuras XInput, «Detectar»), estado del filtro y del servidor; nunca en el hilo de la interfaz |
 
 ## Iniciar Mundo Compartido
 
@@ -64,6 +65,18 @@ flowchart LR
     SRV --> SHUT[shutdown por telnet → esperar ≤45 s → terminar solo si no responde]
 ```
 
+## Emulador de Steam (pestaña 07)
+
+```mermaid
+flowchart LR
+    INST[Instalar] -->|copia de seguridad + SHA-256| DLL[steam_api64.dll emulada\njunto a la original del juego]
+    DLL --> LJ1[Lanzar J1\nSPLITFORGE_STEAMEMU_CONFIG=j1.json]
+    DLL --> LJ2[Lanzar J2\nSPLITFORGE_STEAMEMU_CONFIG=j2.json]
+    LJ1 --> P2P[P2P local · UDP multicast]
+    LJ2 --> P2P
+    DLL --> REST[Restaurar: solo si el SHA-256 coincide\ndevuelve la original y borra lo propio]
+```
+
 ## Persistencia
 
 - `%LOCALAPPDATA%\SplitForge\settings.v2.json`: distribución, modo de lectura, frecuencia de entrada, perfiles de mandos por GUID, opciones del servidor 7DTD. Escritura atómica.
@@ -71,5 +84,9 @@ flowchart LR
 - `%LOCALAPPDATA%\SplitForge\splitforge-net.log`: eventos con identificador de sesión; rota a `.old` al superar 2 MB.
 - `%LOCALAPPDATA%\SplitForge\7dtd\`: `serverconfig.xml`, `UserData\` (mundos y guardados del servidor local), `logs\`.
 - `%LOCALAPPDATA%\SplitForge\sesion-ventanas.json`: solo mientras hay ventanas externas modificadas; se borra al detener. Si existe al arrancar (cierre inesperado), se restauran las ventanas cuyo handle sigue siendo del mismo PID.
+- `%LOCALAPPDATA%\SplitForge\xinput\`: `asignacion.txt` (líneas `PID RANURA`, escrita por SplitForge) y `estado-PID-<dll>.txt` (escrito por cada copia del filtro con reemplazo atómico). Para el jugador 2 en Sandboxie, el estado queda dentro del sandbox `SplitForge_J2`.
+- `%LOCALAPPDATA%\SplitForge\steamemu\`: `j1.json` y `j2.json` (identidades que se pasan por `SPLITFORGE_STEAMEMU_CONFIG`) y una carpeta de guardados por identidad (`<appid>-J1`, `<appid>-J2`, con `remote\` y `userdata\`). Registro nativo en `%LOCALAPPDATA%\SplitForge\steamemu.log`.
+- Carpeta del juego (solo con el emulador instalado): `steam_api64_splitforge_original.dll` (copia de la original), `SplitForge.SteamEmu.json` y `SplitForge.SteamEmu.estado.txt` (SHA-256 de la DLL instalada).
+- Carpeta del juego (solo con el filtro instalado): copias del filtro con los nombres de XInput que carga el juego y su manifiesto `splitforge-xinput.json`.
 - Los juegos guardan sus partidas según su sistema; SplitForge no las toca.
 - `SplitForge_Reporte_*.json`: salidas compartibles ya saneadas.

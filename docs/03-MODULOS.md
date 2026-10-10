@@ -10,19 +10,19 @@
 | `Core.Input` · `PadInfo`, `PadState`, `ControllerMapping`, `PadInterpreter`, `ReadPathPolicy`, `XInputSlotDetector` | Funciones puras; Y positiva = arriba; ranura XInput pulsada | J1/J2, perfiles inválidos, R2 |
 | `Core.Lab` · `SharedWorld` | `Step(dt, j1, j2)` → `WorldSnapshot` inmutable | Determinismo, compatibilidad con pruebas |
 | `Core.Ipc` · `WorldCodec`, `LatestFrameWriter`, `FrameReader` | `SFW1` v1, límites estrictos, último fotograma gana | Cambios de formato (subir versión) |
-| `Core.Sessions` · `SessionManager`, `LabSession`, `FixedRateLoop`, `IWindowSystem`, `IProcessLauncher` | Restaurar siempre; solo matar procesos propios | Cierre inseguro, condiciones de carrera |
+| `Core.Sessions` · `SessionManager`, `LabSession`, `FixedRateLoop`, `IWindowSystem`, `IProcessLauncher`, `SessionRecovery` | Restaurar siempre; solo matar procesos propios; `sesion-ventanas.json` para restaurar tras un cierre inesperado si el handle sigue siendo del mismo PID | Cierre inseguro, condiciones de carrera |
 | `Core.Adapters` · `IGameAdapter`, `SevenDaysToDieAdapter`, `SevenDaysServerConfig`, `SevenDaysServer` | Preflight solo lectura; servidor con config/guardados propios | Puertos, apagado, EAC, versiones |
 | `Core.Settings` · `SettingsStore` | `settings.v2.json` atómico; importa sin tocar el `settings.json` Python | Datos del usuario |
 | `Core.Diagnostics` · `SessionLog`, `InputModuleClassifier`, `ModuleOriginClassifier`, `SevenDaysDiagnosticReport` (v3) | Solo nombres de módulos y categoría de origen (`sistema`/`juego`/`steam`/`otro`), nunca rutas | Privacidad |
-| `SplitForge.Windows` · `Win32WindowSystem`, `ProcessInspector`, `SteamLocator`, `SandboxieLocator`, `HighResolutionDelay`, `WindowsDiagnostics`, `XInputProbe` | Win32 de solo consulta + mover/estilos de ventanas normales; `XInputProbe` lee las 4 ranuras XInput en un hilo de fondo | Permisos, pantalla completa, procesos elevados |
+| `SplitForge.Windows` · `Win32WindowSystem`, `ProcessInspector`, `SteamLocator`, `SandboxieLocator`, `HighResolutionDelay`, `WindowsDiagnostics`, `XInputProbe`, `CursorLock`, `GlobalHotkey` | Win32 de solo consulta + mover/estilos de ventanas normales; `XInputProbe` lee las 4 ranuras XInput en un hilo de fondo; `CursorLock` (`ClipCursor`) y `GlobalHotkey` (Ctrl+Alt+L) para el bloqueo de ratón (ADR-017) | Permisos, pantalla completa, procesos elevados, foco |
 | `SplitForge.Input` · `SdlInputService` | Único hilo que toca SDL; `Latest`, `SetMode`, `SetMapping`, `IdentifyPlayer` | Hilos, hotplug, Steam Input |
 | `SplitForge.LabViewer` · `LabViewer.Run(jugador, stdin)` | Título de ventana exacto `SplitForge MUNDO COMPARTIDO - Jugador N` | `SessionManager` busca ese título |
-| `SplitForge.App` | WPF + ViewModel por pestañas; `--lab-viewer N` | Bloqueos de UI (no hacer trabajo pesado en el hilo de UI) |
+| `SplitForge.App` | WPF + ViewModel por pestañas (01–07); `--lab-viewer N` | Bloqueos de UI (no hacer trabajo pesado en el hilo de UI) |
 | `SplitForge.Diagnostico` | `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` (+ `demo-frames`, `visor-lab` para pruebas) | Privacidad de informes |
 | `Core.Adapters.XInputFilter` | `Install` → `XInputInstallResult` (instalado/actualizado/al día/omitido; manifiesto siempre coherente), `IsOwnFile`, `Uninstall`, asignaciones PID → ranura, `ReadStatus` por proceso y DLL (también desde la carpeta de Sandboxie) | Archivos del juego (nunca sobrescribir lo ajeno) |
-| `Core.Adapters.SteamEmulator` | Emulador de Steam educativo (ADR-016): instalar/restaurar con copia de seguridad + SHA-256, config JSON por identidad, lanzamiento de instancias con variable de entorno | Archivos del juego, EAC, identidades |
+| `Core.Adapters.SteamEmulator` | Emulador de Steam, componente principal (ADR-016): instalar/restaurar con copia de seguridad + SHA-256, config JSON por identidad, lanzamiento de instancias con variable de entorno | Archivos del juego, EAC, identidades |
 | `native/SplitForge.XInputFilter` (C++20) | DLL con la API de XInput (8 funciones + ordinales 100–103); cada proceso ve solo su ranura asignada; DLL real verificada en System32; `estado-PID-<dll>.txt` con ranura y lecturas, actualizado en vivo | Compatibilidad por juego, foco |
-| `native/SplitForge.SteamEmu` (C++20) | DLL que reimplementa el contrato ABI de `steam_api64.dll` (API plana + interfaces + callbacks + P2P multicast local); experimental, se eliminará tras el experimento | ABI del SDK, NetworkingSockets sin implementar, EAC |
+| `native/SplitForge.SteamEmu` (C++20) | DLL que reimplementa el contrato ABI de `steam_api64.dll` (API plana + interfaces + callbacks + P2P multicast local); componente principal, experimental. Pendiente: API plana con `self` y métodos `SteamAPI_ISteam*` (con 7DTD falla en `SteamAPI_ISteamClient_GetISteamUser`) | ABI del SDK, API plana de Steamworks.NET, NetworkingSockets sin implementar, EAC |
 
 ## Tipos públicos importantes
 

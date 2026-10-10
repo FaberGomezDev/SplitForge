@@ -1,9 +1,11 @@
-# SplitForge.SteamEmu — emulador de Steam educativo (EXPERIMENTAL)
+# SplitForge.SteamEmu — emulador de Steam (EXPERIMENTAL)
 
-> **Solo para experimentación y estudio en juegos propios.** No forma parte del paquete
-> publicado de SplitForge y se puede eliminar sin afectar a nada más. Sustituir la DLL de
-> Steam puede incumplir los términos de servicio de Steam; no lo uses con cuentas reales,
-> juegos con EAC/VAC ni en línea. El propietario decidió mantenerlo de forma temporal.
+> **Componente principal y permanente de SplitForge** (ADR-016, decisión del propietario del
+> 2026-10-10). Se publica en el paquete como `native\SplitForge.SteamEmu\steam_api64.dll` y se
+> gestiona desde la pestaña 07 «EMULADOR STEAM». Funciona con el juego abierto sin EAC (opción
+> oficial). Sigue siendo experimental: con 7DTD real (V 3.3.0 b18, 2026-10-10) carga las
+> identidades J1/J2, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser`
+> (ver «API plana: pendiente» y `docs/05-INTEGRACION-STEAM.md`).
 
 ## Qué es
 
@@ -36,7 +38,21 @@ Nada de esto toca Steam: no hay autenticación real, no hay tienda, no hay servi
 **Stubs sin implementar (devuelven `nullptr`):** `SteamNetworkingSockets`, `SteamNetworkingMessages`,
 HTMLSurface, Parties, RemotePlay, Timeline, GameSearch. Los juegos que dependan de
 NetworkingSockets para su multiplayer no conectarán con este emulador (7DTD usa su propio
-transporte con Steam P2P o sockets según la versión: a comprobar en el experimento).
+transporte con Steam P2P o sockets según la versión: pendiente de comprobar con 7DTD real).
+
+## API plana: pendiente (bloquea 7DTD)
+
+Los juegos que usan Steamworks.NET (como 7DTD) llaman **solo** a la API plana del SDK. En ella,
+cada método de interfaz es una exportación `SteamAPI_<Interfaz>_<Método>(self, …)` que recibe
+primero el puntero a la interfaz. Este emulador:
+
+- exporta 32 funciones `SteamAPI_ISteamClient_*` **sin** el parámetro `self`, de modo que los
+  argumentos llegan desplazados. Ahí falla 7DTD, en `SteamAPI_ISteamClient_GetISteamUser`;
+- no exporta ningún método plano del resto de interfaces (`SteamAPI_ISteamUser_*`,
+  `SteamAPI_ISteamFriends_*`…). El Steamworks.NET de 7DTD referencia 866.
+
+Las vtables C++ sí están implementadas, así que cada función plana puede reenviar a ellas.
+La prueba de humo no llama a ninguna función plana de interfaz; conviene añadir una.
 
 ## Configuración
 
@@ -90,9 +106,12 @@ La prueba de humo (`steamemu_humo`) lanza dos procesos que cargan la DLL con ide
 distintas y verifican: identidad, callback de stats + persistencia, nube y un intercambio
 P2P local. Registro de actividad: `%LOCALAPPDATA%\SplitForge\steamemu.log`.
 
-## Límites honestos
+Resultados: superada en el PC del propietario (2026-10-10) y en la CI de Windows desde la run #14
+(`2c20d4a`).
 
-- No es un clon de Goldberg: es una reimplementación educativa con un subconjunto de Steamworks.
+## Límites técnicos
+
+- No es un clon de Goldberg: es una reimplementación propia de un subconjunto de Steamworks.
 - El orden de las vtables sigue los encabezados públicos del SDK; los juegos con el SDK más
   reciente y funciones añadidas al final de interfaces no probadas pueden diferir.
 - P2P es UDP sin cifrado ni fiabilidad garantizada (se ignora la marca "reliable").

@@ -8,8 +8,16 @@
 
 ## Integración continua
 
-- `.github/workflows/build.yml` (cada push a `main` y PR): pruebas .NET + Python, `check_docs`, publicación autónoma, prueba de humo de `SplitForge.Diagnostico.exe` y artefacto **SplitForge-win-x64** (30 días).
-- `.github/workflows/release.yml` (etiquetas `v*`): pruebas, publicación, `SplitForge-vX.Y.Z-win-x64.zip` + `.sha256` y release de GitHub.
+- `.github/workflows/build.yml` (cada push a `main`, PR y manual):
+  - módulos nativos C++ (filtro XInput y emulador de Steam) con CTest;
+  - pruebas .NET + Python y `check_docs`;
+  - publicación autónoma con `native\SplitForge.XInputFilter.dll` y `native\SplitForge.SteamEmu\steam_api64.dll`;
+  - prueba de humo de `SplitForge.Diagnostico.exe` y prueba de arranque de la interfaz (7 pestañas; capturas 7 días);
+  - artefacto **SplitForge-win-x64** (30 días).
+- `.github/workflows/release.yml` (etiquetas `v*`):
+  - módulos nativos con CTest y pruebas .NET;
+  - publicación con las DLL nativas;
+  - `SplitForge-vX.Y.Z-win-x64.zip` + `.sha256` y release de GitHub (prerelease para `v0.*`).
 
 ### Publicar una versión
 

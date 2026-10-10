@@ -8,7 +8,7 @@ namespace SplitForge.Core.Adapters;
 public sealed record SteamEmuStatus(bool Installed, string? Persona, string? SteamId, string? StorageDir, string? OriginalSha256);
 
 /// <summary>
-/// Emulador de Steam educativo (EXPERIMENTAL, ADR-016): instala en la carpeta del juego una DLL que
+/// Emulador de Steam (componente principal, EXPERIMENTAL, ADR-016): instala en la carpeta del juego una DLL que
 /// reimplementa el contrato ABI de <c>steam_api64.dll</c> con identidad local por JSON, y la retira
 /// devolviendo la original. Garantías: copia de seguridad + SHA-256 de lo instalado; nunca borra un
 /// archivo que no sea el que SplitForge puso; configuración y estado solo en los archivos propios.
@@ -22,7 +22,7 @@ public static class SteamEmulator
     public const string ConfigEnvVar = "SPLITFORGE_STEAMEMU_CONFIG";
 
     private const string WarningText =
-        "Experimental y educativo: el juego no hablará con Steam. Nada de EAC/VAC, nada de cuentas reales. "
+        "Experimental: el juego no hablará con Steam y usará identidades locales. Requiere el juego sin EAC. "
         + "Restaura antes de verificar archivos en Steam.";
 
     private sealed record ConfigModel(int app_id, string steam_id, string persona_name, string language,
