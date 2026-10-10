@@ -15,6 +15,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 ### Cobertura .NET (tests/SplitForge.Tests)
 
 - Distribución 2–4 jugadores, área útil desplazada, sin solapes, validaciones.
+- Ajuste a la ventana: letterbox/pillarbox centrado por proporción, proporción inválida ignorada, «Rellenar» no toca las regiones, «Mantener proporción» encaja dentro de cada región.
 - Parser KeyValues (anidación, escapes, comentarios, condicionales, profundidad acotada).
 - Biblioteca Steam (manifiestos sin modificar, bibliotecas modernas/antiguas, índice en `config/`).
 - Preflight (sin declarar cooperativo, rutas fuera de `common`, recorrido `..`, enlaces simbólicos, AppID desconocido, URI).
@@ -24,7 +25,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - IPC binario (ida y vuelta, corrupción, truncado UTF-8, último fotograma gana, pipe real de extremo a extremo).
 - Sesiones (colocar/restaurar, sin bordes, 4 ventanas, rollback, relayout, laboratorio con títulos exactos, cierre y gracia, fallo a medio lanzar, recuperación tras cierre inesperado validando el PID).
 - Adaptador 7DTD (preflight, configuración del servidor, escape XML, opciones inválidas, apagado ordenado con telnet falso, salida inesperada).
-- Configuración (importación de la versión Python sin tocarla, ida y vuelta, archivo dañado, saneado).
+- Configuración (importación de la versión Python sin tocarla, ida y vuelta incluido modo de ajuste y proporción, archivo dañado, saneado con proporción acotada).
 - Diagnóstico de módulos de entrada (incluido el informe real de 7DTD del propietario), origen de cada módulo como categoría sin ruta, informe v3 sin rutas.
 - Tipo legible de mando (PS4/PS5/Xbox/estándar/genérico) y etiqueta de batería (porcentaje, cargando, cable, aviso de batería baja).
 - Atajo global de bloqueo (etiqueta Ctrl+Alt+L; modificadores que coinciden con los MOD_* de Win32).
@@ -71,6 +72,7 @@ Se ejecuta en cada push a cualquier rama (también las ramas de trabajo) y en ca
 | W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; el estado de cada cliente muestra su ranura y sus lecturas suben; anotar si la ventana sin foco responde |
 | W17 | Ranuras XInput | «Detectar» (o `SplitForge.Diagnostico.exe xinput`) identifica la ranura de cada mando al pulsar un botón, también con otra ventana enfocada |
 | W18 | Bloqueo de ratón | Con pantalla dividida activa y el bloqueo (botón o Ctrl+Alt+L), el cursor no cruza a la otra ventana; al soltar o detener la sesión, vuelve a ser libre |
+| W19 | Ajuste a ventana | Con «Mantener proporción» la ventana conserva su forma sin deformarse; la resolución sugerida por panel coincide con lo que encaja en el juego en modo ventana |
 
 **Resultado físico conocido:** laboratorio v0.4 y Steam v0.5 confirmados en el prototipo. En la 0.7, W13 con un cliente (informe real del 2026-10-10); el resto sin confirmar.
 

@@ -15,6 +15,26 @@ public enum SplitOrientation
     Stacked,
 }
 
+/// <summary>Cómo encaja la ventana del juego dentro de su región de pantalla dividida.</summary>
+public enum WindowFit
+{
+    /// <summary>La ventana ocupa toda la región (el juego debe estar en modo ventana a esa resolución).</summary>
+    Rellenar,
+    /// <summary>Se centra el mayor rectángulo con la proporción elegida dentro de la región (sin deformar).</summary>
+    MantenerProporcion,
+}
+
+/// <summary>Proporción de imagen (p. ej. 16:9). <see cref="Value"/> es ancho/alto.</summary>
+public readonly record struct AspectRatio(int W, int H)
+{
+    public static readonly AspectRatio SixteenNine = new(16, 9);
+    public static readonly IReadOnlyList<AspectRatio> Common = [new(16, 9), new(16, 10), new(21, 9), new(4, 3)];
+
+    public double Value => H > 0 ? (double)W / H : 0;
+    public string Label => $"{W}:{H}";
+    public bool IsValid => W > 0 && H > 0;
+}
+
 /// <summary>Cálculos puros y verificables para pantalla dividida de 2 a 4 jugadores.</summary>
 public static class SplitLayout
 {
@@ -39,6 +59,38 @@ public static class SplitLayout
             _ => Grid(area, gutter),
         };
     }
+
+    /// <summary>
+    /// Mayor rectángulo con la proporción <paramref name="aspect"/> centrado dentro de <paramref name="region"/>.
+    /// Así la ventana del juego conserva su forma (sin estirarse) aunque la región no tenga esa proporción.
+    /// </summary>
+    public static Region Fit(Region region, AspectRatio aspect)
+    {
+        if (!aspect.IsValid || region.Width <= 0 || region.Height <= 0)
+            return region;
+        var target = aspect.Value;
+        var regionAspect = (double)region.Width / region.Height;
+        int width, height;
+        if (regionAspect > target)
+        {
+            height = region.Height;
+            width = (int)Math.Round(height * target);
+        }
+        else
+        {
+            width = region.Width;
+            height = (int)Math.Round(width / target);
+        }
+        width = Math.Clamp(width, 1, region.Width);
+        height = Math.Clamp(height, 1, region.Height);
+        var x = region.X + (region.Width - width) / 2;
+        var y = region.Y + (region.Height - height) / 2;
+        return new Region(x, y, width, height);
+    }
+
+    /// <summary>Aplica el modo de ajuste a cada región ya calculada.</summary>
+    public static IReadOnlyList<Region> ApplyFit(IReadOnlyList<Region> regions, WindowFit fit, AspectRatio aspect) =>
+        fit == WindowFit.MantenerProporcion && aspect.IsValid ? [.. regions.Select(r => Fit(r, aspect))] : regions;
 
     /// <summary>Compatibilidad con la configuración de la versión Python ("vertical" / "horizontal").</summary>
     public static SplitOrientation ParseLegacy(string? value) => value switch

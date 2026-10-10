@@ -301,6 +301,10 @@
       <TextBlock Text="Separación:" VerticalAlignment="Center" Margin="6,0,8,0" />
       <ComboBox ItemsSource="{Binding Gutters}" SelectedItem="{Binding Gutter}" Width="60" Margin="0,0,14,0" />
       <CheckBox Content="Sin bordes" IsChecked="{Binding Borderless}" />
+      <CheckBox Content="Mantener proporción" IsChecked="{Binding FitKeepAspect}"
+                ToolTip="Centra el juego con su proporción, sin deformarlo. Deja franjas si la región no coincide." />
+      <ComboBox ItemsSource="{Binding AspectChoices}" SelectedItem="{Binding SelectedAspect}" DisplayMemberPath="Label"
+                IsEnabled="{Binding FitKeepAspect}" Width="70" Margin="0,0,14,0" />
       <Button Content="Reaplicar distribución" Command="{Binding RelayoutCommand}" />
       <Button Content="Restaurar / detener sesión" Command="{Binding StopCommand}" />
       <Button Content="{Binding MouseLockButtonText}" Command="{Binding ToggleMouseLockCommand}"
@@ -309,6 +313,8 @@
         <Run Text="Atajo:" /><Run Text="{Binding MouseLockHotkey, Mode=OneWay}" FontWeight="SemiBold" />
       </TextBlock>
       <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
+      <TextBlock Text="{Binding PaneHint}" TextWrapping="Wrap" Width="760" Margin="0,4,0,0"
+                 Foreground="{StaticResource Muted}" FontSize="11" />
     </WrapPanel>
 
     <Border Grid.Row="3" Style="{StaticResource PanelBorder}" Margin="0">

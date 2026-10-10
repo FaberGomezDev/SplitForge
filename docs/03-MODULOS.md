@@ -4,7 +4,7 @@
 
 | Proyecto / espacio de nombres | Contrato | Riesgo al modificar |
 | --- | --- | --- |
-| `Core.Layout` · `SplitLayout.Compute(area, jugadores 2–4, orientación, separación)` | Regiones sin solape dentro del área útil | DPI, monitores, píxeles impares |
+| `Core.Layout` · `SplitLayout.Compute(area, jugadores 2–4, orientación, separación)`, `Fit`/`ApplyFit`, `WindowFit`, `AspectRatio` | Regiones sin solape dentro del área útil; ajuste a la ventana (rellenar o mantener proporción centrada) | DPI, monitores, píxeles impares |
 | `Core.Steam` · `KeyValuesParser`, `SteamLibrary`, `PreflightEvaluator`, `SteamPublicReport` | Lectura tolerante y sin escritura; informe sin rutas | Formato VDF, rutas maliciosas, privacidad |
 | `Core.Windows` · `WinPath`, `GameWindowInspector` | Ventanas de procesos dentro de la carpeta del juego; `ClientHandles` (≤4, por PID); `VerifyPair` | PID reciclados, falsos positivos |
 | `Core.Input` · `PadInfo`, `PadState`, `ControllerMapping`, `PadInterpreter`, `ReadPathPolicy`, `XInputSlotDetector` | Funciones puras; Y positiva = arriba; ranura XInput pulsada | J1/J2, perfiles inválidos, R2 |

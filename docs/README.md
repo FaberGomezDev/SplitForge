@@ -30,7 +30,7 @@
 
 **Comprobado por el usuario (prototipo Python):** dos PS4 por Bluetooth funcionales en el laboratorio de un mundo compartido (v0.4) y detección Steam (v0.5).
 
-**Implementado en 0.7 (.NET):** entrada SDL3 en hilo dedicado de hasta 1000 Hz con eventos en segundo plano; laboratorio con simulación a 120 Hz en su hilo y visores SDL3/Direct3D; IPC binario versionado; distribución de 2 a 4 ventanas con modo sin bordes reversible; biblioteca Steam y preflight; inspección de clientes; adaptador experimental de 7 Days to Die (servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida); diagnóstico de APIs de mando de 7DTD; CI en Windows con paquete autónomo.
+**Implementado en 0.7 (.NET):** entrada SDL3 en hilo dedicado de hasta 1000 Hz con eventos en segundo plano; laboratorio con simulación a 120 Hz en su hilo y visores SDL3/Direct3D; IPC binario versionado; distribución de 2 a 4 ventanas con modo sin bordes reversible y ajuste configurable (rellenar la región o mantener proporción 16:9/16:10/21:9/4:3 centrada), con resolución sugerida por panel; biblioteca Steam y preflight; inspección de clientes; adaptador experimental de 7 Days to Die (servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida); diagnóstico de APIs de mando de 7DTD; CI en Windows con paquete autónomo.
 
 **Evidencia real de 7DTD (2026-10-10, un cliente sin EAC):** carga `xinput1_3.dll` y `xinput1_4.dll`, DirectInput, HID e InControl; los dos mandos llegan a Windows como `Xbox 360 Controller` (XInput). Ver [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md).
 

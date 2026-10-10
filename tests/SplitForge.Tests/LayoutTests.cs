@@ -93,4 +93,63 @@ public class LayoutTests
             }
         }
     }
+
+    [Fact]
+    public void FitLetterboxesWideRegionToSixteenNineCentered()
+    {
+        // Región 1000×1000; 16:9 → ancho completo, alto 562, centrado verticalmente.
+        var r = SplitLayout.Fit(new Region(0, 0, 1000, 1000), AspectRatio.SixteenNine);
+        Assert.Equal(1000, r.Width);
+        Assert.Equal(562, r.Height);
+        Assert.Equal(0, r.X);
+        Assert.Equal(219, r.Y);
+    }
+
+    [Fact]
+    public void FitPillarboxesTallRegion()
+    {
+        // Región 600×1000 (más alta que 16:9) → alto completo, ancho 16/9*? no: width=round? 
+        var r = SplitLayout.Fit(new Region(10, 20, 600, 1000), new AspectRatio(16, 9));
+        Assert.Equal(600, r.Width);
+        Assert.Equal(338, r.Height); // 600/ (16/9) = 337.5 → 338
+        Assert.Equal(10, r.X);
+        Assert.Equal(20 + (1000 - 338) / 2, r.Y);
+    }
+
+    [Fact]
+    public void FitKeepsRegionWhenAspectMatchesAndStaysInside()
+    {
+        var region = new Region(0, 0, 1920, 1080);
+        var r = SplitLayout.Fit(region, AspectRatio.SixteenNine);
+        Assert.Equal(1920, r.Width);
+        Assert.Equal(1080, r.Height);
+        Assert.True(r.X >= region.X && r.Y >= region.Y && r.Right <= region.Right && r.Bottom <= region.Bottom);
+    }
+
+    [Fact]
+    public void FitIgnoredForInvalidAspect() =>
+        Assert.Equal(new Region(0, 0, 800, 600), SplitLayout.Fit(new Region(0, 0, 800, 600), new AspectRatio(0, 0)));
+
+    [Fact]
+    public void ApplyFitRellenarLeavesRegionsUntouched()
+    {
+        var regions = SplitLayout.Compute(new Region(0, 0, 1920, 1080), 2, SplitOrientation.SideBySide, 0);
+        Assert.Same(regions, SplitLayout.ApplyFit(regions, WindowFit.Rellenar, AspectRatio.SixteenNine));
+    }
+
+    [Fact]
+    public void ApplyFitKeepAspectFitsEveryRegionInside()
+    {
+        var full = new Region(0, 0, 1920, 1080);
+        var regions = SplitLayout.Compute(full, 2, SplitOrientation.SideBySide, 8);
+        var fitted = SplitLayout.ApplyFit(regions, WindowFit.MantenerProporcion, AspectRatio.SixteenNine);
+        for (var i = 0; i < regions.Count; i++)
+        {
+            Assert.True(fitted[i].Width <= regions[i].Width && fitted[i].Height <= regions[i].Height);
+            Assert.True(fitted[i].X >= regions[i].X && fitted[i].Bottom <= regions[i].Bottom);
+            // Proporción respetada (±1 px de redondeo).
+            Assert.InRange(fitted[i].Width / (double)fitted[i].Height, 16.0 / 9 - 0.02, 16.0 / 9 + 0.02);
+        }
+    }
 }
+

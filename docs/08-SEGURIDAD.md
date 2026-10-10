@@ -17,6 +17,7 @@
 | Preflight | Carpeta confinada a `steamapps/common`, resolución de enlaces simbólicos | Uniones creadas después del escaneo |
 | Informes | Tipos públicos dedicados (`ToPublic`, `SteamPublicReport`, `SevenDaysDiagnosticReport`) sin rutas ni títulos | Revisar cada campo nuevo |
 | Ventanas | Revalidación PID+exe+HWND antes de mover; captura de todas las posiciones y estilos antes de cambiar nada; restauración | Pantalla completa exclusiva, procesos elevados |
+| Ajuste a la ventana | SplitForge solo cambia posición/tamaño/estilo de la ventana; NUNCA la configuración ni la resolución interna del juego (el usuario la fija en el propio juego a la resolución sugerida) | Juegos en pantalla completa exclusiva |
 | Modo sin bordes | Estilos originales guardados y restaurados (también al cerrar SplitForge); copia en disco `sesion-ventanas.json` para recuperar tras un cierre inesperado, validando que el handle sigue siendo del mismo PID | Juegos que reescriben su propio estilo |
 | Servidor 7DTD | Configuración propia; `ServerVisibility=0`; telnet sin contraseña ⇒ solo loopback; apagado ordenado antes de terminar | Firewall de Windows puede pedir permiso: aceptar solo redes privadas |
 | Sandboxie-Plus | SplitForge solo lanza Steam en un sandbox; el usuario inicia sesión; no se ven ni guardan credenciales | Políticas de Steam/antitrampas sobre sandboxes |

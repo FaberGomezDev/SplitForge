@@ -18,7 +18,7 @@ Camino elegido (ADR-013):
 | Servidor | Lanza `7DaysToDieServer.exe` (AppID 294420, gratuito) con `-configfile` propio en `%LOCALAPPDATA%\SplitForge\7dtd`: plantilla del servidor + `ServerVisibility=0`, puerto, jugadores, `EACEnabled` según opción, telnet solo en 127.0.0.1, `UserDataFolder` aislado | Instalar «7 Days to Die Dedicated Server» desde Steam → Herramientas |
 | Clientes | Abre, si se pide, un segundo Steam en el sandbox `SplitForge_J2` de Sandboxie-Plus | Unirse a `127.0.0.1:puerto` |
 | EAC | Servidor sin EAC por defecto (los clientes deben coincidir) | Opción oficial de Steam: Propiedades → General → Preguntar al iniciar → «Launch game without EAC» |
-| Pantalla | Distribuye las ventanas de los clientes (orden por PID, intercambiable), sin bordes, y las restaura al detener | Juego en modo ventana / ventana sin bordes |
+| Pantalla | Distribuye las ventanas de los clientes (orden por PID, intercambiable), sin bordes, con ajuste configurable (rellenar o mantener proporción), y las restaura al detener | Juego en modo ventana a la resolución por panel que indica SplitForge |
 | Apagado | `shutdown` por telnet local, espera hasta 45 s y solo entonces termina el proceso propio | — |
 | Mandos | Identifica físicamente cada mando (luz/vibración). **Filtro XInput por proceso (experimental, ADR-015)**: se instala con los nombres que carga 7DTD (`xinput1_3`, `xinput1_4`) y actualiza solo copias antiguas propias. Además detecta la ranura XInput de cada mando con una pulsación, asigna J1/J2 y muestra las lecturas de cada cliente. Se retira sin tocar archivos del juego | Clientes sin EAC; cada mando en una sola ranura XInput; diagnósticos `7dtd` y `xinput` |
 

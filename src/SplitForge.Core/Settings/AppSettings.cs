@@ -11,6 +11,9 @@ public sealed record AppSettings
     public SplitOrientation Orientation { get; init; } = SplitOrientation.SideBySide;
     public int Gutter { get; init; } = 4;
     public bool Borderless { get; init; } = true;
+    public WindowFit Fit { get; init; } = WindowFit.Rellenar;
+    public int AspectW { get; init; } = 16;
+    public int AspectH { get; init; } = 9;
     public InputReadMode InputMode { get; init; } = InputReadMode.Auto;
     public int InputRateHz { get; init; } = 1000;
     public Dictionary<string, ControllerMapping> Mappings { get; init; } = [];
@@ -98,6 +101,9 @@ public static class SettingsStore
         Gutter = Math.Clamp(s.Gutter, 0, SplitLayout.MaxGutter),
         InputRateHz = s.InputRateHz is 250 or 500 or 1000 ? s.InputRateHz : 1000,
         Orientation = Enum.IsDefined(s.Orientation) ? s.Orientation : SplitOrientation.SideBySide,
+        Fit = Enum.IsDefined(s.Fit) ? s.Fit : WindowFit.Rellenar,
+        AspectW = Math.Clamp(s.AspectW, 1, 64),
+        AspectH = Math.Clamp(s.AspectH, 1, 64),
         Mappings = s.Mappings ?? [],
         SevenDays = s.SevenDays ?? new SevenDaysServerOptions(),
     };
