@@ -124,3 +124,14 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 ## ADR-017 · Aceptada (experimental) · Bloqueo de ratón por ventana con ClipCursor
 
 **Decisión:** un atajo global (Ctrl+Alt+L) y un botón confinan el cursor al área de cliente de la ventana del jugador en primer plano, usando `ClipCursor`, que se reaplica en el tick de la interfaz porque Windows lo reinicia al cambiar el foco. **Por qué:** en pantalla dividida el ratón se escapa a la otra mitad; es la técnica de Nucleus Co-op, sin inyección ni hooks. **Límites:** solo confina el ratón; el teclado sigue yendo a la ventana con foco (el aislamiento por dispositivo exigiría Raw Input, aún no implementado); Windows podría ignorar `ClipCursor` desde una app en segundo plano. **Garantías:** solo bloquea ventanas que SplitForge colocó; se suelta al desactivar, detener la sesión o cerrar. **Pendiente:** validar en hardware (W18).
+
+## ADR-020 · Aceptada (experimental) · Foco simulado desde fuera del juego (FakeFocus)
+
+**Contexto:** el propietario informa (2026-10-10) de que, con «Lanzar J1 y J2», los mandos no son independientes: ningún mando mueve solo su ventana. El filtro XInput sí entrega a cada cliente su mando (sus «lecturas» suben en los dos, también sin foco), así que la hipótesis principal es que 7DTD (Unity) no procesa la entrada en la ventana sin foco. El handler de 7DTD de Nucleus Co-op funciona porque su `xinput1_3.dll` propia (x360ce, opción `ForceFocus` en `ncoop.ini`) hace que cada ventana se crea siempre activa.
+
+**Decisión:** primer paso sin tocar el juego: la técnica `FakeFocus` de Nucleus (`WindowFakeFocus.cs`), con los mensajes del `FocusLoop` de ProtoInput. Un hilo propio de SplitForge (`WindowFakeFocus`) publica con `PostMessageW`, cada 100 ms, `WM_ACTIVATE(WA_CLICKACTIVE)`, `WM_ACTIVATEAPP(TRUE)`, `WM_NCACTIVATE(TRUE)`, `WM_SETFOCUS` y `WM_MOUSEACTIVATE(HTCLIENT)` a cada ventana de la sesión activa (dos o más). Activado por defecto, con casilla en la pestaña 07 (`settings.v2.json`: `FakeFocus`, `FakeFocusIntervalMs`, 5–2000 ms). La lógica es pura y está probada (`FakeFocusPlan`).
+
+**Por qué así:** no inyecta código, no modifica archivos del juego y no bloquea la interfaz (mensajes publicados en un hilo propio). Nucleus reenvía cada 1000 ms y ProtoInput cada 5 ms; 100 ms recupera el foco enseguida sin saturar la cola del juego.
+
+**Límites (sin comprobar):** no está probado con 7DTD ni con mandos. Si el juego consulta el foco real (`GetForegroundWindow`) o recibe el mando ajeno por DirectInput/Raw Input en la ventana con foco, los mensajes externos no bastan; Nucleus lo resuelve dentro del juego. Siguiente evidencia: W16 con el foco simulado activado y desactivado.
+

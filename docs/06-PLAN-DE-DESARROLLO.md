@@ -68,5 +68,5 @@
 1. ~~Propietario: enviar `SplitForge_Reporte_7DTD.json`~~ → recibido (2026-10-10, un cliente sin EAC).
 2. ~~Desarrollo: corregir la API plana del emulador~~ → hecho (2026-10-10): dos clientes en el menú con el filtro cargado.
 3. Propietario: con «Lanzar J1 y J2» (pestaña 07), comprobar que cada mando mueve solo su ventana y que la ventana sin foco reacciona (W16).
-4. Si la ventana sin foco no reacciona: simulación de foco en el filtro (técnica `ForceFocus` / `FocusHooks` de Nucleus).
+4. ~~Simulación de foco~~ → primer paso hecho (2026-10-10): foco simulado desde fuera (ADR-020). Repetir W16 con la casilla activada y desactivada.
 5. J2 se une a la partida de J1 en 127.0.0.1 (W14); con esa evidencia, registrar `SESION_COMUN_VALIDADA` / `INPUT_AISLADO_VALIDADO` en `05-INTEGRACION-STEAM.md`.

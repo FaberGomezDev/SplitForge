@@ -90,7 +90,7 @@ Resultado con 7DTD real, paso a paso:
 | Mandos | Filtro cargado en los dos clientes por `xinput1_3.dll`, DLL real cargada, J1 → mando 1, J2 → mando 2; las lecturas suben en ambos (~60 por segundo cada uno) aunque solo uno tenga el foco | **Hecho:** el juego consulta su mando también sin foco. **Pendiente (W16):** que el propietario confirme que cada mando mueve solo su ventana y que la ventana sin foco reacciona |
 
 **Siguiente evidencia necesaria:**
-- **W16:** pulsar en el mando 2 con la ventana de J1 activa; la ventana de J2 debe reaccionar. Si no reacciona, falta la simulación de foco (técnica `ForceFocus` / `FocusHooks` de Nucleus).
+- **W16:** pulsar en el mando 2 con la ventana de J1 activa; la ventana de J2 debe reaccionar. **Primer resultado (2026-10-10, propietario):** los mandos no son independientes. Respuesta: foco simulado desde fuera (ADR-020, pestaña 07, activado por defecto); repetir W16 con la casilla activada y desactivada. Si no basta, falta la parte de Nucleus que actúa dentro del juego (`ForceFocus` / `FocusHooks`).
 - **W14:** J2 se une a la partida de J1 en 127.0.0.1.
 
 ### Alternativas descartadas para 7DTD

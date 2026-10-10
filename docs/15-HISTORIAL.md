@@ -230,6 +230,25 @@ PRÓXIMO PASO: W16 y W21 con el propietario; si la ventana sin foco no reacciona
   después W14 (J2 se une a J1 en 127.0.0.1).
 ```
 
+## 2026-10-10 · Foco simulado (FakeFocus)
+
+```text
+FECHA: 2026-10-10
+RELEASE/COMMIT: (este commit)
+OBJETIVO: que cada mando controle solo su ventana; el propietario informa de que no son independientes.
+CAMBIOS EFECTIVOS: Core.Windows.FakeFocusPlan (mensajes del FocusLoop de ProtoInput, ventanas objetivo,
+  intervalo 5–2000 ms); SplitForge.Windows.WindowFakeFocus (hilo propio, PostMessageW cada 100 ms a cada
+  ventana de la sesión); casilla «Simular foco» en la pestaña 07 con estado (mensajes publicados/rechazados);
+  settings.v2.json: FakeFocus (true) y FakeFocusIntervalMs (100). ADR-020.
+EVIDENCIA AUTOMÁTICA: compilación de la solución sin avisos (dotnet 10, Linux); 171 xUnit OK y 1 fallo
+  previo de rutas de Windows en SteamEmulatorTests, ajeno al cambio (6 pruebas nuevas en FakeFocusTests).
+EVIDENCIA EN WINDOWS REAL: ninguna todavía.
+NUEVOS RIESGOS: un juego podría reaccionar mal a mensajes de activación repetidos; se desactiva con la casilla.
+LIMITACIONES EXPLÍCITAS: si 7DTD consulta el foco real o recibe el mando ajeno por DirectInput/Raw Input,
+  los mensajes externos no bastan.
+PRÓXIMO PASO: W16 con la casilla activada y desactivada.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

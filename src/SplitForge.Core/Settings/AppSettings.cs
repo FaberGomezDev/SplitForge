@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using SplitForge.Core.Adapters;
 using SplitForge.Core.Input;
 using SplitForge.Core.Layout;
+using SplitForge.Core.Windows;
 
 namespace SplitForge.Core.Settings;
 
@@ -32,6 +33,9 @@ public sealed record AppSettings
     public Dictionary<string, ControllerMapping> Mappings { get; init; } = [];
     public SevenDaysServerOptions SevenDays { get; init; } = new();
     public SteamEmuOptions SteamEmu { get; init; } = new();
+    /// <summary>Foco simulado en las ventanas de la sesión (ADR-020, experimental).</summary>
+    public bool FakeFocus { get; init; } = true;
+    public int FakeFocusIntervalMs { get; init; } = FakeFocusPlan.DefaultIntervalMs;
 }
 
 /// <summary>
@@ -118,6 +122,7 @@ public static class SettingsStore
         Fit = Enum.IsDefined(s.Fit) ? s.Fit : WindowFit.Rellenar,
         AspectW = Math.Clamp(s.AspectW, 1, 64),
         AspectH = Math.Clamp(s.AspectH, 1, 64),
+        FakeFocusIntervalMs = FakeFocusPlan.ClampInterval(s.FakeFocusIntervalMs),
         Mappings = s.Mappings ?? [],
         SevenDays = s.SevenDays ?? new SevenDaysServerOptions(),
         SteamEmu = s.SteamEmu ?? new SteamEmuOptions(),

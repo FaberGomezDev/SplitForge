@@ -9,7 +9,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 - Los mandos llegan como `Xbox 360 Controller` y están instalados ViGEmBus y HidHide (2026-10-10). ¿HidHide oculta de verdad los PS4 originales al juego, sin duplicados por HID/DirectInput? ¿Qué programa crea los mandos virtuales?
 - ¿La ventana **sin foco** sigue simulando el juego y leyendo mandos? (Unity puede pausar o ignorar la entrada en segundo plano).
 - ~~¿Abre 7DTD una segunda instancia en la misma sesión de Windows?~~ → **Sí** con el emulador (2026-10-10): dos clientes en el menú a la vez desde la misma carpeta. Con Sandboxie-Plus u otro usuario, sin probar.
-- ¿Procesa la ventana **sin foco** la entrada del mando? El juego sí consulta XInput sin foco (lecturas subiendo en ambos clientes); falta ver si actúa sobre ella (W16). Si no, simulación de foco como Nucleus (`ForceFocus`, `FocusHooks`, bloquear `WM_KILLFOCUS`).
+- ¿Procesa la ventana **sin foco** la entrada del mando? El juego sí consulta XInput sin foco (lecturas subiendo en ambos clientes); falta ver si actúa sobre ella (W16). **Primer resultado (2026-10-10): no son independientes.** Hecho: foco simulado desde fuera (ADR-020). Falta repetir W16; si no basta, la parte de Nucleus que actúa dentro del juego.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam? Cliente: build `25661859` (V 3.3.0 b18); el servidor dedicado aún no está instalado.
 

@@ -45,7 +45,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | Proyecto | Propósito |
 | --- | --- |
 | `src/SplitForge.Core` | Lógica pura y probada: distribución 2–4, Steam (VDF, biblioteca, preflight, informes), ventanas de juego, mandos, laboratorio, IPC binario, sesiones, adaptadores (7DTD, filtro XInput, emulador de Steam), configuración, registro |
-| `src/SplitForge.Windows` | Win32 (`LibraryImport`): ventanas sin bordes, monitores, procesos/módulos solo lectura, temporizador de alta resolución, Steam, Sandboxie-Plus, ranuras XInput, bloqueo de ratón (`ClipCursor`), bloqueo de entrada «solo mandos» (ganchos de bajo nivel, Ctrl+Alt+B), ventanas sobre la barra de tareas, atajos globales, diagnósticos |
+| `src/SplitForge.Windows` | Win32 (`LibraryImport`): ventanas sin bordes, monitores, procesos/módulos solo lectura, temporizador de alta resolución, Steam, Sandboxie-Plus, ranuras XInput, bloqueo de ratón (`ClipCursor`), bloqueo de entrada «solo mandos» (ganchos de bajo nivel, Ctrl+Alt+B), foco simulado (`WindowFakeFocus`, ADR-020), ventanas sobre la barra de tareas, atajos globales, diagnósticos |
 | `src/SplitForge.Input` | `SdlInputService`: SDL3 en hilo dedicado, eventos en segundo plano, luz/vibración por jugador |
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
@@ -87,7 +87,7 @@ Estado real (2026-10-10, PC del propietario, 7DTD build `25661859` = V 3.3.0 b18
 - **Filtro XInput cargado en los dos** por `xinput1_3.dll`, con J1 → mando 1 y J2 → mando 2; las «lecturas» suben en ambos aunque solo uno tenga el foco.
 - Todo lo hace «Lanzar J1 y J2» de la pestaña 07 (ver `docs/05-INTEGRACION-STEAM.md`). La sesión tapa la barra de tareas y **Ctrl+Alt+B** bloquea teclado y ratón para jugar solo con mandos.
 
-Siguiente: confirmar con los dos mandos que cada uno mueve **solo** su ventana y que la ventana sin foco responde (W16). Si no responde, añadir la simulación de foco (técnica `ForceFocus` / `FocusHooks` de Nucleus). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
+W16, primer resultado del propietario: los mandos **no** eran independientes. Respuesta: **foco simulado desde fuera** (ADR-020, casilla en la pestaña 07, activada por defecto), sin probar todavía. Siguiente: repetir W16 con la casilla activada y desactivada. Si no basta, falta la parte de Nucleus que actúa dentro del juego (`ForceFocus` / `FocusHooks`). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
 
 Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 

@@ -336,6 +336,9 @@
               <Button Content="▶  Lanzar J2" Command="{Binding LaunchSteamEmu2Command}" />
               <Button Content="▶  Lanzar J1 y J2" Style="{StaticResource PrimaryButton}" Command="{Binding LaunchSteamEmuBothCommand}" />
             </StackPanel>
+            <CheckBox Content="Simular foco en cada ventana (FakeFocus de Nucleus)" IsChecked="{Binding FakeFocusEnabled}" Margin="0,0,0,4" />
+            <TextBlock Style="{StaticResource Hint}" Text="Experimental: SplitForge envía a cada ventana de la pantalla dividida los mensajes de activación de Windows para que la ventana sin foco siga procesando su mando. No modifica el juego." Margin="0,0,0,2" />
+            <TextBlock Text="{Binding FakeFocusStatus}" Foreground="{StaticResource Muted}" Margin="0,0,0,8" />
             <TextBlock Style="{StaticResource Hint}" Text="Límites: interfaces sin implementar (NetworkingSockets) devuelven vacío; P2P sin cifrado ni fiabilidad; si el multiplayer de tu versión de 7DTD depende de SteamNetworkingSockets, las instancias no se verán. Log: %LOCALAPPDATA%\SplitForge\steamemu.log." />
           </StackPanel>
         </ScrollViewer>

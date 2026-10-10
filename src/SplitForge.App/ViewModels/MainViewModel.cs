@@ -68,6 +68,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitSevenDays();
         InitSteamEmu();
         InitLock();
+        InitFakeFocus();
         RefreshPaneHint();
 
         _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
@@ -251,6 +252,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         {
             Guard(_sessions.Tick, quiet: true);
             Guard(TileEmulatedClientsWhenReady, quiet: true);
+            Guard(SyncFakeFocus, quiet: true);
             RefreshServer();
             var active = _sessions.Active;
             if (active is { Pending: false, WindowHandles.Count: >= 2 })
@@ -290,6 +292,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
                 AppId = SteamEmuAppId,
                 EmulatorDll = SteamEmuDllPath,
             },
+            FakeFocus = FakeFocusEnabled,
         };
         try
         {
@@ -338,6 +341,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _timer.Stop();
         ReleaseCursor();
         ReleaseInputLock();
+        _fakeFocus.Dispose();
         _labLoop?.Dispose();
         _sessions.Dispose();
         _server.Dispose();
