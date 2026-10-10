@@ -136,4 +136,35 @@ public class InputTests
         Assert.Null(XInputSlotDetector.NewPress(idle, connecting));
         Assert.Equal([1, 2], XInputSlotDetector.ConnectedForDisplay(idle));
     }
+
+    [Theory]
+    [InlineData("ps4", PadKind.StandardGamepad, "PlayStation 4 (DualShock 4)")]
+    [InlineData("ps5", PadKind.StandardGamepad, "PlayStation 5 (DualSense)")]
+    [InlineData("xbox360", PadKind.StandardGamepad, "Xbox 360")]
+    [InlineData("xboxone", PadKind.StandardGamepad, "Xbox One / Series")]
+    [InlineData("standard", PadKind.StandardGamepad, "Mando estándar (XInput)")]
+    [InlineData("", PadKind.StandardGamepad, "Mando estándar (XInput)")]
+    [InlineData("", PadKind.GenericHid, "Genérico (HID)")]
+    public void FriendlyPadTypeLabel(string sdlType, PadKind kind, string expected) =>
+        Assert.Equal(expected, PadTypes.FriendlyLabel(sdlType, kind));
+
+    [Theory]
+    [InlineData(BatteryStatus.Discharging, 80, "Batería 80%")]
+    [InlineData(BatteryStatus.Charging, 45, "Cargando 45%")]
+    [InlineData(BatteryStatus.Charged, -1, "Cargado")]
+    [InlineData(BatteryStatus.Wired, -1, "Cable")]
+    [InlineData(BatteryStatus.Unknown, -1, "—")]
+    [InlineData(BatteryStatus.Discharging, -1, "Batería ?")]
+    public void BatteryLabelReadsForAPlayer(BatteryStatus status, int percent, string expected) =>
+        Assert.Equal(expected, new BatteryInfo(status, percent).Label);
+
+    [Fact]
+    public void BatteryLowOnlyWhenDischargingUnderThreshold()
+    {
+        Assert.True(new BatteryInfo(BatteryStatus.Discharging, 15).IsLow());
+        Assert.False(new BatteryInfo(BatteryStatus.Discharging, 50).IsLow());
+        Assert.False(new BatteryInfo(BatteryStatus.Charging, 5).IsLow()); // Cargando no es aviso.
+        Assert.False(new BatteryInfo(BatteryStatus.Unknown, -1).IsLow());
+    }
 }
+

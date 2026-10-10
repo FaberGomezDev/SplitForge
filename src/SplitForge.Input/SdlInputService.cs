@@ -14,10 +14,12 @@ public sealed record InputSnapshot(
     IReadOnlyDictionary<uint, PadState> States,
     IReadOnlyDictionary<uint, RawPadState> Raw,
     IReadOnlyDictionary<uint, ReadPath> Paths,
-    double MeasuredHz)
+    double MeasuredHz,
+    IReadOnlyDictionary<uint, BatteryInfo> Batteries)
 {
     public static readonly InputSnapshot Empty = new(0, [], ImmutableDictionary<uint, PadState>.Empty,
-        ImmutableDictionary<uint, RawPadState>.Empty, ImmutableDictionary<uint, ReadPath>.Empty, 0);
+        ImmutableDictionary<uint, RawPadState>.Empty, ImmutableDictionary<uint, ReadPath>.Empty, 0,
+        ImmutableDictionary<uint, BatteryInfo>.Empty);
 }
 
 /// <summary>
@@ -82,6 +84,7 @@ public sealed unsafe class SdlInputService : IDisposable
         public SDL_Gamepad* Gamepad { get; } = gamepad;
         public float[] Axes { get; } = new float[Math.Max(0, info.Axes)];
         public bool[] Buttons { get; } = new bool[Math.Max(0, info.Buttons)];
+        public BatteryInfo Battery { get; set; } = BatteryInfo.Unknown;
     }
 
     private void Run()
@@ -159,6 +162,7 @@ public sealed unsafe class SdlInputService : IDisposable
                 measured = loops * 1000.0 / rateWindow.ElapsedMilliseconds;
                 loops = 0;
                 rateWindow.Restart();
+                PollBatteries(); // La carga cambia despacio: basta con leerla una vez por segundo.
                 changed = true; // Refresca la frecuencia medida al menos una vez por segundo.
             }
             if (changed)
@@ -193,8 +197,10 @@ public sealed unsafe class SdlInputService : IDisposable
         var info = new PadInfo((uint)id, SDL_GetJoystickName(joystick) ?? "Mando", guid,
             gamepad is not null ? PadKind.StandardGamepad : PadKind.GenericHid,
             SDL_GetNumJoystickAxes(joystick), SDL_GetNumJoystickButtons(joystick), type);
-        _devices[(uint)id] = new Device(info, joystick, gamepad);
-        _log($"Mando conectado: {info.Name} (ID {info.DeviceId}, {info.KindLabel}{(type.Length > 0 ? ", " + type : "")}).");
+        int percent;
+        var device = new Device(info, joystick, gamepad) { Battery = new BatteryInfo(MapBattery(SDL_GetJoystickPowerInfo(joystick, &percent)), percent) };
+        _devices[(uint)id] = device;
+        _log($"Mando conectado: {info.Name} (ID {info.DeviceId}, {PadTypes.FriendlyLabel(type, info.Kind)}{(type.Length > 0 ? ", " + type : "")}).");
         return true;
     }
 
@@ -242,6 +248,27 @@ public sealed unsafe class SdlInputService : IDisposable
         return changed;
     }
 
+    /// <summary>Lee la energía de cada mando (solo el hilo de SDL). percent = −1 cuando SDL no lo sabe.</summary>
+    private void PollBatteries()
+    {
+        foreach (var d in _devices.Values)
+        {
+            int percent;
+            var state = SDL_GetJoystickPowerInfo(d.Joystick, &percent);
+            d.Battery = new BatteryInfo(MapBattery(state), percent);
+        }
+    }
+
+    private static BatteryStatus MapBattery(SDL_PowerState state) => state switch
+    {
+        SDL_PowerState.SDL_POWERSTATE_ON_BATTERY => BatteryStatus.Discharging,
+        SDL_PowerState.SDL_POWERSTATE_NO_BATTERY => BatteryStatus.Wired,
+        SDL_PowerState.SDL_POWERSTATE_CHARGING => BatteryStatus.Charging,
+        SDL_PowerState.SDL_POWERSTATE_CHARGED => BatteryStatus.Charged,
+        SDL_PowerState.SDL_POWERSTATE_ERROR => BatteryStatus.Error,
+        _ => BatteryStatus.Unknown,
+    };
+
     private void Publish(long sequence, double measured)
     {
         var mode = _mode;
@@ -250,9 +277,11 @@ public sealed unsafe class SdlInputService : IDisposable
         var states = ImmutableDictionary.CreateBuilder<uint, PadState>();
         var raw = ImmutableDictionary.CreateBuilder<uint, RawPadState>();
         var paths = ImmutableDictionary.CreateBuilder<uint, ReadPath>();
+        var batteries = ImmutableDictionary.CreateBuilder<uint, BatteryInfo>();
         foreach (var d in _devices.Values.OrderBy(x => x.Info.DeviceId))
         {
             devices.Add(d.Info);
+            batteries[d.Info.DeviceId] = d.Battery;
             raw[d.Info.DeviceId] = new RawPadState([.. d.Axes.Select(a => MathF.Round(a, 2))],
                 [.. Enumerable.Range(0, d.Buttons.Length).Where(i => d.Buttons[i])]);
             var path = ReadPathPolicy.Choose(d.Info, d.Gamepad is not null, mode);
@@ -279,7 +308,7 @@ public sealed unsafe class SdlInputService : IDisposable
                 }
             }
         }
-        Volatile.Write(ref _latest, new InputSnapshot(sequence, devices, states.ToImmutable(), raw.ToImmutable(), paths.ToImmutable(), measured));
+        Volatile.Write(ref _latest, new InputSnapshot(sequence, devices, states.ToImmutable(), raw.ToImmutable(), paths.ToImmutable(), measured, batteries.ToImmutable()));
     }
 
     public void Dispose()

@@ -28,6 +28,7 @@ sequenceDiagram
 - **Frecuencia:** plazos absolutos con `SDL_DelayNS` (temporizador de alta resolución de SDL3, sin girar la CPU). Medido: **1000 Hz en Windows** (VM de la CI, run #2) y en Linux tras la corrección; la primera versión midió 646 Hz por acumulación de retrasos.
 - **Hotplug:** `SDL_EVENT_JOYSTICK_ADDED/REMOVED`; un mando desconectado deja de aparecer y el jugador queda en `SIN LECTURA`; nunca se intercambian J1/J2 en silencio.
 - **Identificación física:** `IdentifyPlayer` enciende la barra de luz del PS4 con el color del jugador (J1 turquesa, J2 naranja, J3 violeta, J4 amarillo), fija el índice de jugador y vibra 250 ms.
+- **Tipo y carga en vivo:** la pestaña «01 MANDOS» muestra el tipo legible de cada mando (PlayStation 4/5, Xbox 360/One, estándar o genérico HID) y su carga en tiempo real (`SDL_GetJoystickPowerInfo`, leída una vez por segundo): «Batería 80%», «Cargando 45%», «Cargado» o «Cable». Con `?` cuando el mando por Bluetooth no informa el porcentaje.
 
 ## Política de lectura (ADR-002, vigente)
 
@@ -45,7 +46,7 @@ sequenceDiagram
 
 1. `joy.cpl`: ambos figuran y responden en *Propiedades → Probar*.
 2. `SplitForge.Diagnostico.exe mandos`: aparecen los dos y cambian X/Y **con otra ventana en primer plano**.
-3. Pestaña **01 MANDOS**: estado en vivo; frecuencia del hilo cercana a 1000 Hz; «Identificar» enciende las luces.
+3. Pestaña **01 MANDOS**: tipo de cada mando, carga en vivo, estado en vivo; frecuencia del hilo cercana a 1000 Hz; «Identificar» enciende las luces.
 4. Pestaña **02 MUNDO COMPARTIDO**: cada mando mueve **su** nave; disparo, escudo e impulso por separado.
 5. Desconectar/reconectar uno; reasignar en vivo.
 

@@ -44,10 +44,11 @@
             <ListView ItemsSource="{Binding Pads}" SelectedItem="{Binding SelectedPad}" MinHeight="120" MaxHeight="220">
               <ListView.View>
                 <GridView>
-                  <GridViewColumn Header="Mando" Width="260" DisplayMemberBinding="{Binding Label}" />
-                  <GridViewColumn Header="Tipo" Width="170" DisplayMemberBinding="{Binding Kind}" />
-                  <GridViewColumn Header="Lectura" Width="80" DisplayMemberBinding="{Binding Path}" />
-                  <GridViewColumn Header="Estado en vivo" Width="440" DisplayMemberBinding="{Binding Live}" />
+                  <GridViewColumn Header="Mando" Width="230" DisplayMemberBinding="{Binding Label}" />
+                  <GridViewColumn Header="Tipo" Width="190" DisplayMemberBinding="{Binding Type}" />
+                  <GridViewColumn Header="Carga" Width="110" DisplayMemberBinding="{Binding Battery}" />
+                  <GridViewColumn Header="Lectura" Width="75" DisplayMemberBinding="{Binding Path}" />
+                  <GridViewColumn Header="Estado en vivo" Width="400" DisplayMemberBinding="{Binding Live}" />
                 </GridView>
               </ListView.View>
             </ListView>

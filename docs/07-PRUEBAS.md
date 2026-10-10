@@ -26,6 +26,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Adaptador 7DTD (preflight, configuración del servidor, escape XML, opciones inválidas, apagado ordenado con telnet falso, salida inesperada).
 - Configuración (importación de la versión Python sin tocarla, ida y vuelta, archivo dañado, saneado).
 - Diagnóstico de módulos de entrada (incluido el informe real de 7DTD del propietario), origen de cada módulo como categoría sin ruta, informe v3 sin rutas.
+- Tipo legible de mando (PS4/PS5/Xbox/estándar/genérico) y etiqueta de batería (porcentaje, cargando, cable, aviso de batería baja).
 - Detección de la ranura XInput pulsada (flancos de botones, gatillos que cruzan el umbral, mandos recién conectados ignorados).
 - Filtro XInput (.NET): nunca sobrescribe DLL del juego; actualiza solo copias propias sin modificar; manifiesto coherente aunque falle una copia; nombres no permitidos rechazados antes de copiar; retira solo lo propio sin modificar; asignaciones válidas y únicas; estado por proceso vivo y por DLL (formato antiguo y nuevo, con lecturas); carpeta de estado de Sandboxie-Plus con nombres seguros.
 
@@ -52,7 +53,7 @@ Se ejecuta en cada push a cualquier rama (también las ramas de trabajo) y en ca
 | ID | Escenario | Criterio |
 | --- | --- | --- |
 | W01 | Arranque limpio del paquete | `SplitForge.exe` abre sin instalar nada |
-| W02 | 2 PS4 Bluetooth | Ambos aparecen en 01 MANDOS con estado en vivo; hilo ≈1000 Hz |
+| W02 | 2 PS4 Bluetooth | Ambos aparecen en 01 MANDOS con tipo (PS4), carga de batería en vivo y estado en vivo; hilo ≈1000 Hz |
 | W03 | Segundo plano | `SplitForge.Diagnostico.exe mandos` responde con otra ventana enfocada |
 | W04 | Identificar | Las luces de los PS4 cambian al color de cada jugador |
 | W05 | Laboratorio | Cada mando mueve solo su nave; acciones independientes; dos visores colocados |
