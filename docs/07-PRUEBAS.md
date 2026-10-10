@@ -27,6 +27,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Configuración (importación de la versión Python sin tocarla, ida y vuelta, archivo dañado, saneado).
 - Diagnóstico de módulos de entrada (incluido el informe real de 7DTD del propietario), origen de cada módulo como categoría sin ruta, informe v3 sin rutas.
 - Tipo legible de mando (PS4/PS5/Xbox/estándar/genérico) y etiqueta de batería (porcentaje, cargando, cable, aviso de batería baja).
+- Atajo global de bloqueo (etiqueta Ctrl+Alt+L; modificadores que coinciden con los MOD_* de Win32).
 - Detección de la ranura XInput pulsada (flancos de botones, gatillos que cruzan el umbral, mandos recién conectados ignorados).
 - Filtro XInput (.NET): nunca sobrescribe DLL del juego; actualiza solo copias propias sin modificar; manifiesto coherente aunque falle una copia; nombres no permitidos rechazados antes de copiar; retira solo lo propio sin modificar; asignaciones válidas y únicas; estado por proceso vivo y por DLL (formato antiguo y nuevo, con lecturas); carpeta de estado de Sandboxie-Plus con nombres seguros.
 
@@ -69,6 +70,7 @@ Se ejecuta en cada push a cualquier rama (también las ramas de trabajo) y en ca
 | W15 | Cierre | Cerrar SplitForge restaura ventanas y apaga el servidor propio |
 | W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; el estado de cada cliente muestra su ranura y sus lecturas suben; anotar si la ventana sin foco responde |
 | W17 | Ranuras XInput | «Detectar» (o `SplitForge.Diagnostico.exe xinput`) identifica la ranura de cada mando al pulsar un botón, también con otra ventana enfocada |
+| W18 | Bloqueo de ratón | Con pantalla dividida activa y el bloqueo (botón o Ctrl+Alt+L), el cursor no cruza a la otra ventana; al soltar o detener la sesión, vuelve a ser libre |
 
 **Resultado físico conocido:** laboratorio v0.4 y Steam v0.5 confirmados en el prototipo. En la 0.7, W13 con un cliente (informe real del 2026-10-10); el resto sin confirmar.
 

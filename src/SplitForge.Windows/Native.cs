@@ -111,6 +111,25 @@ internal static unsafe partial class Native
     [LibraryImport("user32.dll")]
     public static partial int SetProcessDpiAwarenessContext(nint value);
 
+    [LibraryImport("user32.dll")]
+    public static partial nint GetForegroundWindow();
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int GetClientRect(nint hwnd, out RECT rect);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int ClientToScreen(nint hwnd, ref POINT point);
+
+    // ClipCursor(NULL) libera el confinamiento; con un RECT lo fija.
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int ClipCursor(RECT* rect);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int RegisterHotKey(nint hwnd, int id, uint modifiers, uint virtualKey);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int UnregisterHotKey(nint hwnd, int id);
+
     // kernel32
     [LibraryImport("kernel32.dll", SetLastError = true)]
     public static partial nint OpenProcess(uint access, int inherit, uint processId);

@@ -166,5 +166,20 @@ public class InputTests
         Assert.False(new BatteryInfo(BatteryStatus.Charging, 5).IsLow()); // Cargando no es aviso.
         Assert.False(new BatteryInfo(BatteryStatus.Unknown, -1).IsLow());
     }
+
+    [Fact]
+    public void LockHotkeyDefaultIsCtrlAltL()
+    {
+        Assert.Equal("Ctrl+Alt+L", HotkeySpec.LockDefault.Label);
+        Assert.Equal(0x4Cu, HotkeySpec.LockDefault.VirtualKey);
+        Assert.Equal(HotkeyModifiers.Control | HotkeyModifiers.Alt, HotkeySpec.LockDefault.Modifiers);
+        // Los valores coinciden con MOD_CONTROL (0x2) y MOD_ALT (0x1) de Win32.
+        Assert.Equal(0x3u, (uint)HotkeySpec.LockDefault.Modifiers);
+    }
+
+    [Fact]
+    public void HotkeyLabelListsEveryModifierInOrder() =>
+        Assert.Equal("Ctrl+Alt+Shift+Win+F9",
+            new HotkeySpec(HotkeyModifiers.Control | HotkeyModifiers.Alt | HotkeyModifiers.Shift | HotkeyModifiers.Win, 0x78, "F9").Label);
 }
 

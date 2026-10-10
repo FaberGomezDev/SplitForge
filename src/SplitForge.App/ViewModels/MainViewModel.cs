@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitWindows();
         InitSteam();
         InitSevenDays();
+        InitLock();
 
         _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
         _timer.Tick += (_, _) => OnTick();
@@ -148,6 +149,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _labLoop?.Dispose();
         _labLoop = null;
         _sessions.Stop();
+        ReleaseCursor(); // Al deshacer la pantalla dividida, el ratón vuelve a ser libre.
         Status = "Sesión detenida; ventanas restauradas.";
     }
 
@@ -161,6 +163,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         }
         CaptureTick(snapshot);
         RefreshLabStatus();
+        ApplyMouseLock();
         if (++_tickCount % 15 == 0) // ≈ 2 Hz
         {
             Guard(_sessions.Tick, quiet: true);
@@ -236,6 +239,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
     public void Dispose()
     {
         _timer.Stop();
+        ReleaseCursor();
         _labLoop?.Dispose();
         _sessions.Dispose();
         _server.Dispose();

@@ -12,6 +12,11 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam?
 
+## Bloqueo de ratón y teclado
+
+- `ClipCursor` desde SplitForge (en segundo plano, con el juego en primer plano): ¿lo respeta Windows 11 o lo ignora por seguridad? Validar en hardware (W18).
+- Aislamiento de teclado por dispositivo: hoy el teclado va a la ventana con foco; separar dos teclados físicos exigiría Raw Input por dispositivo o un módulo nativo. Pendiente de decidir si hace falta.
+
 ## Diseño técnico
 
 - Filtro XInput implementado (experimental): ¿lo carga 7DTD? → el informe v3 lo dice (`filtro_xinput_cargado`). ¿Basta para aislar los mandos? → W16.

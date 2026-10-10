@@ -303,6 +303,11 @@
       <CheckBox Content="Sin bordes" IsChecked="{Binding Borderless}" />
       <Button Content="Reaplicar distribución" Command="{Binding RelayoutCommand}" />
       <Button Content="Restaurar / detener sesión" Command="{Binding StopCommand}" />
+      <Button Content="{Binding MouseLockButtonText}" Command="{Binding ToggleMouseLockCommand}"
+              ToolTip="{Binding MouseLockStatus}" />
+      <TextBlock VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="2,0,10,0">
+        <Run Text="Atajo:" /><Run Text="{Binding MouseLockHotkey, Mode=OneWay}" FontWeight="SemiBold" />
+      </TextBlock>
       <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
     </WrapPanel>
 

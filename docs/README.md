@@ -36,7 +36,7 @@
 
 **Verificado automáticamente:** 126 pruebas xUnit + 77 unittest; CI en Windows verde (SDL3 3.5.0 inicializa); en Linux el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
-**Experimental, sin validar en hardware:** filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
+**Experimental, sin validar en hardware:** filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo. Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L) para pantalla dividida.
 
 **No implementado / no verificado:** la 0.7 en el hardware del propietario; simulación de foco para juegos que la exijan; dos jugadores reales en 7DTD; métricas de FPS/VRAM.
 
