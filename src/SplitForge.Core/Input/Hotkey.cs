@@ -19,6 +19,9 @@ public sealed record HotkeySpec(HotkeyModifiers Modifiers, uint VirtualKey, stri
     /// <summary>Atajo por defecto del bloqueo de ratón: Ctrl+Alt+L (VK_L = 0x4C).</summary>
     public static readonly HotkeySpec LockDefault = new(HotkeyModifiers.Control | HotkeyModifiers.Alt, 0x4C, "L");
 
+    /// <summary>Atajo del bloqueo de entrada «solo mandos»: Ctrl+Alt+B (VK_B = 0x42).</summary>
+    public static readonly HotkeySpec InputLockDefault = new(HotkeyModifiers.Control | HotkeyModifiers.Alt, 0x42, "B");
+
     /// <summary>Texto para la interfaz, p. ej. «Ctrl+Alt+L».</summary>
     public string Label
     {

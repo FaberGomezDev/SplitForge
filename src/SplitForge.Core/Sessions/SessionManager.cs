@@ -114,7 +114,8 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
     public void Relayout(LayoutOptions layout)
     {
         var s = Active ?? throw new InvalidOperationException("No hay sesión activa.");
-        s.Layout = layout;
+        // La proporción mínima es del juego, no de la barra de opciones: se conserva al reaplicar.
+        s.Layout = layout.MinAspect.IsValid ? layout : layout with { MinAspect = s.Layout.MinAspect };
         if (s.WindowHandles.Count >= 2)
             Place(s, [.. s.WindowHandles]);
     }
@@ -224,8 +225,8 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
 
     private void Place(ActiveSession session, IReadOnlyList<nint> handles)
     {
-        var regions = SplitLayout.Compute(windows.PrimaryWorkArea(), handles.Count, session.Layout.Orientation, session.Layout.Gutter);
-        regions = SplitLayout.ApplyFit(regions, session.Layout.Fit, session.Layout.EffectiveAspect);
+        var area = session.Layout.CoverTaskbar ? windows.PrimaryBounds() : windows.PrimaryWorkArea();
+        var regions = session.Layout.Regions(area, handles.Count);
         // Primero capturar TODAS las posiciones originales: si una colocación falla, Stop() las restaura.
         foreach (var hwnd in handles)
         {
@@ -245,11 +246,13 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
             }
         }
         for (var i = 0; i < handles.Count; i++)
-            windows.Place(handles[i], regions[i], session.Layout.Borderless);
+            windows.Place(handles[i], regions[i], session.Layout.Borderless, session.Layout.CoverTaskbar);
         session.WindowHandles.Clear();
         session.WindowHandles.AddRange(handles);
         session.Pending = false;
-        var fitText = session.Layout.Fit == WindowFit.MantenerProporcion ? $", proporción {session.Layout.EffectiveAspect.Label}" : "";
+        var fitText = (session.Layout.Fit == WindowFit.MantenerProporcion ? $", proporción {session.Layout.EffectiveAspect.Label}" : "")
+                      + (session.Layout.MinAspect.IsValid ? $", mínimo {session.Layout.MinAspect.Label} del juego" : "")
+                      + (session.Layout.CoverTaskbar ? ", sobre la barra de tareas" : "");
         log($"Ventanas colocadas ({session.Layout.Orientation}, separación {session.Layout.Gutter} px{fitText}"
             + (session.Layout.Borderless ? ", sin bordes)." : ")."));
     }

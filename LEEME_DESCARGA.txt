@@ -9,7 +9,9 @@ Paquete autónomo: NO necesitas instalar Python, .NET ni SDL.
 3. Pestaña 01 MANDOS: conecta tus mandos y comprueba que responden.
 4. Pestaña 02 MUNDO COMPARTIDO: prueba de dos jugadores con dos mandos.
 5. Pestaña 06 7 DAYS TO DIE: servidor local + pantalla dividida (ver requisitos en la propia pestaña).
-6. Pestaña 07 EMULADOR STEAM: dos instancias del juego con identidades distintas sin un segundo Steam.
+6. Pestaña 07 EMULADOR STEAM: "Lanzar J1 y J2" abre los dos clientes con identidades distintas, sin
+   juego cruzado, en pantalla dividida y con su mando (filtro XInput de la pestaña 06).
+7. Ctrl+Alt+B bloquea teclado y ratón para jugar solo con mandos; Ctrl+Alt+B otra vez lo suelta.
 
 Diagnósticos (solo lectura), desde una consola en esta carpeta:
   SplitForge.Diagnostico.exe 7dtd      -> informe de 7 Days to Die abierto (APIs de mando y su origen)

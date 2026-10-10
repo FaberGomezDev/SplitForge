@@ -342,7 +342,7 @@ public:
     bool DestroySocket(SNetSocket_t, bool) override { return false; }
     bool DestroyListenSocket(SNetListenSocket_t, bool) override { return false; }
     bool SendDataOnSocket(SNetSocket_t, void*, uint32_t, bool) override { return false; }
-    bool IsDataAvailableOnSocket(SNetSocket_t, uint32_t*, bool) override { return false; }
+    bool IsDataAvailableOnSocket(SNetSocket_t, uint32_t*) override { return false; }
     bool RetrieveDataFromSocket(SNetSocket_t, void*, uint32_t, uint32_t*) override { return false; }
     bool IsDataAvailable(SNetListenSocket_t, uint32_t*, bool) override { return false; }
     bool RetrieveData(SNetListenSocket_t, void*, uint32_t, uint32_t*) override { return false; }

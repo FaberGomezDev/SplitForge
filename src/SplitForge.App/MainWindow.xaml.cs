@@ -11,6 +11,7 @@ namespace SplitForge.App;
 public partial class MainWindow : Window
 {
     private const int MouseLockHotkeyId = 0xB001;
+    private const int InputLockHotkeyId = 0xB002;
     private readonly MainViewModel _vm;
     private bool _closingConfirmed;
     private nint _hotkeyWindow;
@@ -40,6 +41,10 @@ public partial class MainWindow : Window
         var spec = MainViewModel.MouseLockHotkeySpec;
         if (!GlobalHotkey.Register(_hotkeyWindow, MouseLockHotkeyId, (uint)spec.Modifiers, spec.VirtualKey))
             _vm.NoteHotkeyUnavailable();
+        // Activa el bloqueo de entrada; para soltarlo, el propio gancho detecta el atajo (no llega WM_HOTKEY).
+        var input = MainViewModel.InputLockHotkeySpec;
+        if (!GlobalHotkey.Register(_hotkeyWindow, InputLockHotkeyId, (uint)input.Modifiers, input.VirtualKey))
+            _vm.NoteInputLockHotkeyUnavailable();
     }
 
     private nint HotkeyHook(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
@@ -47,6 +52,11 @@ public partial class MainWindow : Window
         if (msg == GlobalHotkey.WmHotkey && wParam == MouseLockHotkeyId)
         {
             _vm.ToggleMouseLock();
+            handled = true;
+        }
+        else if (msg == GlobalHotkey.WmHotkey && wParam == InputLockHotkeyId)
+        {
+            _vm.ToggleInputLock();
             handled = true;
         }
         return nint.Zero;
@@ -72,7 +82,10 @@ public partial class MainWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         if (_hotkeyWindow != nint.Zero)
+        {
             GlobalHotkey.Unregister(_hotkeyWindow, MouseLockHotkeyId);
+            GlobalHotkey.Unregister(_hotkeyWindow, InputLockHotkeyId);
+        }
         _vm.Dispose();
         base.OnClosed(e);
     }

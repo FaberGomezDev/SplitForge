@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using SplitForge.Core.Layout;
 using SplitForge.Core.Sessions;
 using SplitForge.Core.Steam;
 
@@ -39,6 +40,34 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
 {
     public const string GameExe = "7DaysToDie.exe";
     public const string ServerExe = "7DaysToDieServer.exe";
+
+    /// <summary>Título de la ventana principal del cliente (comprobado en V 3.3.0).</summary>
+    public const string WindowTitle = "7 Days To Die";
+
+    /// <summary>
+    /// Proporción mínima de cada ventana. Comprobado el 2026-10-10 (V 3.3.0 b18): a 960×1032 el menú
+    /// principal se corta por la izquierda; a 960×540 (16:9) se ve completo.
+    /// </summary>
+    public static readonly AspectRatio MinAspect = AspectRatio.SixteenNine;
+
+    /// <summary>
+    /// Argumentos de un cliente con el emulador de Steam (técnica del handler de Nucleus Co-op):
+    /// sin juego cruzado (EOS rechaza los tickets locales y bloquea el menú), servidores por Steam,
+    /// ventana sin marco y con el tamaño de su panel desde el arranque. El juego lee
+    /// -crossplatform / -serverplatforms como «-clave=valor» (PlatformManager.GetCommandLineOverrides).
+    /// </summary>
+    public static IReadOnlyList<string> EmulatedClientArguments(int width, int height)
+    {
+        if (width <= 0 || height <= 0)
+            throw new ArgumentOutOfRangeException(nameof(width), "El tamaño de la ventana debe ser positivo.");
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        return
+        [
+            "-crossplatform=None", "-serverplatforms=Steam", "-noeac",
+            "-screen-fullscreen", "0", "-popupwindow",
+            "-screen-width", width.ToString(inv), "-screen-height", height.ToString(inv),
+        ];
+    }
 
     public AdapterManifest Manifest { get; } = new(
         ResearchProfiles.SevenDaysToDie, "7 Days to Die",

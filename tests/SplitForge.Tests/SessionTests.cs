@@ -193,4 +193,36 @@ public class SessionTests
         Assert.Equal(2, _windows.Placed.Count);
         Assert.False(File.Exists(file));
     }
+
+    [Fact]
+    public void GameMinAspectIsAppliedAndKeptOnRelayout()
+    {
+        var m = Manager();
+        var seven = new LayoutOptions(SplitOrientation.SideBySide, 0, true, MinAspect: AspectRatio.SixteenNine);
+        m.Attach([11, 22], seven);
+        Assert.Equal(new Region(0, 270, 960, 540), _windows.Placed[0].Region);
+        // «Reaplicar distribución» llega sin mínimo: se conserva el del juego.
+        m.Relayout(new LayoutOptions(SplitOrientation.SideBySide, 0, true));
+        Assert.Equal(new Region(960, 270, 960, 540), _windows.Placed[3].Region);
+        Assert.Equal(AspectRatio.SixteenNine, m.Active!.Layout.MinAspect);
+    }
+
+    [Fact]
+    public void CoverTaskbarUsesTheWholeMonitorAndPlacesWindowsOnTop()
+    {
+        _windows.WorkArea = new Region(0, 0, 1920, 1032);
+        _windows.Bounds = new Region(0, 0, 1920, 1080);
+        var m = Manager();
+        m.Attach([11, 22], new LayoutOptions(SplitOrientation.Stacked, 0, true, CoverTaskbar: true));
+        Assert.Equal(new Region(0, 0, 1920, 540), _windows.Placed[0].Region);
+        Assert.Equal(new Region(0, 540, 1920, 540), _windows.Placed[1].Region);
+        Assert.All(_windows.Placed, p => Assert.True(p.Topmost));
+        m.Stop();
+        Assert.Equal(2, _windows.Restored.Count);
+
+        var normal = Manager();
+        normal.Attach([33, 44], new LayoutOptions(SplitOrientation.Stacked, 0, true));
+        Assert.Equal(new Region(0, 516, 1920, 516), _windows.Placed[3].Region);
+        Assert.False(_windows.Placed[3].Topmost);
+    }
 }

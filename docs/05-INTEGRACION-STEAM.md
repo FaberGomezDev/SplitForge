@@ -7,7 +7,7 @@
 3. `steam://rungameid/<appid>` abre **una** instancia normal a petición del usuario.
 4. `GameWindowInspector` relaciona ventanas con procesos de la carpeta del juego y permite distribuir **2–4 clientes** solo si son procesos distintos del mismo exe, revalidando justo antes de mover.
 5. **Adaptador experimental de 7 Days to Die** (pestaña 06): preflight, servidor dedicado oficial local, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida sin bordes y diagnóstico de APIs de mando.
-6. **Emulador de Steam, componente principal** (pestaña 07, ADR-016): sustituye `steam_api64.dll` de 7DTD con copia de seguridad y lanza J1 y J2 con identidades distintas sin un segundo Steam. Superó su prueba de humo. **Con 7DTD real (2026-10-10) carga las dos identidades, pero el juego se cierra al iniciar Steam**: falta la API plana con `self` (ver más abajo).
+6. **Emulador de Steam, componente principal** (pestaña 07, ADR-016): sustituye `steam_api64.dll` de 7DTD con copia de seguridad y da a J1 y J2 identidades distintas sin un segundo Steam. «Lanzar J1 y J2» abre los dos clientes con la configuración del handler de Nucleus Co-op, asigna a cada uno su mando (filtro XInput) y divide la pantalla. **Comprobado el 2026-10-10: dos clientes de 7DTD en el menú principal a la vez** (ver más abajo).
 
 ## Adaptador 7 Days to Die (AppID 251570)
 
@@ -17,7 +17,7 @@ Camino elegido (ADR-013):
 | --- | --- | --- |
 | Preflight | Juego y servidor instalados, mandos, clientes abiertos, Sandboxie-Plus; estado máximo `INSPECCIONADO` | — |
 | Servidor | Lanza `7DaysToDieServer.exe` (AppID 294420, gratuito) con `-configfile` propio en `%LOCALAPPDATA%\SplitForge\7dtd`: plantilla del servidor + `ServerVisibility=0`, puerto, jugadores, `EACEnabled` según opción, telnet solo en 127.0.0.1, `UserDataFolder` aislado | Instalar «7 Days to Die Dedicated Server» desde Steam → Herramientas |
-| Clientes | Abre, si se pide, un segundo Steam en el sandbox `SplitForge_J2` de Sandboxie-Plus, o lanza J1 y J2 con identidades emuladas (pestaña 07) | Unirse a `127.0.0.1:puerto` |
+| Clientes | Abre, si se pide, un segundo Steam en el sandbox `SplitForge_J2` de Sandboxie-Plus, o lanza J1 y J2 con identidades emuladas (pestaña 07, sin juego cruzado) | Unirse a `127.0.0.1:puerto` (servidor oficial) o a la partida de J1 en 127.0.0.1 |
 | EAC | Servidor sin EAC por defecto (los clientes deben coincidir) | Opción oficial de Steam: Propiedades → General → Preguntar al iniciar → «Launch game without EAC» |
 | Pantalla | Distribuye las ventanas de los clientes (orden por PID, intercambiable), sin bordes, con ajuste configurable (rellenar o mantener proporción), y las restaura al detener | Juego en modo ventana a la resolución por panel que indica SplitForge |
 | Apagado | `shutdown` por telnet local, espera hasta 45 s y solo entonces termina el proceso propio | — |
@@ -30,7 +30,7 @@ Primer `SplitForge_Reporte_7DTD.json` real (esquema v2), con **un** cliente abie
 | Dato del informe | Valor | Qué significa |
 | --- | --- | --- |
 | Cliente | `7DaysToDie.exe`, 1 ventana, módulos legibles | **Hecho:** abierto sin EAC. Ningún módulo de EAC está cargado y Windows permitió leer los módulos |
-| XInput | `xinput1_3.dll` y `xinput1_4.dll` | **Hecho:** el juego carga las dos, así que el filtro debe estar con ambos nombres (la instalación ya lo hace). **Pendiente:** saber por cuál lee los mandos; lo dirán las «lecturas» del estado de cada copia |
+| XInput | `xinput1_3.dll` y `xinput1_4.dll` | **Hecho:** el juego carga las dos, así que el filtro debe estar con ambos nombres (la instalación ya lo hace). **Resuelto con dos clientes (2026-10-10):** las lecturas solo llegan por `xinput1_3.dll` |
 | DirectInput / HID | `dinput8.dll`, `hid.dll` | **Pendiente:** son otras vías posibles. Si el juego leyera los mandos por ellas, el filtro XInput no bastaría |
 | InControl | `incontrolnative.dll` | **Hecho:** usa InControl, la biblioteca de mandos para Unity, con su módulo nativo |
 | Steam | `steam_api64.dll`, `steamclient64.dll`, `gameoverlayrenderer64.dll` | **Hecho:** API de Steam y superposición cargadas |
@@ -54,8 +54,8 @@ Cambios hechos a partir de esta evidencia:
 | 7 Days to Die Dedicated Server (294420) | **No instalado** (ninguna de las 2 bibliotecas tiene su manifiesto). Necesario para W11, W12 y W14 |
 | Sandboxie-Plus | **No instalado**. Para el segundo cliente queda el emulador de Steam (pestaña 07) o instalarlo |
 | ViGEmBus / HidHide | Instalados |
-| Filtro XInput en la carpeta del juego | No instalado (no hay `xinput1_3.dll` ni `xinput1_4.dll` propias en la carpeta del juego) |
-| Emulador de Steam en la carpeta del juego | **Instalado** desde la pestaña 07 (2026-10-10 03:52): `7DaysToDie_Data\Plugins\x86_64\steam_api64.dll` es la emulada (SHA-256 igual al registrado y a la compilación local); la original está respaldada como `steam_api64_splitforge_original.dll`. **Mientras siga instalado, 7DTD se cierra al iniciar** (ver la siguiente sección) |
+| Filtro XInput en la carpeta del juego | **Instalado** (2026-10-10, tarde): `xinput1_3.dll`, `xinput1_4.dll`, `xinput9_1_0.dll` y su manifiesto; se retira con «Quitar filtro» |
+| Emulador de Steam en la carpeta del juego | **Instalado y actualizado** a la versión con API plana generada (2026-10-10, tarde): `7DaysToDie_Data\Plugins\x86_64\steam_api64.dll`; la original sigue respaldada como `steam_api64_splitforge_original.dll` |
 
 ### Emulador de Steam con 7DTD: primera prueba real (2026-10-10)
 
@@ -71,15 +71,27 @@ Evidencia: `splitforge-net.log`, `steamemu.log` y los registros de Unity (`Playe
 | Causa (código) | En el SDK, las funciones planas reciben primero el puntero `self` (`SteamAPI_ISteamClient_GetISteamUser(ISteamClient* self, HSteamUser, HSteamPipe, const char*)`), y la traza muestra que Steamworks.NET la llama con 4 argumentos. El emulador la declara sin `self` (`flat_api.cpp`): los argumentos se desplazan y la versión llega como un número tratado como puntero | **Hecho comprobado en el código.** Afecta a las 32 funciones `SteamAPI_ISteamClient_*` exportadas |
 | Lo que pide 7DTD | `com.rlabrecque.steamworks.net.dll` referencia 931 entradas `SteamAPI_*`; 866 son métodos planos `SteamAPI_ISteam*` (Friends 80, UGC 89, RemoteStorage 59, UserStats 45, Utils 36…). Versiones: `SteamClient020`, `SteamUser023` | **Hecho:** Steamworks.NET usa la API plana para todo. El emulador solo exporta 32 entradas `SteamAPI_ISteamClient_*` y ninguna del resto de interfaces. Las versiones de interfaz sí coinciden |
 
-**Siguiente paso para el emulador:**
-1. Añadir `self` a las funciones planas `SteamAPI_ISteamClient_*`.
-2. Exportar los métodos planos `SteamAPI_ISteam*` que 7DTD usa al arrancar, reenviándolos a las interfaces ya implementadas.
-3. Añadir a la prueba de humo llamadas a métodos planos `SteamAPI_ISteam*` como las de Steamworks.NET. Hoy solo usa `SteamAPI_InitSafe`, `ContextInit` y accesores, por eso no detectó el fallo.
-4. Repetir W20.
+### Emulador corregido y lanzador con la configuración de Nucleus: dos clientes (2026-10-10, tarde)
 
-Hasta entonces, para usar 7DTD con normalidad hay que pulsar «Restaurar DLL original» en la pestaña 07.
+Corrección del emulador (ver ADR-016):
+- API plana **generada** desde sus vtables (`tools/generar_api_plana.py`): 683 reenvíos con `self` y 234 entradas neutras, que cubren las 944 entradas de Steamworks.NET.
+- Corregidos también `ContextInit`, 7 firmas de vtable, estructuras `pack(1)`, el despacho de call results (703) y las respuestas de tickets.
 
-**Siguiente evidencia necesaria (W16):** dos clientes con el filtro asignado. Las lecturas de cada cliente deben subir y cada mando debe mover solo su ventana. Hay que anotar también si la ventana sin foco responde. Si las lecturas se quedan en 0 mientras el juego responde al mando, el juego lee por otra vía: guardar un informe v3 y decidir con él.
+Resultado con 7DTD real, paso a paso:
+
+| Paso | Evidencia | Qué significa |
+| --- | --- | --- |
+| Arranque | `[Steamworks.NET] SteamAPI_Init() ok` y `Login ok`; estadísticas y logros recibidos | **Hecho:** el emulador ya no tumba el juego |
+| EOS | Con juego cruzado, EOS envía el ticket local a Epic: `Could not decrypt Steam ticket` → `[EOS] Login failed: ConnectExternalTokenValidationFailed`. El juego muestra «Inicio de sesión de servicios en línea de Epic» con «Jugar sin conexión» **desactivado** | **Hecho:** en el IL de `XUiC_LoginBase.updateState`, ese botón solo se activa si la plataforma está en `EUserStatus.OfflineMode` (1) |
+| Referencia Nucleus | Su handler de 7DTD (v18) deja `crossplatform=` vacío y `serverplatforms=Steam` en `platform.cfg` de su copia del juego y lanza con `-screen-fullscreen 0 -popupwindow -noeac` y el tamaño de cada ventana | La técnica para evitar EOS |
+| Sin tocar archivos | 7DTD admite `-crossplatform=` y `-serverplatforms=` como argumentos (`PlatformManager.GetCommandLineOverrides`, formato `-clave=valor`, valores vacíos ignorados). SplitForge lanza con `-crossplatform=None -serverplatforms=Steam` | **Hecho:** sin EOS, sin diálogo, **menú principal** |
+| Dos clientes | J1 y J2 a la vez desde la misma carpeta; en pantalla «PERFIL: SPLITFORGEJ1» y «PERFIL: SPLITFORGEJ2» | **Hecho:** `DOS_CLIENTES_VALIDOS` (dos clientes simultáneos, identidades distintas) |
+| Ventana | 960×1032 (lado a lado sin ajuste) corta el menú por la izquierda; 960×540 (16:9) y 1920×516 (arriba/abajo) lo muestran completo | **Hecho:** 7DTD necesita paneles de 16:9 o más anchos (`SevenDaysToDieAdapter.MinAspect`); el propietario prefiere arriba/abajo |
+| Mandos | Filtro cargado en los dos clientes por `xinput1_3.dll`, DLL real cargada, J1 → mando 1, J2 → mando 2; las lecturas suben en ambos (~60 por segundo cada uno) aunque solo uno tenga el foco | **Hecho:** el juego consulta su mando también sin foco. **Pendiente (W16):** que el propietario confirme que cada mando mueve solo su ventana y que la ventana sin foco reacciona |
+
+**Siguiente evidencia necesaria:**
+- **W16:** pulsar en el mando 2 con la ventana de J1 activa; la ventana de J2 debe reaccionar. Si no reacciona, falta la simulación de foco (técnica `ForceFocus` / `FocusHooks` de Nucleus).
+- **W14:** J2 se une a la partida de J1 en 127.0.0.1.
 
 ### Alternativas descartadas para 7DTD
 
@@ -95,7 +107,7 @@ En cualquier punto: `BLOQUEADO` con motivo verificable. **Nunca** inferir `COMPA
 
 | Juego | ID Steam | Estado | Restricción por validar |
 | --- | --- | --- | --- |
-| 7 Days to Die | 251570 | `INSPECCIONADO` · adaptador experimental · build `25661859` (V 3.3.0 b18) · informe real con 1 cliente sin EAC (XInput 1_3 + 1_4) · emulador: se cierra al iniciar Steam | Aislamiento de mandos con dos clientes; ventana sin foco; guardados; API plana del emulador |
+| 7 Days to Die | 251570 | `DOS_CLIENTES_VALIDOS` (2026-10-10, build `25661859`, V 3.3.0 b18): dos clientes con el emulador en el menú a la vez, filtro XInput cargado en ambos por `xinput1_3` | Confirmación física de los mandos y de la ventana sin foco (W16); misma partida (W14); guardados |
 | No Man's Sky | 275850 | Investigación posterior · instalado (build `25732212`) | Autenticación, sesiones multijugador, offline |
 | State of Decay 2 | 495420 | Investigación posterior · no instalado en el PC de pruebas | Servicios online |
 | GTA V Legacy | 271590 | Investigación posterior · no instalado (sí GTA V Enhanced, 3240220) | Sin cooperativo en campaña, protecciones de GTA Online |

@@ -20,7 +20,7 @@
 | 06 7 DAYS TO DIE | Preflight, servidor dedicado local aislado, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida, filtro XInput y diagnóstico |
 | 07 EMULADOR STEAM | Emulador de `steam_api64.dll`: dos instancias del juego con identidades distintas sin un segundo Steam (instalar/restaurar, identidades J1/J2, lanzar) |
 
-Barra inferior (común a todas las pestañas): distribución lado a lado o arriba/abajo, separación, sin bordes, «Mantener proporción» (16:9, 16:10, 21:9, 4:3), reaplicar, restaurar y **bloquear el ratón en la ventana** (atajo Ctrl+Alt+L).
+Barra inferior (común a todas las pestañas): distribución lado a lado o arriba/abajo, separación, sin bordes, **tapar la barra de tareas**, «Mantener proporción» (16:9, 16:10, 21:9, 4:3), reaplicar, restaurar, bloquear el ratón en la ventana (Ctrl+Alt+L) y **bloquear la entrada para jugar solo con mandos (Ctrl+Alt+B)**.
 
 Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | xinput | mandos | steam | ventanas`.
 
@@ -30,7 +30,7 @@ Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | xinp
 2. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
 3. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
 4. **Un mando por ventana (experimental):** el filtro XInput nativo en C++ hace que cada cliente vea solo su mando (pestaña 06 → *Instalar filtro* → *Detectar* → *Asignar mandos*). Requiere los PS4 como mandos XInput (Steam Input o DS4Windows). Ya está comprobado que 7DTD carga XInput (informe del 2026-10-10); el aislamiento con dos clientes sigue sin validar.
-5. **Segunda identidad sin otro Steam (experimental):** el emulador de Steam de la pestaña 07 lanza J1 y J2 con identidades distintas. Con 7DTD V 3.3.0 aún se cierra al iniciar Steam (API plana pendiente; ver [`docs/05-INTEGRACION-STEAM.md`](docs/05-INTEGRACION-STEAM.md)). Para jugar con normalidad, *Restaurar DLL original*.
+5. **Sin segundo Steam (experimental):** «Lanzar J1 y J2» en la pestaña 07 abre los dos clientes con identidades distintas (emulador de Steam), sin juego cruzado, en pantalla dividida y con su mando asignado. Comprobado el 2026-10-10: los dos llegan al menú a la vez. Después: J1 crea o carga una partida y J2 se une a la IP 127.0.0.1. Para volver a jugar con tu cuenta de Steam, *Restaurar DLL original*.
 
 ## Desarrollo
 

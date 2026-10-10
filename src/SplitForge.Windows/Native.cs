@@ -25,6 +25,11 @@ internal static unsafe partial class Native
     public const uint SWP_NOACTIVATE = 0x0010;
     public const uint SWP_FRAMECHANGED = 0x0020;
     public const uint SWP_SHOWWINDOW = 0x0040;
+    public const uint SWP_NOSIZE = 0x0001;
+    public const uint SWP_NOMOVE = 0x0002;
+    public const nint HWND_TOPMOST = -1;
+    public const nint HWND_NOTOPMOST = -2;
+    public const long WS_EX_TOPMOST = 0x00000008;
     public const int SW_MAXIMIZE = 3;
     public const int SW_MINIMIZE = 6;
     public const int SW_RESTORE = 9;

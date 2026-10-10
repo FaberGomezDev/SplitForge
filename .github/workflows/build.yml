@@ -52,6 +52,9 @@ jobs:
       - name: Documentación
         run: python tools/check_docs.py
 
+      - name: API plana del emulador al día con su generador
+        run: python native/SplitForge.SteamEmu/tools/generar_api_plana.py --comprobar
+
       - name: Publicar SplitForge win-x64 (autónomo, sin instalar .NET)
         shell: pwsh
         run: |

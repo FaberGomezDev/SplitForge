@@ -27,7 +27,65 @@ public sealed partial class MainViewModel
 
     private bool _cursorClipped;
 
-    private void InitLock() => ToggleMouseLockCommand = new RelayCommand(ToggleMouseLock);
+    private void InitLock()
+    {
+        ToggleMouseLockCommand = new RelayCommand(ToggleMouseLock);
+        ToggleInputLockCommand = new RelayCommand(ToggleInputLock);
+    }
+
+    // --- Bloqueo de entrada «solo mandos» (Ctrl+Alt+B) ---
+
+    public static readonly HotkeySpec InputLockHotkeySpec = HotkeySpec.InputLockDefault;
+
+    public string InputLockHotkey => InputLockHotkeySpec.Label;
+
+    public ICommand ToggleInputLockCommand { get; private set; } = null!;
+
+    private bool _inputLocked;
+    public bool InputLocked
+    {
+        get => _inputLocked;
+        private set { if (Set(ref _inputLocked, value)) Raise(nameof(InputLockButtonText)); }
+    }
+
+    public string InputLockButtonText => _inputLocked ? $"Entrada bloqueada ({InputLockHotkey} para soltar)" : "Bloquear entrada (solo mandos)";
+
+    /// <summary>
+    /// Alterna el bloqueo: mientras está activo, el teclado y el ratón no llegan a nada (ni juegos ni
+    /// escritorio) y los mandos siguen funcionando. Se suelta con el mismo atajo, al detener la sesión
+    /// o al cerrar SplitForge; Ctrl+Alt+Supr siempre funciona.
+    /// </summary>
+    public void ToggleInputLock()
+    {
+        if (InputLocked)
+        {
+            ReleaseInputLock();
+            return;
+        }
+        // El gancho avisa del atajo desde dentro: se difiere para que vuelva al instante.
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (!InputLock.Start(InputLockHotkeySpec, () => dispatcher?.BeginInvoke(ReleaseInputLock)))
+        {
+            _log.Write("No se pudo activar el bloqueo de entrada (Windows rechazó el gancho de teclado/ratón).");
+            return;
+        }
+        InputLocked = true;
+        _log.Write($"Entrada bloqueada: solo funcionan los mandos. Pulsa {InputLockHotkey} para soltarla.");
+        Status = $"Entrada bloqueada (solo mandos). {InputLockHotkey} para soltar.";
+    }
+
+    private void ReleaseInputLock()
+    {
+        if (!InputLocked && !InputLock.IsActive)
+            return;
+        InputLock.Stop();
+        InputLocked = false;
+        _log.Write("Entrada liberada: teclado y ratón vuelven a funcionar.");
+    }
+
+    /// <summary>El atajo del bloqueo de entrada ya estaba en uso por otra app.</summary>
+    public void NoteInputLockHotkeyUnavailable() =>
+        _log.Write($"No se pudo registrar el atajo {InputLockHotkey} (¿lo usa otra app?). Usa el botón «Bloquear entrada».");
 
     /// <summary>El atajo global ya estaba en uso por otra app: el botón sigue funcionando.</summary>
     public void NoteHotkeyUnavailable()

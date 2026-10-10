@@ -194,6 +194,42 @@ PRÓXIMO PASO: corregir la API plana del emulador y probarla; restaurar la DLL o
   con un segundo Steam; instalar el servidor dedicado para W12/W14.
 ```
 
+## 2026-10-10 · Emulador funcional con 7DTD y lanzador con la configuración de Nucleus
+
+```text
+FECHA: 2026-10-10 (tarde)
+RELEASE/COMMIT: commit siguiente a 42cfa1e en main
+OBJETIVO: que 7DTD arranque con el emulador, dos jugadores en pantalla dividida, cada uno con su mando,
+  sin barra de tareas y con un atajo para jugar solo con mandos (peticiones del propietario).
+CAMBIOS EFECTIVOS:
+  - Emulador: API plana generada (tools/generar_api_plana.py, comprobada en la CI) con las 944 entradas
+    de Steamworks.NET; ContextInit con el contrato del SDK; 3 firmas planas y 7 de vtable como el SDK;
+    estructuras de entrada pack(1); call results por SteamAPICallCompleted_t (703) con sus datos (antes
+    se perdían al mover el evento); RequestCurrentStats como callback; respuestas de tickets (154, 163,
+    168); cola de eventos segura (deque por índice, sin crecer sin fin); actualización en el sitio.
+  - Referencia de Nucleus Co-op (su handler de 7DTD): clientes sin juego cruzado por argumentos
+    (-crossplatform=None -serverplatforms=Steam, que 7DTD admite), ventana sin marco del tamaño de su
+    panel, pantalla dividida automática con mínimo 16:9 y asignación de mandos por PID (ADR-018).
+  - Tapar la barra de tareas (monitor completo, ventanas siempre encima, restaurable) y bloqueo de
+    entrada «solo mandos» con Ctrl+Alt+B (ganchos de bajo nivel; ADR-019).
+EVIDENCIA AUTOMÁTICA: 166 xUnit + 77 unittest; pruebas de humo del emulador (API plana, ContextInit,
+  despacho manual) y del filtro (primera vez en el PC del propietario); check_docs; generador --comprobar.
+EVIDENCIA EN WINDOWS REAL (PC del propietario):
+  - 7DTD V 3.3.0 b18 con el emulador: SteamAPI_Init ok y Login ok; con juego cruzado, EOS rechaza el
+    ticket local y «Jugar sin conexión» queda desactivado (exige EUserStatus.OfflineMode, visto en el IL);
+    sin juego cruzado: menú principal.
+  - Dos clientes a la vez con perfiles SPLITFORGEJ1 / SPLITFORGEJ2; 960×1032 corta el menú, 16:9 y
+    arriba/abajo lo muestran entero.
+  - Filtro cargado en los dos por xinput1_3, J1 → mando 1, J2 → mando 2, lecturas subiendo en ambos.
+  - Arriba/abajo tapando la barra: la franja de la barra pertenece a la ventana de J2.
+NUEVOS RIESGOS: sin juego cruzado no hay partidas con consolas; el bloqueo de entrada también bloquea el
+  escritorio mientras está activo; ventanas «siempre encima» durante la sesión.
+LIMITACIONES EXPLÍCITAS: falta la confirmación física de los mandos (W16, ventana sin foco) y del
+  bloqueo (W21); partida común por IP sin probar (W14).
+PRÓXIMO PASO: W16 y W21 con el propietario; si la ventana sin foco no reacciona, simulación de foco;
+  después W14 (J2 se une a J1 en 127.0.0.1).
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

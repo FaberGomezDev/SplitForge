@@ -181,5 +181,30 @@ public class InputTests
     public void HotkeyLabelListsEveryModifierInOrder() =>
         Assert.Equal("Ctrl+Alt+Shift+Win+F9",
             new HotkeySpec(HotkeyModifiers.Control | HotkeyModifiers.Alt | HotkeyModifiers.Shift | HotkeyModifiers.Win, 0x78, "F9").Label);
-}
 
+    [Fact]
+    public void InputLockHotkeyIsCtrlAltB()
+    {
+        Assert.Equal("Ctrl+Alt+B", HotkeySpec.InputLockDefault.Label);
+        Assert.Equal(0x42u, HotkeySpec.InputLockDefault.VirtualKey);
+    }
+
+    [Fact]
+    public void InputLockSwallowsKeysButLetsReleasesThroughAndUnlocksWithItsShortcut()
+    {
+        var filter = new InputLockFilter(HotkeySpec.InputLockDefault);
+        // Al activarse con el propio atajo, Ctrl y Alt siguen pulsados.
+        filter.Reset(HotkeyModifiers.Control | HotkeyModifiers.Alt);
+        Assert.Equal(InputLockDecision.Pass, filter.OnKey(0x42, down: false)); // soltar B del atajo
+        Assert.Equal(InputLockDecision.Pass, filter.OnKey(0xA2, down: false)); // soltar Ctrl izquierdo
+        Assert.Equal(InputLockDecision.Pass, filter.OnKey(0xA4, down: false)); // soltar Alt izquierdo
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0x57, down: true)); // W: no llega al juego
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0x42, down: true)); // B sola no desbloquea
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0xA2, down: true)); // Ctrl
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0x42, down: true)); // Ctrl+B tampoco
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0xA5, down: true)); // Alt derecho (AltGr)
+        Assert.Equal(InputLockDecision.Toggle, filter.OnKey(0x42, down: true)); // Ctrl+Alt+B
+        filter.OnKey(0xA0, down: true); // con Shift además ya no coincide
+        Assert.Equal(InputLockDecision.Swallow, filter.OnKey(0x42, down: true));
+    }
+}

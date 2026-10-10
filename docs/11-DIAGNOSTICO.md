@@ -49,10 +49,12 @@ Herramienta principal (0.7): `SplitForge.Diagnostico.exe` en la carpeta del paqu
 1. La línea de estado de la pestaña dice si está instalado, con qué identidad y si la original está respaldada (`steam_api64_splitforge_original.dll`, junto a la DLL del juego; en 7DTD, `7DaysToDie_Data\Plugins\x86_64`).
 2. `%LOCALAPPDATA%\SplitForge\steamemu.log`: una línea `SteamAPI_Init` y otra «iniciado: app=… steamid=… persona=…» por instancia. Si no aparecen, el juego no cargó la DLL emulada.
 3. Registro de Unity del juego: `%USERPROFILE%\AppData\LocalLow\The Fun Pimps\7 Days To Die\Player.log` (y `Player-prev.log`). Si termina en `Crash!!!` con `steam_api64` arriba en la traza, el fallo está en el emulador.
-   - Caso conocido (2026-10-10): `SteamAPI_ISteamClient_GetISteamUser` ← `Steamworks.CSteamAPIContext:Init`. La causa es la API plana sin `self` (ver `05-INTEGRACION-STEAM.md`).
-4. «Ya hay una copia de seguridad»: el emulador ya está instalado; restaura primero.
-5. «La DLL instalada no coincide con la registrada»: algo (p. ej. una actualización o verificación de Steam) cambió la DLL. SplitForge no restaura para no pisar cambios ajenos; verifica los archivos del juego en Steam.
-6. Mientras el emulador esté instalado, el juego abierto desde Steam también usa la DLL emulada. Para jugar con normalidad, «Restaurar DLL original».
+   - Caso conocido y resuelto (2026-10-10): `SteamAPI_ISteamClient_GetISteamUser` ← `Steamworks.CSteamAPIContext:Init` (API plana sin `self`). Si vuelve a ocurrir con otro juego, comprobar con `steamemu.log` qué entradas llama («API plana: … [sin implementar]») y regenerar la API con `tools/generar_api_plana.py`.
+4. Diálogo «Inicio de sesión de servicios en línea de Epic» con «Jugar sin conexión» desactivado: el cliente se abrió con juego cruzado (EOS) y Epic rechaza la identidad local. Ábrelo desde «Lanzar J1 y J2», que añade `-crossplatform=None -serverplatforms=Steam`.
+5. «La DLL instalada no coincide» al instalar: algo cambió la DLL del juego (p. ej. «Verificar archivos» de Steam); SplitForge no la pisa. Si la DLL sigue siendo la que registró SplitForge, «Instalar / actualizar» la sustituye por la nueva.
+6. «La DLL instalada no coincide con la registrada» al restaurar: lo mismo; SplitForge no restaura para no pisar cambios ajenos; verifica los archivos del juego en Steam.
+7. Mientras el emulador esté instalado, el juego abierto desde Steam también usa la DLL emulada. Para jugar con tu cuenta de Steam, «Restaurar DLL original».
+8. Ventana con el menú cortado por un lado: el panel es más estrecho que 16:9. «Lanzar J1 y J2» y «Dividir pantalla» ya aplican el mínimo 16:9 de 7DTD; arriba/abajo da paneles más anchos.
 
 ## G. Reportes seguros
 

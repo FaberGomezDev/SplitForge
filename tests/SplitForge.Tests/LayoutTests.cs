@@ -151,5 +151,19 @@ public class LayoutTests
             Assert.InRange(fitted[i].Width / (double)fitted[i].Height, 16.0 / 9 - 0.02, 16.0 / 9 + 0.02);
         }
     }
-}
 
+    [Fact]
+    public void MinAspectNarrowsOnlyRegionsNarrowerThanTheMinimum()
+    {
+        var area = new Region(0, 0, 1920, 1032);
+        // Lado a lado: 960×1032 es más estrecho que 16:9 → 960×540 centrado en vertical.
+        var columns = SplitLayout.EnsureMinAspect(SplitLayout.Compute(area, 2, SplitOrientation.SideBySide, 0), AspectRatio.SixteenNine);
+        Assert.Equal(new Region(0, 246, 960, 540), columns[0]);
+        Assert.Equal(new Region(960, 246, 960, 540), columns[1]);
+        // Arriba / abajo: 1920×516 ya es más ancho que 16:9 → sin cambios.
+        var rows = SplitLayout.Compute(area, 2, SplitOrientation.Stacked, 0);
+        Assert.Equal(rows, SplitLayout.EnsureMinAspect(rows, AspectRatio.SixteenNine));
+        // Sin mínimo válido no se toca nada.
+        Assert.Equal(columns, SplitLayout.EnsureMinAspect(columns, default));
+    }
+}

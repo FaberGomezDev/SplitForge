@@ -10,6 +10,7 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <deque>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -85,6 +86,9 @@ public:
 
     bool initialized = false;
     bool gameServerInitialized = false;
+    // Generación de SteamInternal_ContextInit: cambia en cada Init/Shutdown para que los
+    // accesores de los juegos C++ vuelvan a pedir sus interfaces.
+    uintptr_t contextCounter = 1;
     Config config;
     std::string userDataDir;
     std::string remoteDir;
@@ -99,7 +103,7 @@ public:
     std::map<std::string, uint32_t> syncPlatforms;
     std::map<std::string, std::string> richPresence;
 
-    std::vector<CallbackEvent> events;
+    std::deque<CallbackEvent> events;
     std::vector<RegisteredCallback> callbacks;
     std::vector<RegisteredCallResult> callResults;
     std::vector<RegisteredCallback> globalCallbacks;
@@ -109,6 +113,7 @@ public:
     uint32_t ipcCallCount = 0;
     void* warningHook = nullptr;
     CallbackMsg_t lastManual{};
+    SteamAPICallCompleted_t lastCompleted{};
     bool lastManualValid = false;
     UGCFileWriteStreamHandle_t streamCounter = 1;
 
@@ -131,6 +136,7 @@ public:
     SteamAPICall_t QueueCallResult(int iCallback, const void* data, size_t size);
     void QueueCallResultAt(SteamAPICall_t call, int iCallback, const void* data, size_t size);
     void DispatchRunCallbacks();
+    void PruneConsumedEvents();
     bool PopManual(CallbackMsg_t* out);
     void FreeLastManual();
     bool GetApiResult(SteamAPICall_t call, void* out, size_t size, int expected, bool* failed);

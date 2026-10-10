@@ -107,7 +107,7 @@ public:
     virtual bool BIsPhoneIdentifying() = 0;
     virtual bool BIsPhoneRequiringVerification() = 0;
     virtual int GetMarketEligibility() = 0;
-    virtual void GetDurationControl(void*) = 0;
+    virtual SteamAPICall_t GetDurationControl() = 0;
     virtual bool BSetDurationControlOnlineState(int) = 0;
     virtual HAuthTicket GetAuthTicketForWebApi(const char*) = 0;
 };
@@ -361,7 +361,7 @@ public:
     virtual bool DestroySocket(SNetSocket_t, bool) = 0;
     virtual bool DestroyListenSocket(SNetListenSocket_t, bool) = 0;
     virtual bool SendDataOnSocket(SNetSocket_t, void*, uint32_t, bool) = 0;
-    virtual bool IsDataAvailableOnSocket(SNetSocket_t, uint32_t*, bool) = 0;
+    virtual bool IsDataAvailableOnSocket(SNetSocket_t, uint32_t*) = 0;
     virtual bool RetrieveDataFromSocket(SNetSocket_t, void*, uint32_t, uint32_t*) = 0;
     virtual bool IsDataAvailable(SNetListenSocket_t, uint32_t*, bool) = 0;
     virtual bool RetrieveData(SNetListenSocket_t, void*, uint32_t, uint32_t*) = 0;
@@ -392,7 +392,7 @@ public:
     virtual int64_t GetFileTimestamp(const char*) = 0;
     virtual uint32_t GetSyncPlatforms(const char*) = 0;
     virtual int32_t GetFileCount() = 0;
-    virtual bool GetFileNameAndSize(int, char*, int32_t*, uint32_t*) = 0;
+    virtual const char* GetFileNameAndSize(int, int32_t*) = 0;
     virtual bool GetQuota(uint64_t*, uint64_t*) = 0;
     virtual bool IsCloudEnabledForAccount() = 0;
     virtual bool IsCloudEnabledForApp() = 0;
@@ -424,7 +424,7 @@ public:
     virtual SteamAPICall_t UpdateUserPublishedItemVote(PublishedFileId_t, bool) = 0;
     virtual SteamAPICall_t GetUserPublishedItemVoteDetails(PublishedFileId_t) = 0;
     virtual SteamAPICall_t EnumerateUserSharedWorkshopFiles(CSteamID, uint32_t, SteamParamStringArray_t*, SteamParamStringArray_t*) = 0;
-    virtual SteamAPICall_t PublishVideo(int, const char*, const char*, const char*, const char*, AppId_t, const char*, const char*, int, SteamParamStringArray_t*) = 0;
+    virtual SteamAPICall_t PublishVideo(int, const char*, const char*, const char*, AppId_t, const char*, const char*, int, SteamParamStringArray_t*) = 0;
     virtual SteamAPICall_t SetUserPublishedFileAction(PublishedFileId_t, int) = 0;
     virtual SteamAPICall_t EnumeratePublishedFilesByUserAction(int, uint32_t) = 0;
     virtual SteamAPICall_t EnumeratePublishedWorkshopFiles(int, uint32_t, uint32_t, uint32_t, SteamParamStringArray_t*, SteamParamStringArray_t*) = 0;
@@ -509,7 +509,7 @@ public:
     virtual bool SetTimeCreatedFileId(UGCQueryHandle_t, PublishedFileId_t) = 0;
     virtual bool SetTimeUpdatedFileId(UGCQueryHandle_t, PublishedFileId_t) = 0;
     virtual bool AddRequiredKeyValueTag(UGCQueryHandle_t, const char*, const char*) = 0;
-    virtual SteamAPICall_t RequestUGCDetails(PublishedFileId_t*, uint32_t, uint32_t) = 0;
+    virtual SteamAPICall_t RequestUGCDetails(PublishedFileId_t, uint32_t) = 0;
     virtual SteamAPICall_t CreateItem(AppId_t, int) = 0;
     virtual UGCUpdateHandle_t StartItemUpdate(AppId_t, PublishedFileId_t) = 0;
     virtual bool SetItemTitle(UGCUpdateHandle_t, const char*) = 0;
@@ -698,7 +698,7 @@ public:
     virtual bool GetDeviceBindingRevision(ControllerHandle_t, int*, int*) = 0;
     virtual uint32_t GetRemotePlaySessionID(ControllerHandle_t) = 0;
     virtual uint16_t GetSessionInputConfigurationSettings() = 0;
-    virtual void SetDualSenseTriggerEffect(ControllerHandle_t, const void*, int) = 0;
+    virtual void SetDualSenseTriggerEffect(ControllerHandle_t, const void*) = 0;
     virtual void StopAnalogActionMomentum(ControllerHandle_t, ControllerAnalogActionHandle_t) = 0;
     virtual InputMotionData_t GetMotionData(ControllerHandle_t) = 0;
     virtual void TriggerVibration(ControllerHandle_t, unsigned short, unsigned short) = 0;
@@ -785,7 +785,7 @@ public:
     virtual void GetGameplayStats() = 0;
     virtual SteamAPICall_t GetServerReputation() = 0;
     virtual SteamIPAddress_t GetPublicIP() = 0;
-    virtual void HandleIncomingPacket(const void*, int, uint32_t, uint16_t) = 0;
+    virtual bool HandleIncomingPacket(const void*, int, uint32_t, uint16_t) = 0;
     virtual int GetNextOutgoingPacket(void*, int, uint32_t*, uint16_t*) = 0;
     virtual SteamAPICall_t AssociateWithClan(CSteamID) = 0;
     virtual SteamAPICall_t ComputeNewPlayerCompatibility(SteamAPICall_t) = 0;

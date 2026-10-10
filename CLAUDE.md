@@ -45,13 +45,13 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | Proyecto | Propósito |
 | --- | --- |
 | `src/SplitForge.Core` | Lógica pura y probada: distribución 2–4, Steam (VDF, biblioteca, preflight, informes), ventanas de juego, mandos, laboratorio, IPC binario, sesiones, adaptadores (7DTD, filtro XInput, emulador de Steam), configuración, registro |
-| `src/SplitForge.Windows` | Win32 (`LibraryImport`): ventanas sin bordes, monitores, procesos/módulos solo lectura, temporizador de alta resolución, Steam, Sandboxie-Plus, ranuras XInput, bloqueo de ratón (`ClipCursor`) y atajo global, diagnósticos |
+| `src/SplitForge.Windows` | Win32 (`LibraryImport`): ventanas sin bordes, monitores, procesos/módulos solo lectura, temporizador de alta resolución, Steam, Sandboxie-Plus, ranuras XInput, bloqueo de ratón (`ClipCursor`), bloqueo de entrada «solo mandos» (ganchos de bajo nivel, Ctrl+Alt+B), ventanas sobre la barra de tareas, atajos globales, diagnósticos |
 | `src/SplitForge.Input` | `SdlInputService`: SDL3 en hilo dedicado, eventos en segundo plano, luz/vibración por jugador |
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
 | `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` |
 | `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015); CMake + prueba de humo |
-| `native/SplitForge.SteamEmu` | C++20: emulador de `steam_api64.dll` (ADR-016), **componente principal y permanente**: una identidad distinta por instancia del juego sin un segundo Steam; pestaña 07 y paquete (`native\SplitForge.SteamEmu`); CMake + prueba de humo. Con 7DTD real falla la API plana (falta `self`) |
+| `native/SplitForge.SteamEmu` | C++20: emulador de `steam_api64.dll` (ADR-016), **componente principal y permanente**: una identidad distinta por instancia del juego sin un segundo Steam; pestaña 07 y paquete (`native\SplitForge.SteamEmu`); API plana generada con `tools/generar_api_plana.py` (las 944 entradas de Steamworks.NET); CMake + prueba de humo. Con 7DTD real llega al menú con dos instancias |
 | `tests/SplitForge.Tests` | xUnit (Core) |
 | `launcher.py`, `splitforge/`, `tests/test_*.py` | Prototipo Python 0.6 (referencia; no ampliar salvo diagnósticos) |
 
@@ -81,13 +81,15 @@ En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y s
 
 ## Próxima meta explícita
 
-Ya hay evidencia real (2026-10-10, un cliente sin EAC): 7DTD carga `xinput1_3.dll` y `xinput1_4.dll`, además de DirectInput, HID e InControl, y los dos mandos llegan a Windows como `Xbox 360 Controller` (ver `docs/05-INTEGRACION-STEAM.md`). Siguiente: prueba **W16** con dos clientes. Consiste en instalar el filtro, detectar la ranura de cada mando, asignarlas, comprobar que suben las «lecturas» de cada cliente y que cada mando mueve solo su ventana, y anotar si la ventana sin foco responde. Después, guardar un informe v3 con los dos clientes abiertos.
+Estado real (2026-10-10, PC del propietario, 7DTD build `25661859` = V 3.3.0 b18):
+- **Dos clientes de 7DTD abiertos a la vez en el menú principal** con el emulador de Steam, cada uno con su perfil (`SPLITFORGEJ1` / `SPLITFORGEJ2`).
+- Lanzados como el handler de Nucleus Co-op: sin juego cruzado (`-crossplatform=None -serverplatforms=Steam`), ventana sin marco con el tamaño de su panel, pantalla dividida automática (arriba/abajo, la preferida del propietario; 16:9 como mínimo).
+- **Filtro XInput cargado en los dos** por `xinput1_3.dll`, con J1 → mando 1 y J2 → mando 2; las «lecturas» suben en ambos aunque solo uno tenga el foco.
+- Todo lo hace «Lanzar J1 y J2» de la pestaña 07 (ver `docs/05-INTEGRACION-STEAM.md`). La sesión tapa la barra de tareas y **Ctrl+Alt+B** bloquea teclado y ratón para jugar solo con mandos.
 
-Estado del PC del propietario (comprobado en solo lectura el 2026-10-10):
-- 7DTD build `25661859` (V 3.3.0 b18).
-- **No** están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus. Para W12/W14 (unirse al servidor local) hay que instalar antes el servidor dedicado.
-- El **emulador de Steam está instalado** en 7DTD y el juego **se cierra al iniciar Steam**. El fallo está en `SteamAPI_ISteamClient_GetISteamUser`: la API plana del emulador no recibe `self` y solo exporta 32 de las 866 entradas `SteamAPI_ISteam*` que usa Steamworks.NET. Ver `docs/05-INTEGRACION-STEAM.md`.
-- Corregir eso es la condición para abrir el segundo cliente con el emulador; la alternativa es instalar Sandboxie-Plus.
+Siguiente: confirmar con los dos mandos que cada uno mueve **solo** su ventana y que la ventana sin foco responde (W16). Si no responde, añadir la simulación de foco (técnica `ForceFocus` / `FocusHooks` de Nucleus). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
+
+Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 
 ## Memoria de desarrollo
 

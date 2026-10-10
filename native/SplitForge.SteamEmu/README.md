@@ -3,9 +3,8 @@
 > **Componente principal y permanente de SplitForge** (ADR-016, decisión del propietario del
 > 2026-10-10). Se publica en el paquete como `native\SplitForge.SteamEmu\steam_api64.dll` y se
 > gestiona desde la pestaña 07 «EMULADOR STEAM». Funciona con el juego abierto sin EAC (opción
-> oficial). Sigue siendo experimental: con 7DTD real (V 3.3.0 b18, 2026-10-10) carga las
-> identidades J1/J2, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser`
-> (ver «API plana: pendiente» y `docs/05-INTEGRACION-STEAM.md`).
+> oficial). Sigue siendo experimental: con 7DTD real (V 3.3.0 b18, 2026-10-10) dos instancias
+> llegan al menú a la vez con identidades distintas (ver `docs/05-INTEGRACION-STEAM.md`).
 
 ## Qué es
 
@@ -35,24 +34,28 @@ Nada de esto toca Steam: no hay autenticación real, no hay tienda, no hay servi
 | Control, música, vídeo, parental, app list, game server | stubs seguros (0 mandos, todo desactivado) |
 | UGC, inventario, HTTP, screenshots | stubs vacíos seguros |
 
-**Stubs sin implementar (devuelven `nullptr`):** `SteamNetworkingSockets`, `SteamNetworkingMessages`,
+**Interfaces sin lógica propia** (objetos con métodos neutros): `SteamNetworkingSockets`, `SteamNetworkingMessages`,
 HTMLSurface, Parties, RemotePlay, Timeline, GameSearch. Los juegos que dependan de
 NetworkingSockets para su multiplayer no conectarán con este emulador (7DTD usa su propio
 transporte con Steam P2P o sockets según la versión: pendiente de comprobar con 7DTD real).
 
-## API plana: pendiente (bloquea 7DTD)
+## API plana (generada)
 
-Los juegos que usan Steamworks.NET (como 7DTD) llaman **solo** a la API plana del SDK. En ella,
-cada método de interfaz es una exportación `SteamAPI_<Interfaz>_<Método>(self, …)` que recibe
-primero el puntero a la interfaz. Este emulador:
+Los juegos que usan Steamworks.NET (como 7DTD) llaman **solo** a la API plana del SDK: cada método
+de interfaz es una exportación `SteamAPI_<Interfaz>_<Método>(self, …)` que recibe primero el
+puntero a la interfaz. `src/flat_generated.cpp` se genera con `tools/generar_api_plana.py` a partir
+de las vtables (`src/interfaces.h`) y de la lista de entradas de Steamworks.NET
+(`tools/steamworksnet_api.json`, extraída con `tools/extraer_api_steamworksnet.cs`):
 
-- exporta 32 funciones `SteamAPI_ISteamClient_*` **sin** el parámetro `self`, de modo que los
-  argumentos llegan desplazados. Ahí falla 7DTD, en `SteamAPI_ISteamClient_GetISteamUser`;
-- no exporta ningún método plano del resto de interfaces (`SteamAPI_ISteamUser_*`,
-  `SteamAPI_ISteamFriends_*`…). El Steamworks.NET de 7DTD referencia 866.
+- reenvío tipado a la vtable para cada método implementado (sobrecargas con el sufijo del SDK:
+  `GetStatInt32`/`GetStatFloat`, `SetPropertyString`…), comprobando la clase de registro x64 de cada
+  argumento frente a la firma de Steamworks.NET;
+- entrada neutra (0, false, nullptr o "") para lo que el emulador no implementa;
+- registro en `steamemu.log` de la primera llamada a cada entrada (`[sin implementar]` en las neutras).
 
-Las vtables C++ sí están implementadas, así que cada función plana puede reenviar a ellas.
-La prueba de humo no llama a ninguna función plana de interfaz; conviene añadir una.
+Para otro juego: extraer su lista con `dotnet run tools/extraer_api_steamworksnet.cs -- <dll> tools/steamworksnet_api.json`
+y regenerar con `python tools/generar_api_plana.py`. La CI comprueba que las salidas están al día
+(`--comprobar`) y la prueba de humo, que la DLL exporta todas las entradas.
 
 ## Configuración
 

@@ -8,6 +8,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # Sin de
 # La salida se llama steam_api64.dll a propósito: es la DLL de Steam que el juego carga.
 add_library(SplitForge.SteamEmu SHARED
   src/flat_api.cpp
+  src/flat_generated.cpp
+  src/flat_networking.cpp
   src/interfaces_core.cpp
   src/interfaces_stats.cpp
   src/interfaces_multiplayer.cpp

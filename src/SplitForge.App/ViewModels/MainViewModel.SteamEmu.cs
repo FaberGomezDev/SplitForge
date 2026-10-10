@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Microsoft.Win32;
 using SplitForge.Core.Adapters;
+using SplitForge.Core.Layout;
 using SplitForge.Core.Sessions;
 using SplitForge.Core.Steam;
 using SplitForge.Platform;
@@ -107,9 +108,14 @@ public sealed partial class MainViewModel
             return;
         var config = SteamEmulator.BuildConfig(SteamEmuAppId, SteamId1, Persona1,
             SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, 1));
-        SteamEmulator.Install(folder, dll, config);
+        var result = SteamEmulator.Install(folder, dll, config);
         SaveSettings();
-        _log.Write("Emulador de Steam instalado en 7DTD (original respaldado). Solo abrir con «Lanzar instancia» de esta pestaña.");
+        _log.Write(result switch
+        {
+            SteamEmuInstallResult.Updated => "Emulador de Steam actualizado en 7DTD (la original sigue respaldada).",
+            SteamEmuInstallResult.UpToDate => "El emulador de Steam de 7DTD ya estaba al día.",
+            _ => "Emulador de Steam instalado en 7DTD (original respaldado). Solo abrir con «Lanzar instancia» de esta pestaña.",
+        });
         RefreshSteamEmuStatus();
     });
 
@@ -123,28 +129,107 @@ public sealed partial class MainViewModel
         RefreshSteamEmuStatus();
     });
 
-    private void LaunchSteamEmu(int player) => Guard(() =>
-    {
-        if (!SteamEmulator.IsInstalled(SevenDaysFolder()))
-            throw new InvalidOperationException("Instala primero el emulador de Steam en 7DTD.");
-        WriteSteamEmuConfig(player);
-        var spec = SteamEmulator.InstanceLaunch(SevenDaysExe(), SteamEmuConfigFile(player));
-        _steamEmuLauncher.Start(spec).Dispose();
-        _log.Write($"Instancia J{player} de 7DTD lanzada con identidad emulada ({SpecPersona(player)}). Cierra Steam antes si estaba abierto.");
-    });
+    /// <summary>Lanzamiento planificado: ejecutable, distribución (con el mínimo 16:9 de 7DTD) y panel de cada jugador.</summary>
+    private sealed record EmulatedLaunch(string Exe, LayoutOptions Layout, IReadOnlyList<Region> Panels);
 
-    private void LaunchSteamEmuBoth() => Guard(() =>
+    /// <summary>Clientes recién lanzados a la espera de su ventana para dividir la pantalla.</summary>
+    private sealed record PendingEmulatedClients(int[] Pids, LayoutOptions Layout, DateTime ReadyAt, DateTime Deadline);
+
+    private PendingEmulatedClients? _emuPending;
+
+    private EmulatedLaunch PlanEmulatedLaunch()
     {
         if (!SteamEmulator.IsInstalled(SevenDaysFolder()))
             throw new InvalidOperationException("Instala primero el emulador de Steam en 7DTD.");
-        WriteSteamEmuConfig(1);
-        WriteSteamEmuConfig(2);
-        var exe = SevenDaysExe();
-        _steamEmuLauncher.Start(SteamEmulator.InstanceLaunch(exe, SteamEmuConfigFile(1))).Dispose();
-        System.Threading.Thread.Sleep(1500);
-        _steamEmuLauncher.Start(SteamEmulator.InstanceLaunch(exe, SteamEmuConfigFile(2))).Dispose();
-        _log.Write("Dos instancias de 7DTD lanzadas con identidades emuladas J1/J2 (Steam debe estar cerrado).");
-    });
+        var layout = Layout() with { MinAspect = SevenDaysToDieAdapter.MinAspect };
+        var area = layout.CoverTaskbar ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea();
+        return new EmulatedLaunch(SevenDaysExe(), layout, layout.Regions(area, 2));
+    }
+
+    /// <summary>
+    /// Lanza un cliente con su identidad y la configuración del handler de Nucleus Co-op: sin juego
+    /// cruzado (EOS), ventana sin marco y con el tamaño de su panel desde el arranque.
+    /// </summary>
+    private int StartEmulatedInstance(EmulatedLaunch plan, int player)
+    {
+        WriteSteamEmuConfig(player);
+        var panel = plan.Panels[player - 1];
+        var spec = SteamEmulator.InstanceLaunch(plan.Exe, SteamEmuConfigFile(player),
+            SevenDaysToDieAdapter.EmulatedClientArguments(panel.Width, panel.Height));
+        using var process = _steamEmuLauncher.Start(spec);
+        _log.Write($"J{player} de 7DTD lanzado con identidad emulada ({SpecPersona(player)}), ventana {panel.Width}×{panel.Height}, sin juego cruzado (EOS).");
+        return process.Id;
+    }
+
+    private void LaunchSteamEmu(int player) => Guard(() => StartEmulatedInstance(PlanEmulatedLaunch(), player));
+
+    /// <summary>
+    /// Todo en un paso: lanza J1 y J2, asigna a cada uno su mando (si el filtro XInput está instalado)
+    /// y divide la pantalla en cuanto aparecen sus ventanas.
+    /// </summary>
+    private async void LaunchSteamEmuBoth()
+    {
+        EmulatedLaunch? plan = null;
+        var first = 0;
+        Guard(() =>
+        {
+            plan = PlanEmulatedLaunch();
+            first = StartEmulatedInstance(plan, 1);
+        });
+        if (plan is null || first == 0)
+            return;
+        // Como el handler de Nucleus (PauseBetweenStarts): el segundo arranque no compite con el primero.
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        var second = 0;
+        Guard(() => second = StartEmulatedInstance(plan, 2));
+        if (second == 0)
+            return;
+        Guard(() => AssignEmulatedPads(first, second));
+        var now = DateTime.UtcNow;
+        // Se espera unos segundos a que el juego termine de crear su ventana (PauseBetweenProcessGrab de Nucleus).
+        _emuPending = new PendingEmulatedClients([first, second], plan.Layout, now.AddSeconds(12), now.AddMinutes(2));
+        Status = "7DTD: J1 y J2 arrancando; la pantalla se dividirá sola cuando aparezcan sus ventanas.";
+    }
+
+    /// <summary>Cada cliente ve solo el mando de su jugador (ranuras de la pestaña 06), por PID.</summary>
+    private void AssignEmulatedPads(int pid1, int pid2)
+    {
+        if (XInputFilter.InstalledNames(SevenDaysFolder()).Count == 0)
+        {
+            _log.Write("Filtro XInput no instalado: los dos mandos controlarán ambas ventanas. Instálalo en la pestaña 06 (con los clientes cerrados).");
+            return;
+        }
+        XInputFilter.WriteAssignments(XInputFolder, [(pid1, SlotPlayer1 - 1), (pid2, SlotPlayer2 - 1)]);
+        _log.Write($"Mandos asignados: J1 (PID {pid1}) → mando XInput {SlotPlayer1} · J2 (PID {pid2}) → mando XInput {SlotPlayer2}.");
+        RefreshFilterStatus();
+    }
+
+    /// <summary>Llamado a ≈2 Hz: divide la pantalla cuando las ventanas de los clientes lanzados ya existen.</summary>
+    private void TileEmulatedClientsWhenReady()
+    {
+        if (_emuPending is not { } pending || DateTime.UtcNow < pending.ReadyAt)
+            return;
+        if (DateTime.UtcNow > pending.Deadline)
+        {
+            _emuPending = null;
+            Status = "Las ventanas de 7DTD no aparecieron a tiempo: usa «Dividir pantalla» en la pestaña 06.";
+            return;
+        }
+        var windows = _windows.EnumerateWindows();
+        var handles = new List<nint>();
+        foreach (var pid in pending.Pids)
+        {
+            var window = windows.FirstOrDefault(w => w.Pid == pid && w.Title == SevenDaysToDieAdapter.WindowTitle);
+            if (window.Handle == 0)
+                return; // aún no
+            handles.Add(window.Handle);
+        }
+        _emuPending = null;
+        if (_sessions.Active is not null)
+            _sessions.Stop();
+        _sessions.Attach(handles, pending.Layout);
+        Status = "7DTD: J1 y J2 en pantalla dividida, cada uno con su mando.";
+    }
 
     private string SpecPersona(int player) => player == 1 ? Persona1 : Persona2;
 

@@ -164,6 +164,10 @@ public:
             *ticketSize = length;
         const HAuthTicket handle = emu.nextAuthTicket++;
         emu.authTickets[handle] = emu.config.steamId;
+        GetAuthSessionTicketResponse_t response{};
+        response.m_hAuthTicket = handle;
+        response.m_eResult = k_EResultOK;
+        emu.QueueCallback(k_iCallback_GetAuthSessionTicketResponse, &response, sizeof(response));
         return handle;
     }
     EBeginAuthSessionResult BeginAuthSession(const void*, int, CSteamID) override {
@@ -183,12 +187,19 @@ public:
     }
     bool BIsBehindNAT() override { return false; }
     void AdvertiseGame(CSteamID, uint32_t, uint16_t) override {}
-    SteamAPICall_t RequestEncryptedAppTicket(void*, int) override { return Emu().NewApiCall(); }
+    // El ticket cifrado es local: ningún servicio externo (p. ej. EOS) lo dará por válido.
+    SteamAPICall_t RequestEncryptedAppTicket(void*, int) override {
+        EncryptedAppTicketResponse_t response{};
+        response.m_eResult = k_EResultOK;
+        return Emu().QueueCallResult(k_iCallback_EncryptedAppTicketResponse, &response, sizeof(response));
+    }
     bool GetEncryptedAppTicket(void* ticket, int size, uint32_t* ticketSize) override {
+        constexpr uint32_t length = 128;
         if (ticketSize)
-            *ticketSize = 0;
-        if (ticket && size > 0)
-            std::memset(ticket, 0, static_cast<size_t>(size));
+            *ticketSize = length;
+        if (!ticket || size < static_cast<int>(length))
+            return false;
+        MakeTicket(static_cast<uint8_t*>(ticket), length);
         return true;
     }
     int GetGameBadgeLevel(int, bool) override { return 1; }
@@ -199,7 +210,8 @@ public:
     bool BIsPhoneIdentifying() override { return false; }
     bool BIsPhoneRequiringVerification() override { return false; }
     int GetMarketEligibility() override { return 0; }
-    void GetDurationControl(void* out) override {
+    // SDK: llamada asíncrona; el resultado (DurationControl_t, callback 167) llega como call result.
+    SteamAPICall_t GetDurationControl() override {
         struct DurationControl {
             EResult m_eResult;
             AppId_t m_appid;
@@ -210,15 +222,23 @@ public:
             int32_t m_csecsToday;
             int32_t m_csecsRemaining;
         };
-        auto* result = static_cast<DurationControl*>(out);
-        if (!result)
-            return;
-        std::memset(result, 0, sizeof(DurationControl));
-        result->m_eResult = k_EResultOK;
+        DurationControl result{};
+        result.m_eResult = k_EResultOK;
+        result.m_appid = Emu().config.appId;
+        return Emu().QueueCallResult(167, &result, sizeof(result));
     }
     bool BSetDurationControlOnlineState(int) override { return false; }
     HAuthTicket GetAuthTicketForWebApi(const char*) override {
-        return GetAuthSessionTicket(nullptr, 0, nullptr);
+        EmuState& emu = Emu();
+        const HAuthTicket handle = emu.nextAuthTicket++;
+        emu.authTickets[handle] = emu.config.steamId;
+        GetTicketForWebApiResponse_t response{};
+        response.m_hAuthTicket = handle;
+        response.m_eResult = k_EResultOK;
+        response.m_cubTicket = 64;
+        MakeTicket(response.m_rgubTicket, static_cast<size_t>(response.m_cubTicket));
+        emu.QueueCallback(k_iCallback_GetTicketForWebApiResponse, &response, sizeof(response));
+        return handle;
     }
 };
 

@@ -36,7 +36,7 @@
 - Distribución de 2 a 4 ventanas con modo sin bordes reversible y ajuste configurable: rellenar la región o mantener la proporción 16:9, 16:10, 21:9 o 4:3 centrada, con resolución sugerida por panel.
 - Biblioteca Steam con preflight e inspección de clientes.
 - Adaptador experimental de 7 Days to Die: servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida y diagnóstico de las APIs de mando.
-- **Emulador de Steam, componente principal** (ADR-016, pestaña 07): da a cada instancia del juego una identidad distinta sin un segundo Steam (con 7DTD aún falla al iniciar; ver más abajo).
+- **Emulador de Steam, componente principal** (ADR-016, pestaña 07): da a cada instancia del juego una identidad distinta sin un segundo Steam. **Con 7DTD (2026-10-10): dos clientes en el menú a la vez**, lanzados con la configuración del handler de Nucleus (ADR-018) en pantalla dividida y con su mando asignado.
 - CI en Windows con paquete autónomo.
 
 **Evidencia real de 7DTD (2026-10-10, un cliente sin EAC):** carga `xinput1_3.dll` y `xinput1_4.dll`, DirectInput, HID e InControl; los dos mandos llegan a Windows como `Xbox 360 Controller` (XInput). Ver [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md).
@@ -47,12 +47,13 @@
 - Servidor dedicado de 7DTD (AppID 294420) y Sandboxie-Plus **no instalados**.
 - Controladores ViGEmBus y HidHide instalados.
 
-**Verificado automáticamente:** 158 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador. La CI en Windows está verde (run #16, `783da1d`, incluida la prueba de arranque que exige las 7 pestañas). En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
+**Verificado automáticamente:** 166 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador (esta última con la API plana de Steamworks.NET). La CI en Windows comprueba además que la API plana generada está al día. En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
 **Experimental, sin validar en hardware:**
 - Filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
 - Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L, ADR-017) para pantalla dividida.
-- Emulador de Steam con 7DTD real (2026-10-10): carga las identidades J1/J2, pero el juego **se cierra al iniciar Steam**. Su API plana no recibe `self` y solo cubre 32 de las 866 entradas que usa Steamworks.NET. Sigue **instalado** en el juego (ver [`05-INTEGRACION-STEAM.md`](05-INTEGRACION-STEAM.md)).
+- Bloqueo de entrada «solo mandos» (Ctrl+Alt+B, ADR-019) y pantalla dividida que tapa la barra de tareas (comprobado con 7DTD).
+- Aislamiento de mandos dentro de 7DTD: filtro cargado en los dos clientes (J1 → mando 1, J2 → mando 2); falta la confirmación física y ver si la ventana sin foco reacciona (W16).
 
 **No implementado / no verificado:**
 - La 0.7 con mandos en el hardware del propietario.

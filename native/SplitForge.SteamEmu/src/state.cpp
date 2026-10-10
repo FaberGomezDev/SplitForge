@@ -227,11 +227,12 @@ void EmuState::QueueCallResultAt(SteamAPICall_t call, int iCallback, const void*
     event.apiCall = call;
     event.iCallback = iCallback;
     event.data.assign(static_cast<const uint8_t*>(data), static_cast<const uint8_t*>(data) + size);
-    events.push_back(std::move(event));
+    // Copia antes de mover el evento a la cola (tras el move, event.data queda vacío).
     PendingResult result;
     result.iCallback = iCallback;
     result.data = event.data;
     apiResults[call] = std::move(result);
+    events.push_back(std::move(event));
 }
 
 bool EmuState::FinishApiResult(SteamAPICall_t call, int iCallback, const void* data, size_t size, bool fail) {
@@ -276,8 +277,16 @@ void InvokeRun(void* object, CallbackEvent& event, bool isCallResult, bool faile
 }
 } // namespace
 
+void EmuState::PruneConsumedEvents() {
+    while (!events.empty() && events.front().consumed)
+        events.pop_front();
+}
+
 void EmuState::DispatchRunCallbacks() {
-    for (auto& event : events) {
+    PruneConsumedEvents();
+    // Por índice: los manejadores pueden encolar eventos nuevos mientras se recorre la cola.
+    for (size_t i = 0; i < events.size(); ++i) {
+        CallbackEvent& event = events[i];
         if (event.consumed)
             continue;
         if (event.apiCall != 0) {
@@ -319,13 +328,26 @@ void EmuState::DispatchRunCallbacks() {
 }
 
 bool EmuState::PopManual(CallbackMsg_t* out) {
+    if (!lastManualValid)
+        PruneConsumedEvents();
     for (auto& event : events) {
         if (event.consumed)
             continue;
         lastManual.m_hSteamUser = 1;
-        lastManual.m_iCallback = event.iCallback;
-        lastManual.m_pubParam = event.data.data();
-        lastManual.m_cubParam = static_cast<int>(event.data.size());
+        if (event.apiCall != 0) {
+            // Call result: se anuncia con SteamAPICallCompleted_t; el juego pide los datos después
+            // con SteamAPI_ManualDispatch_GetAPICallResult (apiResults los conserva hasta entonces).
+            lastCompleted.m_hAsyncCall = event.apiCall;
+            lastCompleted.m_iCallback = event.iCallback;
+            lastCompleted.m_cubParam = static_cast<uint32_t>(event.data.size());
+            lastManual.m_iCallback = k_iCallback_SteamAPICallCompleted;
+            lastManual.m_pubParam = reinterpret_cast<uint8_t*>(&lastCompleted);
+            lastManual.m_cubParam = static_cast<int>(sizeof(lastCompleted));
+        } else {
+            lastManual.m_iCallback = event.iCallback;
+            lastManual.m_pubParam = event.data.data();
+            lastManual.m_cubParam = static_cast<int>(event.data.size());
+        }
         lastManualValid = true;
         event.consumed = true;
         if (out)

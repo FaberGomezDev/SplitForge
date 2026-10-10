@@ -22,6 +22,8 @@ public sealed record AppSettings
     public SplitOrientation Orientation { get; init; } = SplitOrientation.SideBySide;
     public int Gutter { get; init; } = 4;
     public bool Borderless { get; init; } = true;
+    /// <summary>Sesión de juego en el monitor completo, con las ventanas por encima de la barra de tareas.</summary>
+    public bool CoverTaskbar { get; init; } = true;
     public WindowFit Fit { get; init; } = WindowFit.Rellenar;
     public int AspectW { get; init; } = 16;
     public int AspectH { get; init; } = 9;

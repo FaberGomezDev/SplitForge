@@ -92,6 +92,15 @@ public static class SplitLayout
     public static IReadOnlyList<Region> ApplyFit(IReadOnlyList<Region> regions, WindowFit fit, AspectRatio aspect) =>
         fit == WindowFit.MantenerProporcion && aspect.IsValid ? [.. regions.Select(r => Fit(r, aspect))] : regions;
 
+    /// <summary>
+    /// Reduce a <paramref name="minimum"/> (centrada) cada región más estrecha que esa proporción; las
+    /// regiones iguales o más anchas no cambian. Para juegos cuya interfaz se corta por debajo de 16:9.
+    /// </summary>
+    public static IReadOnlyList<Region> EnsureMinAspect(IReadOnlyList<Region> regions, AspectRatio minimum) =>
+        minimum.IsValid
+            ? [.. regions.Select(r => r.Height > 0 && (double)r.Width / r.Height < minimum.Value - 1e-6 ? Fit(r, minimum) : r)]
+            : regions;
+
     /// <summary>Compatibilidad con la configuración de la versión Python ("vertical" / "horizontal").</summary>
     public static SplitOrientation ParseLegacy(string? value) => value switch
     {

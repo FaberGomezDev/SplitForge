@@ -41,6 +41,7 @@ bool ShutdownInternal() {
     emu.SaveStats();
     emu.net.Stop();
     emu.initialized = false;
+    ++emu.contextCounter;
     return true;
 }
 
@@ -135,6 +136,7 @@ S_API bool SteamAPI_Init() {
     }
     emu.initTicks = GetTickCount64();
     emu.initialized = true;
+    ++emu.contextCounter;
     const bool netOk = emu.net.Start(emu.config.multicastAddress, emu.config.netPort,
                                      emu.config.steamId, emu.config.appId, emu.config.discoverySeconds);
     emu.Log("SplitForge.SteamEmu iniciado: app=%u steamid=%llu persona=%s config=%s red=%s",
@@ -163,7 +165,7 @@ S_API void SteamAPI_WriteMiniDump(uint32_t, void*, uint32_t) {}
 
 S_API void SteamAPI_SetMiniDumpComment(const char*) {}
 
-S_API void SteamAPI_UseBreakpadCrashHandler(void*, void*, const char*, unsigned int) {}
+S_API void SteamAPI_UseBreakpadCrashHandler(const char*, const char*, const char*, bool, void*, void*) {}
 
 S_API void SteamAPI_SetBreakpadAppID(uint32_t) {}
 
@@ -272,37 +274,31 @@ S_API bool SteamAPI_ManualDispatch_GetAPICallResult(int, uint64_t apiCall, void*
     return Emu().GetApiResult(apiCall, out, static_cast<size_t>(size > 0 ? size : 0), expected, failed);
 }
 
-S_API bool SteamAPI_GetSteamInstallPath(char*, uint32_t) {
-    return false;
+S_API const char* SteamAPI_GetSteamInstallPath() {
+    return "";
 }
+
+S_API void SteamAPI_SetTryCatchCallbacks(bool) {}
 
 S_API void* SteamInternal_ContextInit(void* data) {
     if (!data)
         return nullptr;
-    // La estructura que pasa Steamworks.NET: puntero de función (sin usar) + cadena de
-    // versiones separadas por '?' (p. ej. "SteamClient020?SteamUser023?SteamFriends017?…").
-    // Se devuelve la interfaz del PRIMER segmento reconocible de la cadena.
+    // Contrato de steam_api_internal.h (accesores SteamUser(), SteamFriends()… de los juegos C++):
+    // void* datos[3] = { función de inicio, contador, hueco }. Si el contador no es el vigente, se
+    // llama a la función con el hueco (ella guarda ahí la interfaz) y se devuelve el hueco.
     struct ContextInitData {
-        void* pFn;
-        const char* pchVersionString;
+        void (*pFn)(void* context);
+        uintptr_t counter;
+        void* context;
     };
-    auto* context = static_cast<ContextInitData*>(data);
-    if (!context->pchVersionString)
-        return nullptr;
-    std::string chain = context->pchVersionString;
-    size_t start = 0;
-    while (start <= chain.size()) {
-        const size_t end = chain.find('?', start);
-        const std::string segment = chain.substr(start, end == std::string::npos ? std::string::npos : end - start);
-        if (!segment.empty()) {
-            if (void* found = ResolveGeneric(segment.c_str()))
-                return found;
-        }
-        if (end == std::string::npos)
-            break;
-        start = end + 1;
+    auto* init = static_cast<ContextInitData*>(data);
+    const uintptr_t current = Emu().contextCounter;
+    if (init->counter != current) {
+        if (init->pFn)
+            init->pFn(&init->context);
+        init->counter = current;
     }
-    return nullptr;
+    return &init->context;
 }
 
 S_API void* SteamInternal_CreateInterface(const char* version) {
@@ -313,7 +309,7 @@ S_API void* SteamInternal_FindOrCreateUserInterface(int, const char* version) {
     return ResolveGeneric(version);
 }
 
-S_API void* SteamInternal_FindOrCreateGameServerInterface(int, int, const char* version) {
+S_API void* SteamInternal_FindOrCreateGameServerInterface(int, const char* version) {
     return ResolveGeneric(version);
 }
 
@@ -329,6 +325,14 @@ S_API bool SteamGameServer_Init(uint32_t, uint16_t, uint16_t, uint16_t, int, con
 S_API bool SteamGameServer_InitSafe(uint32_t, uint16_t, uint16_t, uint16_t, int, const char*) {
     return SteamGameServer_Init(0, 0, 0, 0, 0, nullptr);
 }
+
+// Lo que llaman SteamGameServer_Init de los encabezados modernos y Steamworks.NET.
+S_API bool SteamInternal_GameServer_Init(uint32_t ip, uint16_t legacyPort, uint16_t gamePort, uint16_t queryPort,
+                                         int serverMode, const char* version) {
+    return SteamGameServer_Init(ip, legacyPort, gamePort, queryPort, serverMode, version);
+}
+
+S_API void SteamGameServer_ReleaseCurrentThreadMemory() {}
 
 S_API void SteamGameServer_Shutdown() {
     Emu().gameServerInitialized = false;
@@ -435,110 +439,6 @@ S_API ISteamInput* SteamGameServerInput() { return InputInstance(); }
 S_API ISteamMatchmaking* SteamGameServerMatchmaking() { return MatchmakingInstance(); }
 S_API void* SteamGameServerTimeline() { return nullptr; }
 S_API void* SteamGameServerNetworkingMessages() { return NetworkingMessagesInstance(); }
-
-// Accesores clásicos ISteamClient.
-S_API ISteamUser* SteamAPI_ISteamClient_GetISteamUser(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamUser(user, pipe, version);
-}
-S_API ISteamGameServer* SteamAPI_ISteamClient_GetISteamGameServer(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamGameServer(user, pipe, version);
-}
-S_API ISteamFriends* SteamAPI_ISteamClient_GetISteamFriends(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamFriends(user, pipe, version);
-}
-S_API ISteamUtils* SteamAPI_ISteamClient_GetISteamUtils(int pipe, const char* version) {
-    return ClientInstance()->GetISteamUtils(pipe, version);
-}
-S_API ISteamMatchmaking* SteamAPI_ISteamClient_GetISteamMatchmaking(int user, int pipe,
-                                                                    const char* version) {
-    return ClientInstance()->GetISteamMatchmaking(user, pipe, version);
-}
-S_API ISteamMatchmakingServers* SteamAPI_ISteamClient_GetISteamMatchmakingServers(int user, int pipe,
-                                                                                  const char* version) {
-    return ClientInstance()->GetISteamMatchmakingServers(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamGenericInterface(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamGenericInterface(user, pipe, version);
-}
-S_API ISteamUserStats* SteamAPI_ISteamClient_GetISteamUserStats(int user, int pipe,
-                                                                const char* version) {
-    return ClientInstance()->GetISteamUserStats(user, pipe, version);
-}
-S_API ISteamGameServerStats* SteamAPI_ISteamClient_GetISteamGameServerStats(int user, int pipe,
-                                                                            const char* version) {
-    return ClientInstance()->GetISteamGameServerStats(user, pipe, version);
-}
-S_API ISteamApps* SteamAPI_ISteamClient_GetISteamApps(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamApps(user, pipe, version);
-}
-S_API ISteamNetworking* SteamAPI_ISteamClient_GetISteamNetworking(int user, int pipe,
-                                                                  const char* version) {
-    return ClientInstance()->GetISteamNetworking(user, pipe, version);
-}
-S_API ISteamRemoteStorage* SteamAPI_ISteamClient_GetISteamRemoteStorage(int user, int pipe,
-                                                                        const char* version) {
-    return ClientInstance()->GetISteamRemoteStorage(user, pipe, version);
-}
-S_API ISteamScreenshots* SteamAPI_ISteamClient_GetISteamScreenshots(int user, int pipe,
-                                                                    const char* version) {
-    return ClientInstance()->GetISteamScreenshots(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamGameSearch(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamGameSearch(user, pipe, version);
-}S_API ISteamHTTP* SteamAPI_ISteamClient_GetISteamHTTP(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamHTTP(user, pipe, version);
-}
-S_API ISteamController* SteamAPI_ISteamClient_GetISteamController(int user, int pipe,
-                                                                  const char* version) {
-    return ClientInstance()->GetISteamController(user, pipe, version);
-}
-S_API ISteamUGC* SteamAPI_ISteamClient_GetISteamUGC(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamUGC(user, pipe, version);
-}
-S_API ISteamAppList* SteamAPI_ISteamClient_GetISteamAppList(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamAppList(user, pipe, version);
-}
-S_API ISteamMusic* SteamAPI_ISteamClient_GetISteamMusic(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamMusic(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamMusicRemote(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamMusicRemote(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamHTMLSurface(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamHTMLSurface(user, pipe, version);
-}S_API ISteamInventory* SteamAPI_ISteamClient_GetISteamInventory(int user, int pipe,
-                                                                const char* version) {
-    return ClientInstance()->GetISteamInventory(user, pipe, version);
-}
-S_API ISteamVideo* SteamAPI_ISteamClient_GetISteamVideo(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamVideo(user, pipe, version);
-}
-S_API ISteamParentalSettings* SteamAPI_ISteamClient_GetISteamParentalSettings(int user, int pipe,
-                                                                              const char* version) {
-    return ClientInstance()->GetISteamParentalSettings(user, pipe, version);
-}
-S_API ISteamInput* SteamAPI_ISteamClient_GetISteamInput(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamInput(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamParties(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamParties(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamRemotePlay(int user, int pipe, const char* version) {
-    return ClientInstance()->GetISteamRemotePlay(user, pipe, version);
-}
-S_API void* SteamAPI_ISteamClient_GetISteamTimeline(int, int, const char*) { return nullptr; }
-S_API void* SteamAPI_ISteamClient_GetISteamNetworkingSockets(int, int, const char*) {
-    return NetworkingSocketsInstance();
-}
-S_API void* SteamAPI_ISteamClient_GetISteamNetworkingUtils(int, int, const char*) {
-    return NetworkingUtilsInstance();
-}
-S_API void* SteamAPI_ISteamClient_GetISteamNetworkingMessages(int, int, const char*) {
-    return NetworkingMessagesInstance();
-}
-S_API void* SteamAPI_ISteamClient_GetISteamNetworkingFakeUDPPort(int, int, const char*) {
-    return nullptr;
-}
 
 // Accesores versionados: se resuelven con GetProcAddress por nombre exacto.
 S_API ISteamUser* SteamAPI_SteamUser_v023() { return UserInstance(); }

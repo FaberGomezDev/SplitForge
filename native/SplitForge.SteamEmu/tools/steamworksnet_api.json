@@ -1,0 +1,9252 @@
+{
+  "origen": "Steamworks.NET (com.rlabrecque.steamworks.net.dll), extraído con tools/extraer_api_steamworksnet.cs",
+  "nota": "Solo nombres de entrada y clases de ABI x64 (int, float, double, ptr, void, struct:N). Sin código ni datos del juego.",
+  "versiones": {
+    "STEAMAPPLIST_INTERFACE_VERSION": "STEAMAPPLIST_INTERFACE_VERSION001",
+    "STEAMAPPS_INTERFACE_VERSION": "STEAMAPPS_INTERFACE_VERSION008",
+    "STEAMAPPTICKET_INTERFACE_VERSION": "STEAMAPPTICKET_INTERFACE_VERSION001",
+    "STEAMCLIENT_INTERFACE_VERSION": "SteamClient020",
+    "STEAMFRIENDS_INTERFACE_VERSION": "SteamFriends017",
+    "STEAMGAMECOORDINATOR_INTERFACE_VERSION": "SteamGameCoordinator001",
+    "STEAMGAMESEARCH_INTERFACE_VERSION": "SteamMatchGameSearch001",
+    "STEAMGAMESERVERSTATS_INTERFACE_VERSION": "SteamGameServerStats001",
+    "STEAMGAMESERVER_INTERFACE_VERSION": "SteamGameServer015",
+    "STEAMHTMLSURFACE_INTERFACE_VERSION": "STEAMHTMLSURFACE_INTERFACE_VERSION_005",
+    "STEAMHTTP_INTERFACE_VERSION": "STEAMHTTP_INTERFACE_VERSION003",
+    "STEAMINPUT_INTERFACE_VERSION": "SteamInput006",
+    "STEAMINVENTORY_INTERFACE_VERSION": "STEAMINVENTORY_INTERFACE_V003",
+    "STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION": "SteamMatchMakingServers002",
+    "STEAMMATCHMAKING_INTERFACE_VERSION": "SteamMatchMaking009",
+    "STEAMMUSICREMOTE_INTERFACE_VERSION": "STEAMMUSICREMOTE_INTERFACE_VERSION001",
+    "STEAMMUSIC_INTERFACE_VERSION": "STEAMMUSIC_INTERFACE_VERSION001",
+    "STEAMNETWORKINGMESSAGES_INTERFACE_VERSION": "SteamNetworkingMessages002",
+    "STEAMNETWORKINGSOCKETS_INTERFACE_VERSION": "SteamNetworkingSockets012",
+    "STEAMNETWORKINGUTILS_INTERFACE_VERSION": "SteamNetworkingUtils004",
+    "STEAMNETWORKING_INTERFACE_VERSION": "SteamNetworking006",
+    "STEAMPARENTALSETTINGS_INTERFACE_VERSION": "STEAMPARENTALSETTINGS_INTERFACE_VERSION001",
+    "STEAMPARTIES_INTERFACE_VERSION": "SteamParties002",
+    "STEAMREMOTEPLAY_INTERFACE_VERSION": "STEAMREMOTEPLAY_INTERFACE_VERSION001",
+    "STEAMREMOTESTORAGE_INTERFACE_VERSION": "STEAMREMOTESTORAGE_INTERFACE_VERSION016",
+    "STEAMSCREENSHOTS_INTERFACE_VERSION": "STEAMSCREENSHOTS_INTERFACE_VERSION003",
+    "STEAMUGC_INTERFACE_VERSION": "STEAMUGC_INTERFACE_VERSION017",
+    "STEAMUSERSTATS_INTERFACE_VERSION": "STEAMUSERSTATS_INTERFACE_VERSION012",
+    "STEAMUSER_INTERFACE_VERSION": "SteamUser023",
+    "STEAMUTILS_INTERFACE_VERSION": "SteamUtils010",
+    "STEAMVIDEO_INTERFACE_VERSION": "STEAMVIDEO_INTERFACE_V002"
+  },
+  "entradas": [
+    {
+      "name": "SteamAPI_GetHSteamPipe",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_GetHSteamUser",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_GetSteamInstallPath",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_ISteamAppList_GetAppBuildId",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamAppList_GetAppInstallDir",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamAppList_GetAppName",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamAppList_GetInstalledApps",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamAppList_GetNumInstalledApps",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BGetDLCDataByIndex",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsAppInstalled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsCybercafe",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsDlcInstalled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsLowViolence",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsSubscribed",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsSubscribedApp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsSubscribedFromFamilySharing",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsSubscribedFromFreeWeekend",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsTimedTrial",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_BIsVACBanned",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetAppBuildId",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetAppInstallDir",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetAppOwner",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetAvailableGameLanguages",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetCurrentBetaName",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetCurrentGameLanguage",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetDLCCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetDlcDownloadProgress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetEarliestPurchaseUnixTime",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetFileDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetInstalledDepots",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetLaunchCommandLine",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_GetLaunchQueryParam",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_InstallDLC",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_MarkContentCorrupt",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_RequestAllProofOfPurchaseKeys",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_RequestAppProofOfPurchaseKey",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_SetDlcContext",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamApps_UninstallDLC",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_BReleaseSteamPipe",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_BShutdownIfAllPipesClosed",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_ConnectToGlobalUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_CreateLocalUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_CreateSteamPipe",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetIPCCallCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamAppList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamApps",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamController",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamFriends",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamGameSearch",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamGameServer",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamGameServerStats",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamGenericInterface",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamHTMLSurface",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamHTTP",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamInput",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamInventory",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamMatchmaking",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamMatchmakingServers",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamMusic",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamMusicRemote",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamNetworking",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamParentalSettings",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamParties",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamRemotePlay",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamRemoteStorage",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamScreenshots",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamUGC",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamUser",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamUserStats",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamUtils",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_GetISteamVideo",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_ReleaseUser",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_SetLocalIPBinding",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamClient_SetWarningMessageHook",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlay",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayInviteDialog",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayInviteDialogConnectString",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayRemotePlayTogetherInviteDialog",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayToStore",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayToUser",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_BHasEquippedProfileItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ClearRichPresence",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_CloseClanChatWindowInSteam",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_DownloadClanActivityCounts",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_EnumerateFollowingList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetChatMemberByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanActivityCounts",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanChatMemberCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanChatMessage",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanOfficerByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanOfficerCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanOwner",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetClanTag",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetCoplayFriend",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetCoplayFriendCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFollowerCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendCoplayGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendCoplayTime",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendCountFromSource",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendFromSourceByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendGamePlayed",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendMessage",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendPersonaName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendPersonaNameHistory",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendPersonaState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendRelationship",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendRichPresence",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendRichPresenceKeyCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendSteamLevel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendsGroupCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendsGroupIDByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendsGroupMembersCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendsGroupMembersList",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetFriendsGroupName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetLargeFriendAvatar",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetMediumFriendAvatar",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetNumChatsWithUnreadPriorityMessages",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetPersonaName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetPersonaState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetPlayerNickname",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetProfileItemPropertyString",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetProfileItemPropertyUint",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetSmallFriendAvatar",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_GetUserRestrictions",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_HasFriend",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_InviteUserToGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsClanChatAdmin",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsClanChatWindowOpenInSteam",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsClanOfficialGameGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsClanPublic",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsFollowing",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_IsUserInSource",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_JoinClanChatRoom",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_LeaveClanChatRoom",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_OpenClanChatWindowInSteam",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_RegisterProtocolInOverlayBrowser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_ReplyToFriendMessage",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_RequestClanOfficerList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_RequestEquippedProfileItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_RequestFriendRichPresence",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_RequestUserInformation",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SendClanChatMessage",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SetInGameVoiceSpeaking",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SetListenForFriendsMessages",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SetPersonaName",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SetPlayedWith",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamFriends_SetRichPresence",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_AcceptGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_AddGameSearchParams",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_CancelRequestPlayersForGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_DeclineGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_EndGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_EndGameSearch",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_HostConfirmGameStart",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_RequestPlayersForGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_RetrieveConnectionDetails",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_SearchForGameSolo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_SearchForGameWithLobby",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_SetConnectionDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_SetGameHostParams",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameSearch_SubmitPlayerResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_ClearUserAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_GetUserAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_GetUserStatFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_GetUserStatInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_RequestUserStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_SetUserAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_SetUserStatFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_SetUserStatInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_StoreUserStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServerStats_UpdateUserAvgRateStat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "float",
+        "double"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_AssociateWithClan",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_BLoggedOn",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_BSecure",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_BUpdateUserData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_BeginAuthSession",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_CancelAuthTicket",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_ClearAllKeyValues",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_ComputeNewPlayerCompatibility",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_CreateUnauthenticatedUserConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_EndAuthSession",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetAuthSessionTicket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetGameplayStats",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetNextOutgoingPacket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetPublicIP",
+      "ret": "struct:20",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetServerReputation",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_GetSteamID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_HandleIncomingPacket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_LogOff",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_LogOn",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_LogOnAnonymous",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_RequestUserGroupStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SendUserConnectAndAuthenticate_DEPRECATED",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SendUserDisconnect_DEPRECATED",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetAdvertiseServerActive",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetBotPlayerCount",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetDedicatedServer",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetGameData",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetGameDescription",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetGameTags",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetKeyValue",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetMapName",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetMaxPlayerCount",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetModDir",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetPasswordProtected",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetProduct",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetRegion",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetServerName",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetSpectatorPort",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_SetSpectatorServerName",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_UserHasLicenseForApp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamGameServer_WasRestartRequested",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_AddHeader",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_AllowStartRequest",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_CopyToClipboard",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_CreateBrowser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_ExecuteJavascript",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_FileLoadDialogResponse",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_Find",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_GetLinkAtPosition",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_GoBack",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_GoForward",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_Init",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_JSDialogResponse",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_KeyChar",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_KeyDown",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_KeyUp",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_LoadURL",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_MouseDoubleClick",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_MouseDown",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_MouseMove",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_MouseUp",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_MouseWheel",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_OpenDeveloperTools",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_PasteFromClipboard",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_Reload",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_RemoveBrowser",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetBackgroundMode",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetCookie",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetDPIScalingFactor",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetHorizontalScroll",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetKeyFocus",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetPageScaleFactor",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "float",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetSize",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_SetVerticalScroll",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_Shutdown",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_StopFind",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_StopLoad",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTMLSurface_ViewSource",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_CreateCookieContainer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_CreateHTTPRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_DeferHTTPRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPDownloadProgressPct",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPRequestWasTimedOut",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPResponseBodyData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPResponseBodySize",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPResponseHeaderSize",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPResponseHeaderValue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_GetHTTPStreamingResponseBodyData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_PrioritizeHTTPRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_ReleaseCookieContainer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_ReleaseHTTPRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SendHTTPRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SendHTTPRequestAndStreamResponse",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetCookie",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestAbsoluteTimeoutMS",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestContextValue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestCookieContainer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestGetOrPostParameter",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestHeaderValue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestNetworkActivityTimeout",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestRawPostBody",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestRequiresVerifiedCertificate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamHTTP_SetHTTPRequestUserAgentInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_ActivateActionSet",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_ActivateActionSetLayer",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_BNewDataAvailable",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_BWaitForData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_DeactivateActionSetLayer",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_DeactivateAllActionSetLayers",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_EnableActionEventCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_EnableDeviceCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetActionOriginFromXboxOrigin",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetActionSetHandle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetActiveActionSetLayers",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetAnalogActionData",
+      "ret": "struct:13",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetAnalogActionHandle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetAnalogActionOrigins",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetConnectedControllers",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetControllerForGamepadIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetCurrentActionSet",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetDeviceBindingRevision",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetDigitalActionData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetDigitalActionHandle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetDigitalActionOrigins",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetGamepadIndexForController",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetGlyphForActionOrigin_Legacy",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetGlyphForXboxOrigin",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetGlyphPNGForActionOrigin",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetGlyphSVGForActionOrigin",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetInputTypeForHandle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetMotionData",
+      "ret": "struct:40",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetRemotePlaySessionID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetSessionInputConfigurationSettings",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetStringForActionOrigin",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetStringForAnalogActionName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetStringForDigitalActionName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_GetStringForXboxOrigin",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_Init",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_Legacy_TriggerHapticPulse",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_Legacy_TriggerRepeatedHapticPulse",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_RunFrame",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_SetDualSenseTriggerEffect",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_SetInputActionManifestFilePath",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_SetLEDColor",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_ShowBindingPanel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_Shutdown",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_StopAnalogActionMomentum",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_TranslateActionOrigin",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_TriggerSimpleHapticEvent",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_TriggerVibration",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInput_TriggerVibrationExtended",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_AddPromoItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_AddPromoItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_CheckResultSteamID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_ConsumeItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_DeserializeResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_DestroyResult",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_ExchangeItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GenerateItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetAllItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetEligiblePromoItemDefinitionIDs",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetItemDefinitionIDs",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetItemDefinitionProperty",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetItemPrice",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetItemsByID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetItemsWithPrices",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetNumItemsWithPrices",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetResultItemProperty",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetResultItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetResultStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GetResultTimestamp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_GrantPromoItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_InspectItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_LoadItemDefinitions",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_RemoveProperty",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_RequestEligiblePromoItemDefinitionsIDs",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_RequestPrices",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SendItemDropHeartbeat",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SerializeResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SetPropertyBool",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SetPropertyFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SetPropertyInt64",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SetPropertyString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_StartPurchase",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_StartUpdateProperties",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_SubmitUpdateProperties",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_TradeItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_TransferItemQuantity",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamInventory_TriggerItemDrop",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_CancelQuery",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_CancelServerQuery",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_GetServerCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_GetServerDetails",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_IsRefreshing",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_PingServer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_PlayerDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RefreshQuery",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RefreshServer",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_ReleaseRequest",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestFavoritesServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestFriendsServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestHistoryServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestInternetServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestLANServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_RequestSpectatorServerList",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmakingServers_ServerRules",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddFavoriteGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListCompatibleMembersFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListDistanceFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListFilterSlotsAvailable",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListNearValueFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListNumericalFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListResultCountFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_AddRequestLobbyListStringFilter",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_CreateLobby",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_DeleteLobbyData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetFavoriteGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetFavoriteGameCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyChatEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyData",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyDataByIndex",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyDataCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyGameServer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyMemberByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyMemberData",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyMemberLimit",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetLobbyOwner",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_GetNumLobbyMembers",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_InviteUserToLobby",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_JoinLobby",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_LeaveLobby",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_RemoveFavoriteGame",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_RequestLobbyData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_RequestLobbyList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SendLobbyChatMsg",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLinkedLobby",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyGameServer",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyJoinable",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyMemberData",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyMemberLimit",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyOwner",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMatchmaking_SetLobbyType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_BActivationSuccess",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_BIsCurrentMusicRemote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_CurrentEntryDidChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_CurrentEntryIsAvailable",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_CurrentEntryWillChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_DeregisterSteamMusicRemote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnableLooped",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnablePlayNext",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnablePlayPrevious",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnablePlaylists",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnableQueue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_EnableShuffled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_PlaylistDidChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_PlaylistWillChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_QueueDidChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_QueueWillChange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_RegisterSteamMusicRemote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_ResetPlaylistEntries",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_ResetQueueEntries",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetCurrentPlaylistEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetCurrentQueueEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetDisplayName",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetPNGIcon_64x64",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetPlaylistEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_SetQueueEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateCurrentEntryCoverArt",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateCurrentEntryElapsedSeconds",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateCurrentEntryText",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateLooped",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdatePlaybackStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateShuffled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusicRemote_UpdateVolume",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_BIsEnabled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_BIsPlaying",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_GetPlaybackStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_GetVolume",
+      "ret": "float",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_Pause",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_Play",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_PlayNext",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_PlayPrevious",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamMusic_SetVolume",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingConnectionSignaling_Release",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingConnectionSignaling_SendSignal",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_AcceptSessionWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_CloseChannelWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_GetSessionConnectionInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_ReceiveMessagesOnChannel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingMessages_SendMessageToUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSignalingRecvContext_OnConnectRequest",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSignalingRecvContext_SendRejectionSignal",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_AcceptConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_BeginAsyncRequestFakeIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CloseConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CloseListenSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ConnectByIPAddress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ConnectP2P",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ConnectP2PCustomSignaling",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ConnectToHostedDedicatedServer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateFakeUDPPort",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateHostedDedicatedServerListenSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateListenSocketIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateListenSocketP2P",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateListenSocketP2PFakeIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreatePollGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_CreateSocketPair",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_DestroyPollGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_FindRelayAuthTicketForServer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_FlushMessagesOnConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetAuthenticationStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetCertificateRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetConnectionInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetConnectionName",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetConnectionUserData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetDetailedConnectionStatus",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetFakeIP",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetGameCoordinatorServerLogin",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerAddress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerPOPID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetHostedDedicatedServerPort",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetIdentity",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_GetRemoteFakeIPForConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_InitAuthentication",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnPollGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ReceivedP2PCustomSignal",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ReceivedRelayAuthTicket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_ResetIdentity",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_RunCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SendMessageToConnection",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SendMessages",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SetCertificate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SetConnectionName",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SetConnectionPollGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingSockets_SetConnectionUserData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_AllocateMessage",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_CheckPingDataUpToDate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_ConvertPingLocationToString",
+      "ret": "void",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_EstimatePingTimeBetweenTwoLocations",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_EstimatePingTimeFromLocalHost",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetConfigValue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetConfigValueInfo",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetDirectPingToPOP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetIPv4FakeIPType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetLocalPingLocation",
+      "ret": "float",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetLocalTimestamp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetPOPCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetPOPList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetPingToDataCenter",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetRealIdentityForFakeIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_GetRelayNetworkStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_InitRelayNetworkAccess",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_IsFakeIPv4",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_IterateGenericEditableConfigValues",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_ParsePingLocationString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SetConfigValue",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SetDebugOutputFunction",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SteamNetworkingIPAddr_GetFakeIPType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SteamNetworkingIPAddr_ParseString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SteamNetworkingIPAddr_ToString",
+      "ret": "void",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SteamNetworkingIdentity_ParseString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworkingUtils_SteamNetworkingIdentity_ToString",
+      "ret": "void",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_AcceptP2PSessionWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_AllowP2PPacketRelay",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_CloseP2PChannelWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_CloseP2PSessionWithUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_CreateConnectionSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "struct:20",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_CreateListenSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "struct:20",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_CreateP2PConnectionSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_DestroyListenSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_DestroySocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_GetListenSocketInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_GetMaxPacketSize",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_GetP2PSessionState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_GetSocketConnectionType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_GetSocketInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_IsDataAvailable",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_IsDataAvailableOnSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_IsP2PPacketAvailable",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_ReadP2PPacket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_RetrieveData",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_RetrieveDataFromSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_SendDataOnSocket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamNetworking_SendP2PPacket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsAppBlocked",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsAppInBlockList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsFeatureBlocked",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsFeatureInBlockList",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsParentalLockEnabled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParentalSettings_BIsParentalLockLocked",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_CancelReservation",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_ChangeNumOpenSlots",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_CreateBeacon",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_DestroyBeacon",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetAvailableBeaconLocations",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetBeaconByIndex",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetBeaconDetails",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetBeaconLocationData",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "struct:16",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetNumActiveBeacons",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_GetNumAvailableBeaconLocations",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_JoinParty",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamParties_OnReservationCompleted",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_BGetSessionClientResolution",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_BSendRemotePlayTogetherInvite",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_GetSessionClientFormFactor",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_GetSessionClientName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_GetSessionCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_GetSessionID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemotePlay_GetSessionSteamID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_BeginFileWriteBatch",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_CommitPublishedFileUpdate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_CreatePublishedFileUpdateRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_DeletePublishedFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EndFileWriteBatch",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EnumeratePublishedFilesByUserAction",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EnumeratePublishedWorkshopFiles",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EnumerateUserPublishedFiles",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EnumerateUserSharedWorkshopFiles",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_EnumerateUserSubscribedFiles",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileDelete",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileExists",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileForget",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FilePersisted",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileRead",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileReadAsync",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileReadAsyncComplete",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileShare",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWrite",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWriteAsync",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWriteStreamCancel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWriteStreamClose",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWriteStreamOpen",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_FileWriteStreamWriteChunk",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetCachedUGCCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetCachedUGCHandle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetFileCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetFileNameAndSize",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetFileSize",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetFileTimestamp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetLocalFileChange",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetLocalFileChangeCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetPublishedFileDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetPublishedItemVoteDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetQuota",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetSyncPlatforms",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetUGCDetails",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetUGCDownloadProgress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_GetUserPublishedItemVoteDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_IsCloudEnabledForAccount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_IsCloudEnabledForApp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_PublishVideo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_PublishWorkshopFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_SetCloudEnabledForApp",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_SetSyncPlatforms",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_SetUserPublishedFileAction",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_SubscribePublishedFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UGCDownload",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UGCDownloadToLocation",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UGCRead",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UnsubscribePublishedFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileDescription",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFilePreviewFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileSetChangeDescription",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTitle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdatePublishedFileVisibility",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamRemoteStorage_UpdateUserPublishedItemVote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_AddScreenshotToLibrary",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_AddVRScreenshotToLibrary",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_HookScreenshots",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_IsScreenshotsHooked",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_SetLocation",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_TagPublishedFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_TagUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_TriggerScreenshot",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamScreenshots_WriteScreenshot",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddAppDependency",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddContentDescriptor",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddDependency",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddExcludedTag",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddItemKeyValueTag",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddItemPreviewFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddItemPreviewVideo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddItemToFavorites",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddRequiredKeyValueTag",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddRequiredTag",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_AddRequiredTagGroup",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_BInitWorkshopForGameServer",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_CreateItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_CreateQueryAllUGCRequestCursor",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_CreateQueryAllUGCRequestPage",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_CreateQueryUserUGCRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_DeleteItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_DownloadItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetAppDependencies",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetItemDownloadInfo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetItemInstallInfo",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetItemState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetItemUpdateProgress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetNumSubscribedItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryFirstUGCKeyValueTag",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCChildren",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCContentDescriptors",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCMetadata",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCNumTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCPreviewURL",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCStatistic",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCTag",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetQueryUGCTagDisplayName",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetSubscribedItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetUserItemVote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_GetWorkshopEULAStatus",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_ReleaseQueryUGCRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveAllItemKeyValueTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveAppDependency",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveContentDescriptor",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveDependency",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveItemFromFavorites",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveItemKeyValueTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RemoveItemPreview",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_RequestUGCDetails",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SendQueryUGCRequest",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetAllowCachedResponse",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetAllowLegacyUpload",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetCloudFileNameFilter",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemContent",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemDescription",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemMetadata",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemPreview",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemTitle",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemUpdateLanguage",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetItemVisibility",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetLanguage",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetMatchAnyTag",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetRankedByTrendDays",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnAdditionalPreviews",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnChildren",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnKeyValueTags",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnLongDescription",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnMetadata",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnOnlyIDs",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnPlaytimeStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetReturnTotalOnly",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetSearchText",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetTimeCreatedDateRange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetTimeUpdatedDateRange",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SetUserItemVote",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_ShowWorkshopEULA",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_StartItemUpdate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_StartPlaytimeTracking",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_StopPlaytimeTracking",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SubmitItemUpdate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SubscribeItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_SuspendDownloads",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_UnsubscribeItem",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_UpdateItemPreviewFile",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUGC_UpdateItemPreviewVideo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_AttachLeaderboardUGC",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_ClearAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_DownloadLeaderboardEntries",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_DownloadLeaderboardEntriesForUsers",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_FindLeaderboard",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_FindOrCreateLeaderboard",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementAchievedPercent",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementIcon",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementProgressLimitsFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetAchievementProgressLimitsInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetDownloadedLeaderboardEntry",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetGlobalStatDouble",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetGlobalStatHistoryDouble",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetGlobalStatHistoryInt64",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetGlobalStatInt64",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetLeaderboardDisplayType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetLeaderboardEntryCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetLeaderboardName",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetLeaderboardSortMethod",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetMostAchievedAchievementInfo",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetNextMostAchievedAchievementInfo",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetNumAchievements",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetNumberOfCurrentPlayers",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetStatFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetStatInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetUserAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetUserAchievementAndUnlockTime",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetUserStatFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_GetUserStatInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_IndicateAchievementProgress",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_RequestCurrentStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_RequestGlobalAchievementPercentages",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_RequestGlobalStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_RequestUserStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_ResetAllStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_SetAchievement",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_SetStatFloat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "float"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_SetStatInt32",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_StoreStats",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_UpdateAvgRateStat",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "float",
+        "double"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUserStats_UploadLeaderboardScore",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_AdvertiseGame",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BIsBehindNAT",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BIsPhoneIdentifying",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BIsPhoneRequiringVerification",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BIsPhoneVerified",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BIsTwoFactorEnabled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BLoggedOn",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BSetDurationControlOnlineState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_BeginAuthSession",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_CancelAuthTicket",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_DecompressVoice",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_EndAuthSession",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetAuthSessionTicket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetAuthTicketForWebApi",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetAvailableVoice",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetDurationControl",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetEncryptedAppTicket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetGameBadgeLevel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetHSteamUser",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetMarketEligibility",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetPlayerSteamLevel",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetSteamID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetUserDataFolder",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetVoice",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_GetVoiceOptimalSampleRate",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_InitiateGameConnection_DEPRECATED",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_RequestEncryptedAppTicket",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_RequestStoreAuthURL",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_StartVoiceRecording",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_StopVoiceRecording",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_TerminateGameConnection_DEPRECATED",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_TrackAppUsageEvent",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUser_UserHasLicenseForApp",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_BOverlayNeedsPresent",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_CheckFileSignature",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_FilterText",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetAPICallFailureReason",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetAPICallResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetAppID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetConnectedUniverse",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetCurrentBatteryPower",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetEnteredGamepadTextInput",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetEnteredGamepadTextLength",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetIPCCallCount",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetIPCountry",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetIPv6ConnectivityState",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetImageRGBA",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetImageSize",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetSecondsSinceAppActive",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetSecondsSinceComputerActive",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetServerRealTime",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_GetSteamUILanguage",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_InitFilterText",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsAPICallCompleted",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsOverlayEnabled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsSteamChinaLauncher",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsSteamInBigPictureMode",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsSteamRunningInVR",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_SetGameLauncherMode",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_SetOverlayNotificationInset",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_SetOverlayNotificationPosition",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_SetVRHeadsetStreamingEnabled",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_SetWarningMessageHook",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_ShowGamepadTextInput",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamUtils_StartVRDashboard",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamVideo_GetOPFSettings",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamVideo_GetOPFStringForApp",
+      "ret": "int",
+      "string": true,
+      "params": [
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamVideo_GetVideoURL",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ISteamVideo_IsBroadcasting",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_Init",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_IsSteamRunning",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_ManualDispatch_FreeLastCallback",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ManualDispatch_GetAPICallResult",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "int",
+        "int",
+        "ptr",
+        "int",
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ManualDispatch_GetNextCallback",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_ManualDispatch_Init",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_ManualDispatch_RunFrame",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_RegisterCallResult",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_RegisterCallback",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_ReleaseCurrentThreadMemory",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_RestartAppIfNecessary",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_RunCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_SetBreakpadAppID",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SetMiniDumpComment",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SetTryCatchCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_Shutdown",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_Clear",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_GetFakeIPType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_GetIPv4",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_IsEqualTo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_IsFakeIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_IsIPv4",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_IsIPv6AllZeros",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_IsLocalHost",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_ParseString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_SetIPv4",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_SetIPv6",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_SetIPv6LocalHost",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIPAddr_ToString",
+      "ret": "void",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_Clear",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetFakeIPType",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetGenericBytes",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetGenericString",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetIPAddr",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetIPv4",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetPSNID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetStadiaID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetSteamID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetSteamID64",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_GetXboxPairwiseID",
+      "ret": "ptr",
+      "string": true,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_IsEqualTo",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_IsFakeIP",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_IsInvalid",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_IsLocalHost",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_ParseString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetGenericBytes",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetGenericString",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetIPAddr",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetIPv4Addr",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetLocalHost",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetPSNID",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetStadiaID",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetSteamID",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetSteamID64",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_SetXboxPairwiseID",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingIdentity_ToString",
+      "ret": "void",
+      "string": true,
+      "params": [
+        "ptr",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_SteamNetworkingMessage_t_Release",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_UnregisterCallResult",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamAPI_UnregisterCallback",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_UseBreakpadCrashHandler",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "ptr",
+        "ptr",
+        "ptr",
+        "int",
+        "ptr",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamAPI_WriteMiniDump",
+      "ret": "void",
+      "string": false,
+      "params": [
+        "int",
+        "ptr",
+        "int"
+      ]
+    },
+    {
+      "name": "SteamClient",
+      "ret": "ptr",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServerClient",
+      "ret": "ptr",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_BSecure",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_GetHSteamPipe",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_GetHSteamUser",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_GetSteamID",
+      "ret": "int",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_ReleaseCurrentThreadMemory",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_RunCallbacks",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamGameServer_Shutdown",
+      "ret": "void",
+      "string": false,
+      "params": []
+    },
+    {
+      "name": "SteamInternal_ContextInit",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamInternal_CreateInterface",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamInternal_FindOrCreateGameServerInterface",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamInternal_FindOrCreateUserInterface",
+      "ret": "ptr",
+      "string": false,
+      "params": [
+        "int",
+        "ptr"
+      ]
+    },
+    {
+      "name": "SteamInternal_GameServer_Init",
+      "ret": "int",
+      "string": false,
+      "params": [
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "ptr"
+      ]
+    }
+  ]
+}

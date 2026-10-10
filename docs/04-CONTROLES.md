@@ -63,4 +63,6 @@ Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input
   - Están instalados ViGEmBus (mandos virtuales) y HidHide (oculta los HID originales). Encaja con PS4 convertidos en mandos Xbox 360 virtuales; la herramienta que los crea no se ha identificado (supuesto).
   - El hilo de entrada SDL3 3.5.0 mide 1000 Hz (`mandos`, sin mandos conectados en esa medición).
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
+- **Bloqueo de entrada «solo mandos» (Ctrl+Alt+B, ADR-019):** el teclado y el ratón dejan de llegar a los juegos y al escritorio; los mandos siguen funcionando. Se suelta con el mismo atajo.
+- **Evidencia (2026-10-10, dos clientes de 7DTD):** el filtro se carga por `xinput1_3.dll`, J1 solo ve el mando 1 y J2 el mando 2, y ambos consultan su mando unas 60 veces por segundo también sin foco.
 - Sin drivers de kernel por defecto.

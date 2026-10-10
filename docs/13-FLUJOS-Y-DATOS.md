@@ -77,6 +77,12 @@ flowchart LR
     DLL --> REST[Restaurar: solo si el SHA-256 coincide\ndevuelve la original y borra lo propio]
 ```
 
+«Lanzar J1 y J2» (ADR-018):
+1. Calcula el panel de cada jugador con la distribución de la barra inferior, el mínimo 16:9 de 7DTD y, si está activo, el monitor completo.
+2. Lanza J1 y, 1,5 s después, J2 con su identidad y `-crossplatform=None -serverplatforms=Steam -noeac -screen-fullscreen 0 -popupwindow -screen-width/-height`.
+3. Si el filtro XInput está instalado, escribe la asignación por PID (J1 → mando de J1, J2 → mando de J2); el filtro la relee en vivo.
+4. A ≈2 Hz, desde 12 s después, busca las ventanas «7 Days To Die» de esos PID y abre la sesión de pantalla dividida (restaurable al detener).
+
 ## Persistencia
 
 - `%LOCALAPPDATA%\SplitForge\settings.v2.json`: distribución, modo de lectura, frecuencia de entrada, perfiles de mandos por GUID, opciones del servidor 7DTD. Escritura atómica.

@@ -7,7 +7,7 @@
 - [x] Dos PS4 Bluetooth leídos con SDL en el equipo del usuario (prototipo Python).
 - [x] Mundo simulado una sola vez, dos visores y estados separados.
 - [x] Reconstrucción en .NET 10 + SDL3 + WPF (ADR-010): entrada en hilo dedicado, simulación a 120 Hz, IPC binario, visores con GPU.
-- [x] Pruebas automáticas (158 xUnit + 77 unittest + pruebas de humo C++) y CI en Windows con paquete autónomo.
+- [x] Pruebas automáticas (166 xUnit + 77 unittest + pruebas de humo C++) y CI en Windows con paquete autónomo.
 - [x] Registro local con identificador de sesión, sin datos privados.
 - [x] Hilo de entrada SDL3 3.5.0 a 1000 Hz medido en el PC del propietario (2026-10-10, sin mandos).
 - [ ] **Validar la 0.7 en el PC del propietario con los dos PS4** (W01–W07 de `07-PRUEBAS.md`).
@@ -22,8 +22,10 @@
 - [x] Preflight, servidor local aislado, Sandboxie-Plus para el Steam del jugador 2, pantalla dividida (implementado, sin validar).
 - [x] `SplitForge_Reporte_7DTD.json` con **un** cliente sin EAC (2026-10-10): `xinput1_3` + `xinput1_4`, DirectInput, HID, InControl; mandos como `Xbox 360 Controller`.
 - [x] Emulador de Steam (componente principal, pestaña 07) para abrir J1 y J2 con identidades distintas sin un segundo Steam.
-- [x] Primera prueba real del emulador con 7DTD (2026-10-10): carga J1/J2, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser`.
-- [ ] Emulador: API plana con `self` y métodos `SteamAPI_ISteam*` que 7DTD usa al arrancar; prueba de humo por la API plana; repetir W20.
+- [x] Primera prueba real del emulador con 7DTD (2026-10-10, mañana): carga J1/J2, pero el juego se cerraba en `SteamAPI_ISteamClient_GetISteamUser` (API plana sin `self`).
+- [x] Emulador: API plana generada (944 entradas de Steamworks.NET) y prueba de humo por la API plana.
+- [x] Lanzador con la configuración del handler de Nucleus (sin juego cruzado, ventana por panel, pantalla dividida y mandos asignados automáticamente): **dos clientes en el menú a la vez** (`DOS_CLIENTES_VALIDOS`).
+- [x] Pantalla dividida que tapa la barra de tareas y bloqueo de entrada «solo mandos» (Ctrl+Alt+B), a petición del propietario.
 - [ ] Instalar el servidor dedicado (AppID 294420) en el PC de pruebas (no instalado el 2026-10-10).
 - [ ] Informe v3 con **dos** clientes abiertos y anotación de si la ventana sin foco sigue funcionando.
 
@@ -64,10 +66,7 @@
 ## Orden concreto del próximo sprint
 
 1. ~~Propietario: enviar `SplitForge_Reporte_7DTD.json`~~ → recibido (2026-10-10, un cliente sin EAC).
-2. Desarrollo: corregir la API plana del emulador (`self` + métodos `SteamAPI_ISteam*` de arranque), con prueba de humo por la API plana.
-3. Propietario: descargar el `SplitForge-win-x64` de `main` (o `Compilar_SplitForge.bat`).
-   - Con los clientes cerrados, «Instalar filtro».
-   - Abrir dos clientes sin EAC: pestaña 07 con el emulador corregido, o un segundo Steam en Sandboxie-Plus.
-   - Pulsar «Detectar» y «Asignar».
-   - Comprobar las lecturas y el control de cada ventana (W16) y guardar un informe v3.
-4. Con esa evidencia: registrar `INPUT_AISLADO_VALIDADO` o decidir el siguiente método (ADR) en `05-INTEGRACION-STEAM.md`.
+2. ~~Desarrollo: corregir la API plana del emulador~~ → hecho (2026-10-10): dos clientes en el menú con el filtro cargado.
+3. Propietario: con «Lanzar J1 y J2» (pestaña 07), comprobar que cada mando mueve solo su ventana y que la ventana sin foco reacciona (W16).
+4. Si la ventana sin foco no reacciona: simulación de foco en el filtro (técnica `ForceFocus` / `FocusHooks` de Nucleus).
+5. J2 se une a la partida de J1 en 127.0.0.1 (W14); con esa evidencia, registrar `SESION_COMUN_VALIDADA` / `INPUT_AISLADO_VALIDADO` en `05-INTEGRACION-STEAM.md`.

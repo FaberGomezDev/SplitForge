@@ -66,7 +66,7 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
             Native.IsZoomed(handle) != 0, Native.IsIconic(handle) != 0, style, ex, (int)pid);
     }
 
-    public void Place(nint handle, Region region, bool borderless)
+    public void Place(nint handle, Region region, bool borderless, bool topmost = false)
     {
         EnsureWindow(handle);
         Native.ShowWindow(handle, Native.SW_RESTORE); // Si estaba maximizada o minimizada.
@@ -86,7 +86,7 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
             Native.SetWindowLongPtr(handle, Native.GWL_STYLE, original.Style);
             Native.SetWindowLongPtr(handle, Native.GWL_EXSTYLE, original.ExStyle);
         }
-        Move(handle, region);
+        Move(handle, region, topmost ? Native.HWND_TOPMOST : null);
     }
 
     public void Restore(WindowSnapshot snapshot)
@@ -99,7 +99,8 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
         _framed.Remove(snapshot.Handle);
         Native.SetWindowLongPtr(snapshot.Handle, Native.GWL_STYLE, (nint)snapshot.Style);
         Native.SetWindowLongPtr(snapshot.Handle, Native.GWL_EXSTYLE, (nint)snapshot.ExStyle);
-        Move(snapshot.Handle, snapshot.Bounds);
+        // El orden «siempre encima» no se restaura con el estilo: hace falta SetWindowPos.
+        Move(snapshot.Handle, snapshot.Bounds, (snapshot.ExStyle & Native.WS_EX_TOPMOST) != 0 ? Native.HWND_TOPMOST : Native.HWND_NOTOPMOST);
         if (snapshot.Maximized)
             Native.ShowWindow(snapshot.Handle, Native.SW_MAXIMIZE);
         else if (snapshot.Minimized)
@@ -122,6 +123,16 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
         return new Region(w.Left, w.Top, w.Right - w.Left, w.Bottom - w.Top);
     }
 
+    public Region PrimaryBounds()
+    {
+        var monitor = Native.MonitorFromPoint(default, Native.MONITOR_DEFAULTTOPRIMARY);
+        var info = new Native.MONITORINFO { cbSize = sizeof(Native.MONITORINFO) };
+        if (monitor == 0 || Native.GetMonitorInfo(monitor, ref info) == 0)
+            throw new InvalidOperationException("No se pudo leer el monitor principal.");
+        var m = info.rcMonitor;
+        return new Region(m.Left, m.Top, m.Right - m.Left, m.Bottom - m.Top);
+    }
+
     public int? ProcessId(nint handle)
     {
         if (Native.IsWindow(handle) == 0)
@@ -130,10 +141,11 @@ public sealed unsafe class Win32WindowSystem : IWindowSystem
         return (int)pid;
     }
 
-    private static void Move(nint handle, Region region)
+    /// <summary>Mueve y redimensiona; con <paramref name="zOrder"/> además cambia el orden (p. ej. siempre encima).</summary>
+    private static void Move(nint handle, Region region, nint? zOrder = null)
     {
-        const uint flags = Native.SWP_NOZORDER | Native.SWP_NOACTIVATE | Native.SWP_SHOWWINDOW | Native.SWP_FRAMECHANGED;
-        if (Native.SetWindowPos(handle, 0, region.X, region.Y, region.Width, region.Height, flags) == 0)
+        var flags = Native.SWP_NOACTIVATE | Native.SWP_SHOWWINDOW | Native.SWP_FRAMECHANGED | (zOrder is null ? Native.SWP_NOZORDER : 0);
+        if (Native.SetWindowPos(handle, zOrder ?? 0, region.X, region.Y, region.Width, region.Height, flags) == 0)
             throw new InvalidOperationException("Windows impidió mover esta ventana (¿pantalla completa exclusiva o proceso elevado?).",
                 new Win32Exception(Marshal.GetLastPInvokeError()));
     }

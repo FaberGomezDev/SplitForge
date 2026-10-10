@@ -50,6 +50,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _orientationStacked = _settings.Orientation == SplitOrientation.Stacked;
         _gutter = _settings.Gutter;
         _borderless = _settings.Borderless;
+        _coverTaskbar = _settings.CoverTaskbar;
         _fitKeepAspect = _settings.Fit == SplitForge.Core.Layout.WindowFit.MantenerProporcion;
         _selectedAspect = new AspectRatio(_settings.AspectW, _settings.AspectH) is { IsValid: true } a ? a : AspectRatio.SixteenNine;
         _selectedMode = _settings.InputMode;
@@ -128,6 +129,22 @@ public sealed partial class MainViewModel : Observable, IDisposable
 
     public IReadOnlyList<AspectRatio> AspectChoices { get; } = AspectRatio.Common;
 
+    private bool _coverTaskbar;
+    /// <summary>true = la sesión ocupa el monitor completo y las ventanas tapan la barra de tareas.</summary>
+    public bool CoverTaskbar
+    {
+        get => _coverTaskbar;
+        set
+        {
+            if (Set(ref _coverTaskbar, value))
+            {
+                SaveSettings();
+                ApplyLayoutLive();
+                RefreshPaneHint();
+            }
+        }
+    }
+
     private bool _fitKeepAspect;
     /// <summary>true = centrar el juego con su proporción (sin deformar); false = rellenar toda la región.</summary>
     public bool FitKeepAspect
@@ -174,7 +191,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
     /// <summary>Calcula el tamaño de cada panel (2 jugadores) para que el usuario fije esa resolución en el juego.</summary>
     private void RefreshPaneHint() => Guard(() =>
     {
-        var regions = SplitLayout.Compute(_windows.PrimaryWorkArea(), 2,
+        var regions = SplitLayout.Compute(CoverTaskbar ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea(), 2,
             OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide, Gutter);
         regions = SplitLayout.ApplyFit(regions, FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar, SelectedAspect);
         var sizes = string.Join(" · ", regions.Select((r, i) => $"J{i + 1} {r.Width}×{r.Height}"));
@@ -201,7 +218,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
 
     private LayoutOptions Layout() =>
         new(OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide, Gutter, Borderless,
-            FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar, SelectedAspect);
+            FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar, SelectedAspect, CoverTaskbar: CoverTaskbar);
 
     private void Relayout() => Guard(() =>
     {
@@ -215,6 +232,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _labLoop = null;
         _sessions.Stop();
         ReleaseCursor(); // Al deshacer la pantalla dividida, el ratón vuelve a ser libre.
+        ReleaseInputLock(); // Y el teclado y el ratón vuelven a funcionar.
         Status = "Sesión detenida; ventanas restauradas.";
     }
 
@@ -232,6 +250,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         if (++_tickCount % 15 == 0) // ≈ 2 Hz
         {
             Guard(_sessions.Tick, quiet: true);
+            Guard(TileEmulatedClientsWhenReady, quiet: true);
             RefreshServer();
             var active = _sessions.Active;
             if (active is { Pending: false, WindowHandles.Count: >= 2 })
@@ -255,6 +274,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Orientation = OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide,
             Gutter = Gutter,
             Borderless = Borderless,
+            CoverTaskbar = CoverTaskbar,
             Fit = FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar,
             AspectW = SelectedAspect.W,
             AspectH = SelectedAspect.H,
@@ -317,6 +337,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
     {
         _timer.Stop();
         ReleaseCursor();
+        ReleaseInputLock();
         _labLoop?.Dispose();
         _sessions.Dispose();
         _server.Dispose();

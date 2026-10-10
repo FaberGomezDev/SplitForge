@@ -52,6 +52,15 @@ public class SettingsTests
     }
 
     [Fact]
+    public void CoverTaskbarIsOnByDefaultAndPersists()
+    {
+        Assert.True(new AppSettings().CoverTaskbar);
+        using var tmp = new TempDir();
+        SettingsStore.Save(tmp.Path, new AppSettings { CoverTaskbar = false });
+        Assert.False(SettingsStore.Load(tmp.Path).CoverTaskbar);
+    }
+
+    [Fact]
     public void CorruptedFileFallsBackAndIsKept()
     {
         using var tmp = new TempDir();

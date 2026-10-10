@@ -93,10 +93,33 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Evidencia (2026-10-10):**
 - La prueba de humo pasa en el PC del propietario y en la CI.
-- Con 7DTD V 3.3.0 (b18), las dos instancias cargan sus identidades, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser`.
-- Causa: Steamworks.NET usa la API plana del SDK, que recibe `self` como primer argumento. El emulador exporta 32 funciones `SteamAPI_ISteamClient_*` sin `self` y ninguno de los métodos planos de las demás interfaces; 7DTD referencia 866.
+- Con 7DTD V 3.3.0 (b18), por la mañana: las dos instancias cargaban sus identidades, pero el juego se cerraba en `SteamAPI_ISteamClient_GetISteamUser`. Causa: la API plana del emulador no recibía `self` y solo exportaba 32 de las 944 entradas de Steamworks.NET.
+- Por la tarde: API plana **generada** desde las vtables (`tools/generar_api_plana.py`, comprobada en la CI) con las 944 entradas, `ContextInit` con el contrato del SDK, despacho de call results por `SteamAPICallCompleted_t`. Con el lanzador de ADR-018, **dos clientes de 7DTD llegan al menú a la vez** con perfiles distintos.
 
-**Pendiente:** API plana completa para lo que 7DTD usa al arrancar, prueba de humo por la API plana y repetir W20.
+**Pendiente:** comprobar si el servidor dedicado oficial acepta identidades emuladas y la partida común por IP (W14).
+
+## ADR-018 · Aceptada (experimental) · Lanzador de clientes con la configuración del handler de Nucleus Co-op
+
+**Decisión:** «Lanzar J1 y J2» (pestaña 07) reproduce lo que hace el handler de 7DTD de Nucleus Co-op (versión 18, instalado en el PC del propietario y usado como referencia). Cada cliente:
+- arranca sin juego cruzado (`-crossplatform=None -serverplatforms=Steam`), en ventana sin marco (`-screen-fullscreen 0 -popupwindow`, `-noeac`) y con el tamaño de su panel (`-screen-width`, `-screen-height`);
+- recibe su mando con el filtro XInput (asignación por PID, si el filtro está instalado);
+- se coloca en pantalla dividida en cuanto aparece su ventana (espera de 12 s, como `PauseBetweenProcessGrab`), con la proporción mínima 16:9 del juego (`LayoutOptions.MinAspect`).
+
+**Por qué:** con juego cruzado, EOS rechaza la identidad local y bloquea el menú (el botón «Jugar sin conexión» exige `EUserStatus.OfflineMode`). Nucleus lo evita editando `platform.cfg` en su copia del juego; 7DTD admite lo mismo por argumentos (`PlatformManager.GetCommandLineOverrides`), así que SplitForge no toca archivos del juego para esto. La interfaz de 7DTD se corta en paneles más estrechos que 16:9.
+
+**Consecuencias:** sin juego cruzado no hay partidas con jugadores de consola; la partida común es por Steam/IP. Pendiente: simulación de foco si la ventana sin foco no reacciona (Nucleus usa `ForceFocus` y `FocusHooks`).
+
+**Barra de tareas (petición del propietario):** con «Tapar barra de tareas» (activada por defecto), la sesión usa el monitor completo y coloca las ventanas «siempre encima» (`HWND_TOPMOST`), por encima de la barra. Al detener se restaura también ese orden. Comprobado el 2026-10-10: la franja de la barra (esquinas incluidas) pasa a ser de la ventana de J2.
+
+## ADR-019 · Aceptada (experimental) · Bloqueo de entrada «solo mandos» (Ctrl+Alt+B)
+
+**Decisión:** un atajo global (Ctrl+Alt+B) y un botón activan ganchos de bajo nivel de teclado y ratón (`WH_KEYBOARD_LL` / `WH_MOUSE_LL`) que descartan toda la entrada de teclado y ratón, para los juegos y para el escritorio, salvo el propio atajo, que la suelta. Los mandos (XInput) no pasan por ahí. Es el equivalente al bloqueo de entrada de Nucleus Co-op (tecla Fin), pedido por el propietario para jugar solo con mandos.
+
+**Cómo:** la decisión es pura y está probada (`InputLockFilter`): descarta pulsaciones, deja pasar las teclas soltadas (ningún modificador se queda «pegado») y sigue por sí misma el estado de Ctrl/Alt/Shift/Win, porque Windows no lo actualiza con las pulsaciones descartadas. `InputLock` (Win32) solo instala y retira los ganchos.
+
+**Garantías:** se suelta con el atajo, al detener la sesión y al cerrar SplitForge. Ctrl+Alt+Supr no se puede bloquear. Windows retira el gancho si SplitForge deja de responder. Sin inyección en otros procesos.
+
+**Límites:** bloquea todo el teclado y el ratón (también el escritorio) mientras está activo. No separa varios teclados o ratones por jugador.
 
 ## ADR-017 · Aceptada (experimental) · Bloqueo de ratón por ventana con ClipCursor
 

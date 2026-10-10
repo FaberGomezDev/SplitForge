@@ -13,13 +13,19 @@ public interface IWindowSystem
 {
     IReadOnlyList<WindowInfo> EnumerateWindows();
     WindowSnapshot Capture(nint handle);
-    /// <summary>Mueve la ventana; con <paramref name="borderless"/> quita marco y título (reversible).</summary>
-    void Place(nint handle, Region region, bool borderless);
+    /// <summary>
+    /// Mueve la ventana; con <paramref name="borderless"/> quita marco y título, y con <paramref name="topmost"/>
+    /// la pone por encima de la barra de tareas. Todo reversible con <see cref="Restore"/>.
+    /// </summary>
+    void Place(nint handle, Region region, bool borderless, bool topmost = false);
     void Restore(WindowSnapshot snapshot);
     /// <summary>Petición de cierre normal (WM_CLOSE). Nunca fuerza.</summary>
     void RequestClose(nint handle);
     /// <summary>Área útil del monitor principal (sin barra de tareas), en píxeles físicos.</summary>
     Region PrimaryWorkArea();
+
+    /// <summary>Monitor principal completo (incluida la zona de la barra de tareas), en píxeles físicos.</summary>
+    Region PrimaryBounds();
 
     /// <summary>PID dueño de la ventana, o null si ya no existe.</summary>
     int? ProcessId(nint handle);
@@ -87,13 +93,30 @@ public sealed class SystemProcessLauncher : IProcessLauncher
     }
 }
 
+/// <param name="CoverTaskbar">
+/// Usa el monitor completo y coloca las ventanas por encima de la barra de tareas (sesión de juego sin
+/// barra visible). Al detener se restaura el orden original de las ventanas.
+/// </param>
+/// <param name="MinAspect">
+/// Proporción mínima que exige el juego (p. ej. 16:9 en 7DTD, cuya interfaz se corta en ventanas más
+/// estrechas). Las regiones más estrechas se reducen a esa proporción, centradas; sin valor, no se aplica.
+/// </param>
 public sealed record LayoutOptions(
     SplitOrientation Orientation,
     int Gutter,
     bool Borderless,
     WindowFit Fit = WindowFit.Rellenar,
-    AspectRatio Aspect = default)
+    AspectRatio Aspect = default,
+    AspectRatio MinAspect = default,
+    bool CoverTaskbar = false)
 {
     /// <summary>Proporción efectiva: la elegida o 16:9 si no se fijó una válida.</summary>
     public AspectRatio EffectiveAspect => Aspect.IsValid ? Aspect : AspectRatio.SixteenNine;
+
+    /// <summary>Rectángulo final de cada ventana: distribución, ajuste elegido y proporción mínima del juego.</summary>
+    public IReadOnlyList<Region> Regions(Region area, int players)
+    {
+        var regions = SplitLayout.ApplyFit(SplitLayout.Compute(area, players, Orientation, Gutter), Fit, EffectiveAspect);
+        return MinAspect.IsValid ? SplitLayout.EnsureMinAspect(regions, MinAspect) : regions;
+    }
 }

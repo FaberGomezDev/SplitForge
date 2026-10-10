@@ -7,6 +7,14 @@ namespace SplitForge.Core.Adapters;
 
 public sealed record SteamEmuStatus(bool Installed, string? Persona, string? SteamId, string? StorageDir, string? OriginalSha256);
 
+/// <summary>Resultado de instalar: primera instalación, DLL propia sustituida por la nueva o ya al día.</summary>
+public enum SteamEmuInstallResult
+{
+    Installed,
+    Updated,
+    UpToDate,
+}
+
 /// <summary>
 /// Emulador de Steam (componente principal, EXPERIMENTAL, ADR-016): instala en la carpeta del juego una DLL que
 /// reimplementa el contrato ABI de <c>steam_api64.dll</c> con identidad local por JSON, y la retira
@@ -39,8 +47,12 @@ public static class SteamEmulator
     public static string DefaultStorageDir(string dataFolder, int appId, int player) =>
         Path.Combine(dataFolder, "steamemu", $"{appId}-J{player}");
 
-    /// <summary>Instala el emulador: respalda la DLL original, copia la emulada y escribe config y estado (SHA-256).</summary>
-    public static void Install(string gameFolder, string emulatorDll, string configJson)
+    /// <summary>
+    /// Instala el emulador: respalda la DLL original, copia la emulada y escribe config y estado (SHA-256).
+    /// Si ya está instalado, actualiza la DLL solo cuando la del juego sigue siendo la copia que registró
+    /// SplitForge; si alguien la cambió (p. ej. «Verificar archivos» de Steam), no toca nada.
+    /// </summary>
+    public static SteamEmuInstallResult Install(string gameFolder, string emulatorDll, string configJson)
     {
         if (!Directory.Exists(gameFolder))
             throw new InvalidOperationException("La carpeta del juego no existe.");
@@ -48,10 +60,6 @@ public static class SteamEmulator
             throw new InvalidOperationException("No se encontró la DLL emulada (steam_api64.dll de native\\SplitForge.SteamEmu).");
         var target = FindDll(gameFolder, EmuDllName)
                      ?? throw new InvalidOperationException("El juego no tiene steam_api64.dll en su carpeta (ni en sus subcarpetas de plugins); no se puede respaldar.");
-        var folder = Path.GetDirectoryName(target)!;
-        var backup = Path.Combine(folder, BackupName);
-        if (File.Exists(backup))
-            throw new InvalidOperationException("Ya hay una copia de seguridad: el emulador parece instalado. Restaura primero.");
         if (string.IsNullOrWhiteSpace(configJson))
             throw new ArgumentException("Falta la configuración JSON del emulador.");
         try
@@ -65,10 +73,35 @@ public static class SteamEmulator
             throw new ArgumentException("Configuración JSON inválida.", ex);
         }
 
-        File.Copy(target, backup, overwrite: false);
-        File.Copy(emulatorDll, target, overwrite: true);
+        var folder = Path.GetDirectoryName(target)!;
+        var backup = Path.Combine(folder, BackupName);
+        var state = Path.Combine(folder, StateName);
+        var result = SteamEmuInstallResult.Installed;
+        try
+        {
+            if (File.Exists(backup))
+            {
+                var installed = Sha256(target);
+                if (!File.Exists(state) || !string.Equals(installed, File.ReadAllText(state).Trim(), StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("La DLL instalada no coincide con la registrada por SplitForge; no se actualiza para no pisar cambios ajenos.");
+                result = string.Equals(installed, Sha256(emulatorDll), StringComparison.OrdinalIgnoreCase)
+                    ? SteamEmuInstallResult.UpToDate
+                    : SteamEmuInstallResult.Updated;
+            }
+            else
+            {
+                File.Copy(target, backup, overwrite: false);
+            }
+            if (result != SteamEmuInstallResult.UpToDate)
+                File.Copy(emulatorDll, target, overwrite: true);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("No se pudo escribir la DLL del juego: cierra el juego e inténtalo de nuevo.", ex);
+        }
         File.WriteAllText(Path.Combine(folder, ConfigName), configJson, new UTF8Encoding(false));
-        File.WriteAllText(Path.Combine(folder, StateName), Sha256(target), Encoding.ASCII);
+        File.WriteAllText(state, Sha256(target), Encoding.ASCII);
+        return result;
     }
 
     /// <summary>Restaura la DLL original solo si la instalada coincide con la registrada por SplitForge.</summary>
@@ -151,9 +184,9 @@ public static class SteamEmulator
     }
 
     /// <summary>Especificación de lanzamiento de una instancia del juego con la identidad del JSON indicado.</summary>
-    public static LaunchSpec InstanceLaunch(string gameExe, string configPath) => new(
+    public static LaunchSpec InstanceLaunch(string gameExe, string configPath, IReadOnlyList<string>? arguments = null) => new(
         gameExe,
-        [],
+        arguments ?? [],
         Path.GetDirectoryName(gameExe) ?? "",
         EnvironmentVariables: new Dictionary<string, string> { [ConfigEnvVar] = configPath });
 

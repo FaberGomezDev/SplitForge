@@ -209,7 +209,7 @@ public sealed partial class MainViewModel
         if (report.ClientHandles.Count < 2)
             throw new InvalidOperationException($"Se necesitan al menos dos clientes de 7 Days to Die abiertos (hay {report.DistinctPids}).");
         IReadOnlyList<nint> handles = _sevenSwap ? [.. report.ClientHandles.Reverse()] : report.ClientHandles;
-        _sessions.Attach(handles, Layout());
+        _sessions.Attach(handles, Layout() with { MinAspect = SevenDaysToDieAdapter.MinAspect });
         foreach (var (pad, index) in Pads.Take(handles.Count).Select((p, i) => (p, i)))
             _input.IdentifyPlayer(pad.DeviceId, index);
         Status = $"7 Days to Die: {handles.Count} clientes en pantalla dividida. Aislamiento de mandos en el juego: pendiente.";

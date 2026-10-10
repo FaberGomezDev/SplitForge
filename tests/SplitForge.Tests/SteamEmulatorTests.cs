@@ -76,12 +76,36 @@ public class SteamEmulatorTests
     }
 
     [Fact]
-    public void InstallRefusesIfAlreadyInstalledOrWithoutOriginal()
+    public void InstallAgainUpdatesOwnCopyAndKeepsTheOriginal()
+    {
+        using var tmp = new TempDir();
+        var game = GameFolder(tmp);
+        var original = File.ReadAllBytes(Path.Combine(game, SteamEmulator.EmuDllName));
+        Assert.Equal(SteamEmuInstallResult.Installed, SteamEmulator.Install(game, EmuDll(tmp), Config()));
+        Assert.Equal(SteamEmuInstallResult.UpToDate, SteamEmulator.Install(game, EmuDll(tmp), Config()));
+
+        var newer = tmp.Combine("emu2", SteamEmulator.EmuDllName);
+        Directory.CreateDirectory(Path.GetDirectoryName(newer)!);
+        File.WriteAllBytes(newer, [0x4D, 0x5A, 7, 7, 7, 7]);
+        Assert.Equal(SteamEmuInstallResult.Updated, SteamEmulator.Install(game, newer, Config()));
+
+        Assert.Equal([0x4D, 0x5A, 7, 7, 7, 7], File.ReadAllBytes(Path.Combine(game, SteamEmulator.EmuDllName)));
+        Assert.Equal(original, File.ReadAllBytes(Path.Combine(game, SteamEmulator.BackupName)));
+        SteamEmulator.Restore(game); // el estado registra la DLL nueva: la restauración se permite
+        Assert.Equal(original, File.ReadAllBytes(Path.Combine(game, SteamEmulator.EmuDllName)));
+    }
+
+    [Fact]
+    public void InstallRefusesToUpdateDllChangedByOthersOrWithoutOriginal()
     {
         using var tmp = new TempDir();
         var game = GameFolder(tmp);
         SteamEmulator.Install(game, EmuDll(tmp), Config());
-        Assert.Throws<InvalidOperationException>(() => SteamEmulator.Install(game, EmuDll(tmp), Config()));
+        File.WriteAllBytes(Path.Combine(game, SteamEmulator.EmuDllName), [1, 2, 3]);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => SteamEmulator.Install(game, EmuDll(tmp), Config()));
+        Assert.Contains("no coincide", ex.Message);
+        Assert.Equal([1, 2, 3], File.ReadAllBytes(Path.Combine(game, SteamEmulator.EmuDllName)));
 
         using var tmp2 = new TempDir();
         var empty = tmp2.Combine("empty");
@@ -145,5 +169,9 @@ public class SteamEmulatorTests
         Assert.Equal(SteamEmulator.ConfigEnvVar, Assert.Single(spec.EnvironmentVariables!).Key);
         Assert.Equal(@"C:\temp\j2.json", spec.EnvironmentVariables![SteamEmulator.ConfigEnvVar]);
         Assert.Equal(@"C:\game", spec.WorkingDirectory);
+        Assert.Empty(spec.Arguments);
+
+        var withArgs = SteamEmulator.InstanceLaunch(@"C:\game\7DaysToDie.exe", @"C:\temp\j1.json", ["-crossplatform=None"]);
+        Assert.Equal(["-crossplatform=None"], withArgs.Arguments);
     }
 }

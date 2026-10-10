@@ -3,7 +3,7 @@
 ## Suites automáticas
 
 ```sh
-dotnet test SplitForge.slnx -c Release          # 158 pruebas xUnit (Core; 128 métodos, las [Theory] cuentan por caso)
+dotnet test SplitForge.slnx -c Release          # 166 pruebas xUnit (Core; las [Theory] cuentan por caso)
 cmake -S native/SplitForge.XInputFilter -B native/build -A x64 && cmake --build native/build --config Release
 ctest --test-dir native/build -C Release        # prueba de humo del filtro XInput (Windows)
 cmake -S native/SplitForge.SteamEmu -B native/build-steamemu -A x64 && cmake --build native/build-steamemu --config Release
@@ -30,7 +30,10 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Configuración (importación de la versión Python sin tocarla, ida y vuelta incluido modo de ajuste y proporción, archivo dañado, saneado con proporción acotada).
 - Diagnóstico de módulos de entrada (incluido el informe real de 7DTD del propietario), origen de cada módulo como categoría sin ruta, informe v3 sin rutas.
 - Tipo legible de mando (PS4/PS5/Xbox/estándar/genérico) y etiqueta de batería (porcentaje, cargando, cable, aviso de batería baja).
-- Atajo global de bloqueo (etiqueta Ctrl+Alt+L; modificadores que coinciden con los MOD_* de Win32).
+- Atajos globales (Ctrl+Alt+L del ratón y Ctrl+Alt+B de la entrada; modificadores que coinciden con los MOD_* de Win32).
+- Bloqueo de entrada «solo mandos» (`InputLockFilter`): descarta pulsaciones, deja pasar las teclas soltadas y se suelta solo con Ctrl+Alt+B exacto (ni con B sola, ni con Ctrl+B, ni con Shift añadido).
+- Distribución por juego: proporción mínima 16:9 de 7DTD (solo estrecha los paneles más estrechos; se conserva al reaplicar), monitor completo y ventanas encima de la barra de tareas con «Tapar barra de tareas», y su persistencia.
+- Lanzamiento de clientes emulados: argumentos de 7DTD sin juego cruzado y con el tamaño del panel; `InstanceLaunch` con argumentos.
 - Detección de la ranura XInput pulsada (flancos de botones, gatillos que cruzan el umbral, mandos recién conectados ignorados).
 - Emulador de Steam (.NET):
   - instala con copia de seguridad, configuración y estado SHA-256, también con la estructura de plugins de Unity;
@@ -101,14 +104,19 @@ Historial:
 | W17 | Ranuras XInput | «Detectar» (o `SplitForge.Diagnostico.exe xinput`) identifica la ranura de cada mando al pulsar un botón, también con otra ventana enfocada |
 | W18 | Bloqueo de ratón | Con pantalla dividida activa y el bloqueo (botón o Ctrl+Alt+L), el cursor no cruza a la otra ventana; al soltar o detener la sesión, vuelve a ser libre |
 | W19 | Ajuste a ventana | Con «Mantener proporción» la ventana conserva su forma sin deformarse; la resolución sugerida por panel coincide con lo que encaja en el juego en modo ventana |
-| W20 | Emulador de Steam | Instalar desde la pestaña 07; «Lanzar J1 y J2» abre dos instancias de 7DTD con identidades distintas que llegan al menú; se ven por LAN/P2P o entran al servidor local; «Restaurar DLL original» deja el juego como estaba |
+| W20 | Emulador de Steam | Instalar desde la pestaña 07; «Lanzar J1 y J2» abre dos instancias de 7DTD con identidades distintas que llegan al menú, en pantalla dividida y con su mando asignado; «Restaurar DLL original» deja el juego como estaba |
+| W21 | Bloqueo de entrada | Con Ctrl+Alt+B (o el botón), el teclado y el ratón no llegan a los juegos ni al escritorio y los mandos siguen funcionando; Ctrl+Alt+B lo suelta sin teclas pegadas; detener la sesión o cerrar SplitForge también lo suelta |
+| W22 | Tapar barra de tareas | Con la casilla activa, las ventanas ocupan el monitor completo y la barra de tareas no se ve; al detener, vuelven a su sitio y a su orden |
 
 **Resultado físico conocido:**
 - Prototipo: laboratorio v0.4 y Steam v0.5 confirmados.
 - 0.7, PC del propietario (2026-10-10):
   - W13 con un cliente (informe real).
   - Parte de W02: hilo SDL3 a 1000 Hz, sin mandos.
-  - **W20 fallido:** las dos instancias cargan sus identidades, pero 7DTD se cierra al iniciar Steam (API plana del emulador; ver `05-INTEGRACION-STEAM.md`).
+  - **W20 superado (tarde):** tras generar la API plana y lanzar sin juego cruzado, J1 y J2 llegan al menú a la vez con perfiles distintos, colocados arriba/abajo, con el filtro cargado en ambos (J1 → mando 1, J2 → mando 2, lecturas subiendo). Por la mañana fallaba: 7DTD se cerraba al iniciar Steam.
+  - **W16 parcial:** filtro y lecturas comprobados; falta que el propietario confirme con los mandos que cada uno mueve solo su ventana.
+  - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
+  - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
 - El resto, sin confirmar. W11, W12 y W14 requieren instalar antes el servidor dedicado (no instalado).
 
 ## Benchmark cuando exista el primer adaptador validado

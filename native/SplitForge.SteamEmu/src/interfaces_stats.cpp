@@ -22,7 +22,8 @@ public:
         result.m_nGameID = GameId();
         result.m_eResult = k_EResultOK;
         result.m_steamIDUser = emu.config.steamId;
-        return emu.QueueCallResult(k_iCallback_UserStatsReceived, &result, sizeof(result)) != 0;
+        emu.QueueCallback(k_iCallback_UserStatsReceived, &result, sizeof(result));
+        return true;
     }
     bool GetStat(const char* name, int32_t* value) override {
         if (!name || !value)

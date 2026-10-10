@@ -8,7 +8,7 @@ namespace SplitForge.Tests;
 internal sealed class FakeWindowSystem : IWindowSystem
 {
     public List<WindowInfo> Windows { get; } = [];
-    public List<(nint Handle, Region Region, bool Borderless)> Placed { get; } = [];
+    public List<(nint Handle, Region Region, bool Borderless, bool Topmost)> Placed { get; } = [];
     public List<WindowSnapshot> Restored { get; } = [];
     public List<nint> CloseRequests { get; } = [];
     public Func<nint, Region, bool>? FailPlace { get; set; }
@@ -23,11 +23,11 @@ internal sealed class FakeWindowSystem : IWindowSystem
 
     public int? ProcessId(nint handle) => Owners.TryGetValue(handle, out var pid) ? pid : null;
 
-    public void Place(nint handle, Region region, bool borderless)
+    public void Place(nint handle, Region region, bool borderless, bool topmost = false)
     {
         if (FailPlace?.Invoke(handle, region) == true)
             throw new InvalidOperationException("Ventana no redimensionable");
-        Placed.Add((handle, region, borderless));
+        Placed.Add((handle, region, borderless, topmost));
     }
 
     public void Restore(WindowSnapshot snapshot) => Restored.Add(snapshot);
@@ -35,6 +35,10 @@ internal sealed class FakeWindowSystem : IWindowSystem
     public void RequestClose(nint handle) => CloseRequests.Add(handle);
 
     public Region PrimaryWorkArea() => WorkArea;
+
+    public Region Bounds { get; set; } = new(0, 0, 1920, 1080);
+
+    public Region PrimaryBounds() => Bounds;
 }
 
 internal sealed class FakeProcess(int id, bool withInput) : IChildProcess

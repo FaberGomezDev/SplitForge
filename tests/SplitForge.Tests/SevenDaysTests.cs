@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Xml.Linq;
 using SplitForge.Core.Adapters;
+using SplitForge.Core.Layout;
 using SplitForge.Core.Steam;
 
 namespace SplitForge.Tests;
@@ -199,5 +200,18 @@ public class SevenDaysServerLifecycleTests
         launcher.Started[0].Process.ExitCode = 3;
         Assert.Equal(ServerPhase.Exited, server.Refresh());
         Assert.Contains(logs, l => l.Contains("código 3"));
+    }
+
+    [Fact]
+    public void EmulatedClientsStartWithoutCrossplayAndWithTheirPanelSize()
+    {
+        var args = SevenDaysToDieAdapter.EmulatedClientArguments(1920, 516);
+        Assert.Contains("-crossplatform=None", args);
+        Assert.Contains("-serverplatforms=Steam", args);
+        Assert.Equal("1920", args[args.ToList().IndexOf("-screen-width") + 1]);
+        Assert.Equal("516", args[args.ToList().IndexOf("-screen-height") + 1]);
+        Assert.Equal("0", args[args.ToList().IndexOf("-screen-fullscreen") + 1]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => SevenDaysToDieAdapter.EmulatedClientArguments(0, 516));
+        Assert.Equal(AspectRatio.SixteenNine, SevenDaysToDieAdapter.MinAspect);
     }
 }

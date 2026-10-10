@@ -194,18 +194,19 @@ public:
     int32_t GetFileCount() override {
         return static_cast<int32_t>(ListRemoteFiles().size());
     }
-    bool GetFileNameAndSize(int index, char* name, int32_t* size, uint32_t* timestamp) override {
+    // SDK: devuelve el nombre (válido hasta la siguiente llamada) y el tamaño; "" fuera de rango.
+    const char* GetFileNameAndSize(int index, int32_t* size) override {
         const auto files = ListRemoteFiles();
+        if (size)
+            *size = 0;
         if (index < 0 || index >= static_cast<int>(files.size()))
-            return false;
+            return "";
         const auto& item = files[static_cast<size_t>(index)];
-        if (name)
-            std::strncpy(name, item.name.c_str(), 259);
         if (size)
             *size = item.size;
-        if (timestamp)
-            *timestamp = item.timestamp;
-        return true;
+        thread_local std::string name;
+        name = item.name;
+        return name.c_str();
     }
     bool GetQuota(uint64_t* total, uint64_t* available) override {
         EmuState& emu = Emu();
@@ -253,8 +254,8 @@ public:
                                                     SteamParamStringArray_t*) override {
         return 0;
     }
-    SteamAPICall_t PublishVideo(int, const char*, const char*, const char*, const char*, AppId_t,
-                                const char*, const char*, int, SteamParamStringArray_t*) override {
+    SteamAPICall_t PublishVideo(int, const char*, const char*, const char*, AppId_t, const char*,
+                                const char*, int, SteamParamStringArray_t*) override {
         return 0;
     }
     SteamAPICall_t SetUserPublishedFileAction(PublishedFileId_t, int) override { return 0; }
@@ -354,7 +355,7 @@ public:
     bool SetTimeCreatedFileId(UGCQueryHandle_t, PublishedFileId_t) override { return false; }
     bool SetTimeUpdatedFileId(UGCQueryHandle_t, PublishedFileId_t) override { return false; }
     bool AddRequiredKeyValueTag(UGCQueryHandle_t, const char*, const char*) override { return false; }
-    SteamAPICall_t RequestUGCDetails(PublishedFileId_t*, uint32_t, uint32_t) override { return 0; }
+    SteamAPICall_t RequestUGCDetails(PublishedFileId_t, uint32_t) override { return 0; }
     SteamAPICall_t CreateItem(AppId_t, int) override { return 0; }
     UGCUpdateHandle_t StartItemUpdate(AppId_t, PublishedFileId_t) override { return 0; }
     bool SetItemTitle(UGCUpdateHandle_t, const char*) override { return false; }

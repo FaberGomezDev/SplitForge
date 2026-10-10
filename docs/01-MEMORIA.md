@@ -49,6 +49,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 | 2026-10-10 · `5d1c748` | **Ajuste de cada juego a su ventana:** «Rellenar» o «Mantener proporción» (16:9, 16:10, 21:9, 4:3) centrada en la región, con resolución sugerida por panel; guardado en `settings.v2.json`. | Pruebas xUnit de distribución y configuración; CI run #13 verde; sin validar en hardware (W19) |
 | 2026-10-10 · `fd98ba2` + `783da1d` | Fusión en `main` de la rama `7dtd-diagnostico-xinput` (informe 7DTD, filtro, mandos, bloqueo de ratón, ajuste) con el emulador, conservando las reglas de Git de `main`. | **158 xUnit + 77 unittest**; CI run #16 verde con la prueba de arranque de 7 pestañas |
 | 2026-10-10 · memoria | Docs contrastados con el código y con el PC del propietario. El emulador pasa a **componente principal** (decisión del propietario). Datos reales: hilo SDL3 a 1000 Hz en su PC, build de 7DTD, servidor dedicado y Sandboxie-Plus no instalados, ViGEmBus y HidHide instalados. **Primera prueba real del emulador con 7DTD (02:50–03:55):** carga las identidades J1/J2, pero el juego se cierra en `SteamAPI_ISteamClient_GetISteamUser` porque la API plana del emulador no recibe `self` y solo cubre 32 de las 866 entradas que usa Steamworks.NET. | Diagnósticos de solo lectura `steam`, `7dtd`, `mandos` y `xinput` (sin mandos conectados ni 7DTD abierto); registros `splitforge-net.log`, `steamemu.log` y `Player.log` de Unity; análisis de `flat_api.cpp` y del Steamworks.NET de 7DTD |
+| 2026-10-10 · emulador + lanzador | **API plana generada** (`tools/generar_api_plana.py`: 683 reenvíos con `self` + 234 entradas neutras = las 944 de Steamworks.NET), `ContextInit` con el contrato del SDK, 7 firmas de vtable y estructuras `pack(1)` como el SDK, call results por `SteamAPICallCompleted_t` (703) con sus datos, respuestas de tickets. Con la referencia del handler de Nucleus Co-op para 7DTD: clientes sin juego cruzado (`-crossplatform=None -serverplatforms=Steam`), ventana del tamaño de su panel y pantalla dividida automática. «Lanzar J1 y J2» lo hace todo (pestaña 07). A petición del propietario: la sesión tapa la barra de tareas y **Ctrl+Alt+B** bloquea teclado y ratón para jugar solo con mandos (ADR-019). | **Dos clientes de 7DTD en el menú principal a la vez**, perfiles `SPLITFORGEJ1`/`SPLITFORGEJ2`; filtro XInput cargado en ambos por `xinput1_3`, J1 → mando 1, J2 → mando 2, lecturas subiendo en ambos; arriba/abajo con la interfaz completa y, tapando la barra, 1920×540 cada uno (la franja de la barra pasa a la ventana de J2). 166 xUnit, prueba de humo del emulador ampliada y del filtro en el PC del propietario. Falta que el propietario confirme con los mandos |
 
 ## Incidente PS4: causa, corrección y reglas (siguen vigentes en 0.7)
 
@@ -65,10 +66,10 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Dos perspectivas del mismo mundo simulado: **SÍ**.
 - Steam detectado/diagnosticado: **SÍ, solo lectura**.
 - Servidor dedicado 7DTD local con guardados aislados: **implementado**, no probado en el PC del propietario.
-- Dos/cuatro ventanas de clientes distribuidas sin bordes: **implementado**, eficacia por juego no comprobada.
-- Un mando por cliente dentro del juego: **filtro XInput nativo implementado (experimental)**. 7DTD carga XInput (informe real); el aislamiento con dos clientes está sin validar.
-- Dos instancias con identidades distintas sin un segundo Steam: **emulador de Steam implementado** (componente principal). Superó su prueba de humo, pero **con 7DTD real se cierra al iniciar Steam** (API plana incompleta y sin `self`; ver `05-INTEGRACION-STEAM.md`).
-- Dos clientes de 7DTD en la misma partida con dos mandos aislados: **NO** (falta validar el aislamiento de mandos).
+- Dos/cuatro ventanas de clientes distribuidas sin bordes: **SÍ con 7DTD** (2026-10-10, dos clientes, arriba/abajo y lado a lado 16:9).
+- Un mando por cliente dentro del juego: **filtro XInput cargado en los dos clientes de 7DTD** (por `xinput1_3`), cada uno con su ranura y lecturas subiendo en ambos. Falta que el propietario confirme con los mandos que cada uno mueve solo su ventana.
+- Dos instancias con identidades distintas sin un segundo Steam: **SÍ con 7DTD** (emulador de Steam, componente principal): las dos llegan al menú con perfiles distintos.
+- Dos clientes de 7DTD en la misma partida con dos mandos aislados: **pendiente** (falta unir J2 a la partida de J1 y la confirmación de los mandos).
 - FPS/frametimes/VRAM medidos: **NO**.
 
 ## Decisiones tomadas con el propietario (2026-10-10)
@@ -76,30 +77,22 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - **Técnicas de Nucleus Co-op que adopta SplitForge:** filtrado de mandos por instancia, simulación de foco y colocación de ventanas (ADR-013, ADR-015).
 - **Remote Play Together:** solo funciona con juegos con multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
 - **Emulador de Steam = componente principal y permanente** (ADR-016): deja de ser temporal y no se eliminará; el propietario no quiere limitarlo.
+- **Nucleus Co-op como referencia** (instalado en el PC del propietario; su handler de 7DTD, versión 18): SplitForge adopta su configuración en el lanzador (sin juego cruzado, ventana por panel, colocación automática). En vez de editar `platform.cfg`, SplitForge usa los argumentos equivalentes, que el juego admite, y no toca archivos.
+- **Distribución preferida para 7DTD: arriba y abajo** (el propietario la prefiere; además da paneles más anchos que 16:9).
 - **Retirado en 0.7 a propósito:** el lanzamiento doble genérico de cualquier `.exe` (pestaña «03 EJECUTABLES» del prototipo; sin aislamiento de guardados, riesgo para partidas) y la demo antigua de dos mundos separados (sustituida por el mundo compartido). Siguen disponibles en el prototipo Python. Los juegos se integran mediante adaptadores con preflight.
 
 ## Estado para la siguiente sesión
 
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide con los dos PS4 conectados: mandos en «01 MANDOS», laboratorio, distribución sin bordes y restauración. La frecuencia del hilo (1000 Hz) ya se midió en su PC sin mandos.
-**P1:** hecho con un cliente (2026-10-10): 7DTD sin EAC carga `xinput1_3` y `xinput1_4` (ver `05-INTEGRACION-STEAM.md`). Falta el informe con dos clientes.
-**Requisitos que faltan en el PC (2026-10-10):**
-- **El emulador sigue instalado en 7DTD**, y con él el juego se cierra al iniciar. Para jugar o para W16 con un segundo Steam, primero «Restaurar DLL original» en la pestaña 07.
-- El segundo cliente necesita el emulador corregido o Sandboxie-Plus (no instalado).
-- Para unirse al servidor local (W12/W14) hay que instalar el servidor dedicado (Steam → Herramientas → «7 Days to Die Dedicated Server»).
-**Emulador (bloqueante para su vía):** añadir `self` a la API plana y exportar los métodos `SteamAPI_ISteam*` que 7DTD usa al arrancar; ver la prueba del 2026-10-10 en `05-INTEGRACION-STEAM.md`.
-**W16 (siguiente prueba física):**
-1. Con los clientes cerrados, pulsa «Instalar filtro» en la pestaña 06.
-2. Abre los dos clientes sin EAC (con la pestaña 07 o con un segundo Steam).
-3. Pulsa «Detectar» para J1 y J2 y luego «Asignar mandos a los clientes».
-4. Comprueba que las lecturas de cada cliente suben y que cada mando mueve solo su ventana.
-5. Anota si la ventana sin foco responde.
-6. Guarda un informe v3 (`7dtd`) con ambos clientes abiertos.
-**P2:** prueba real de dos jugadores en la misma partida.
-**Emulador de Steam con 7DTD (W20, repetir tras corregir la API plana):**
-1. Instalar desde la pestaña 07 con 7DTD cerrado (o con `tools\SteamEmu_Instalar.ps1`).
-2. Con Steam cerrado, como indica la pestaña, pulsar «Lanzar J1 y J2»: cada instancia recibe su JSON mediante `SPLITFORGE_STEAMEMU_CONFIG`.
-3. Anotar si arrancan las dos, si se ven por LAN/P2P y si el servidor dedicado acepta las identidades emuladas.
-4. Registrar el resultado en `05-INTEGRACION-STEAM.md`.
+**P1 (estado 2026-10-10):** emulador y filtro XInput instalados en 7DTD en el PC del propietario. «Lanzar J1 y J2» abre los dos clientes en pantalla dividida, cada uno con su mando asignado (ver `05-INTEGRACION-STEAM.md`).
+**W16 (siguiente prueba física, solo falta el propietario):**
+1. Con los dos clientes abiertos por «Lanzar J1 y J2», pulsar un botón en el mando 2: la ventana de J2 debe avanzar aunque no tenga el foco.
+2. Mover el stick del mando 1: solo debe reaccionar la ventana de J1.
+3. Si la ventana sin foco no responde, implementar la simulación de foco (técnica `ForceFocus` / `FocusHooks` de Nucleus) dentro del filtro.
+4. Guardar un informe v3 (`7dtd`) con los dos clientes abiertos.
+**W14 (siguiente):** J1 crea o carga una partida y J2 se une conectando a la IP 127.0.0.1 (como indica el handler de Nucleus). Anotar si la identidad emulada de J2 entra y si se ven en el mismo mundo.
+**Vía del servidor oficial (opcional):** instalar «7 Days to Die Dedicated Server» (Steam → Herramientas) para W11/W12; comprobar si acepta identidades emuladas.
+**P2:** dos jugadores reales en la misma partida.
 
 ## Política de actualización de memoria
 

@@ -96,7 +96,7 @@ public:
     bool GetDeviceBindingRevision(ControllerHandle_t, int*, int*) override { return false; }
     uint32_t GetRemotePlaySessionID(ControllerHandle_t) override { return 0; }
     uint16_t GetSessionInputConfigurationSettings() override { return 0; }
-    void SetDualSenseTriggerEffect(ControllerHandle_t, const void*, int) override {}
+    void SetDualSenseTriggerEffect(ControllerHandle_t, const void*) override {}
     void StopAnalogActionMomentum(ControllerHandle_t, ControllerAnalogActionHandle_t) override {}
     InputMotionData_t GetMotionData(ControllerHandle_t) override { return {}; }
     void TriggerVibration(ControllerHandle_t, unsigned short, unsigned short) override {}
@@ -200,7 +200,7 @@ public:
         ip.m_ipv4 = 0x0100007F;
         return ip;
     }
-    void HandleIncomingPacket(const void*, int, uint32_t, uint16_t) override {}
+    bool HandleIncomingPacket(const void*, int, uint32_t, uint16_t) override { return false; }
     int GetNextOutgoingPacket(void*, int, uint32_t*, uint16_t*) override { return 0; }
     SteamAPICall_t AssociateWithClan(CSteamID) override { return 0; }
     SteamAPICall_t ComputeNewPlayerCompatibility(SteamAPICall_t) override { return 0; }

@@ -458,6 +458,9 @@ struct gameserveritem_t {
     CSteamID m_steamID;
 };
 
+// isteaminput.h los declara con pack(1): la API plana los devuelve por valor y el tamaño es ABI
+// (InputAnalogActionData_t ocupa 13 bytes; con relleno serían 16 y se escribiría fuera del búfer).
+#pragma pack(push, 1)
 struct InputDigitalActionData_t {
     bool bState;
     bool bActive;
@@ -472,6 +475,11 @@ struct InputMotionData_t {
     float posAccelX, posAccelY, posAccelZ;
     float rotVelX, rotVelY, rotVelZ;
 };
+#pragma pack(pop)
+static_assert(sizeof(InputDigitalActionData_t) == 2, "ABI de InputDigitalActionData_t");
+static_assert(sizeof(InputAnalogActionData_t) == 13, "ABI de InputAnalogActionData_t");
+static_assert(sizeof(InputMotionData_t) == 40, "ABI de InputMotionData_t");
+static_assert(sizeof(SteamIPAddress_t) == 20, "ABI de SteamIPAddress_t");
 
 constexpr int k_iCallback_UserStatsReceived = 1101;
 constexpr int k_iCallback_UserStatsStored = 1102;
@@ -584,6 +592,34 @@ struct CallbackMsg_t {
     int m_iCallback;
     uint8_t* m_pubParam;
     int m_cubParam;
+};
+
+// Despacho manual: cada call result se anuncia con este callback y el juego recoge el resultado
+// con SteamAPI_ManualDispatch_GetAPICallResult (así lo hace Steamworks.NET).
+constexpr int k_iCallback_SteamAPICallCompleted = 703;
+struct SteamAPICallCompleted_t {
+    SteamAPICall_t m_hAsyncCall;
+    int m_iCallback;
+    uint32_t m_cubParam;
+};
+static_assert(sizeof(SteamAPICallCompleted_t) == 16, "ABI de SteamAPICallCompleted_t");
+
+constexpr int k_iCallback_EncryptedAppTicketResponse = 154;
+struct EncryptedAppTicketResponse_t {
+    EResult m_eResult;
+};
+constexpr int k_iCallback_GetAuthSessionTicketResponse = 163;
+struct GetAuthSessionTicketResponse_t {
+    HAuthTicket m_hAuthTicket;
+    EResult m_eResult;
+};
+constexpr int k_iCallback_GetTicketForWebApiResponse = 168;
+constexpr int k_cubTicketForWebApiMax = 2560;
+struct GetTicketForWebApiResponse_t {
+    HAuthTicket m_hAuthTicket;
+    EResult m_eResult;
+    int m_cubTicket;
+    uint8_t m_rgubTicket[k_cubTicketForWebApiMax];
 };
 
 } // namespace sfemu

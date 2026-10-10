@@ -300,7 +300,7 @@
             <TextBlock Style="{StaticResource Hint}" Text="Sustituye steam_api64.dll del juego por una versión emulada con identidad local: dos instancias de 7DTD en la misma PC con identidades distintas y P2P local. La DLL original queda respaldada y se restaura con un botón." />
             <TextBlock Style="{StaticResource Warning}" Text="El juego no hablará con Steam: usa las identidades locales de abajo. Requiere el juego sin EAC (opción oficial). Restaura la DLL original antes de verificar archivos en Steam." Margin="0,0,0,8" />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-              <Button Content="Instalar emulador en 7DTD" Style="{StaticResource PrimaryButton}" Command="{Binding InstallSteamEmuCommand}" />
+              <Button Content="Instalar / actualizar emulador en 7DTD" Style="{StaticResource PrimaryButton}" Command="{Binding InstallSteamEmuCommand}" />
               <Button Content="Restaurar DLL original" Command="{Binding RestoreSteamEmuCommand}" />
               <Button Content="Seleccionar DLL…" Command="{Binding PickSteamEmuDllCommand}" />
             </StackPanel>
@@ -330,7 +330,7 @@
             <TextBlock Text="Cada jugador guarda en %LOCALAPPDATA%\SplitForge\steamemu\AppID-J1 y AppID-J2." Foreground="{StaticResource Muted}" Margin="0,0,0,8" />
 
             <TextBlock Style="{StaticResource Heading}" Text="Lanzar (con Steam cerrado)" FontSize="15" />
-            <TextBlock Style="{StaticResource Hint}" Text="No abras el juego desde Steam ni con EAC: usa estos botones. Las dos instancias comparten puerto multicast y se descubren en local (P2P)." Margin="0,0,0,6" />
+            <TextBlock Style="{StaticResource Hint}" Text="«Lanzar J1 y J2» lo hace todo: abre cada cliente sin juego cruzado (EOS) y con el tamaño de su panel (mínimo 16:9), asigna a cada uno su mando si el filtro XInput está instalado (pestaña 06: Instalar filtro y Detectar) y divide la pantalla cuando aparecen las ventanas. Para jugar juntos: J1 crea o carga una partida y J2 se une a ella conectando a la IP 127.0.0.1." Margin="0,0,0,6" />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
               <Button Content="▶  Lanzar J1" Command="{Binding LaunchSteamEmu1Command}" />
               <Button Content="▶  Lanzar J2" Command="{Binding LaunchSteamEmu2Command}" />
@@ -350,6 +350,8 @@
       <TextBlock Text="Separación:" VerticalAlignment="Center" Margin="6,0,8,0" />
       <ComboBox ItemsSource="{Binding Gutters}" SelectedItem="{Binding Gutter}" Width="60" Margin="0,0,14,0" />
       <CheckBox Content="Sin bordes" IsChecked="{Binding Borderless}" />
+      <CheckBox Content="Tapar barra de tareas" IsChecked="{Binding CoverTaskbar}"
+                ToolTip="La pantalla dividida usa el monitor completo y las ventanas quedan por encima de la barra de tareas. Al detener, todo vuelve a su sitio." />
       <CheckBox Content="Mantener proporción" IsChecked="{Binding FitKeepAspect}"
                 ToolTip="Centra el juego con su proporción, sin deformarlo. Deja franjas si la región no coincide." />
       <ComboBox ItemsSource="{Binding AspectChoices}" SelectedItem="{Binding SelectedAspect}" DisplayMemberPath="Label"
@@ -360,6 +362,11 @@
               ToolTip="{Binding MouseLockStatus}" />
       <TextBlock VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="2,0,10,0">
         <Run Text="Atajo:" /><Run Text="{Binding MouseLockHotkey, Mode=OneWay}" FontWeight="SemiBold" />
+      </TextBlock>
+      <Button Content="{Binding InputLockButtonText}" Command="{Binding ToggleInputLockCommand}"
+              ToolTip="El teclado y el ratón dejan de llegar a los juegos y al escritorio; solo funcionan los mandos. Se suelta con el mismo atajo." />
+      <TextBlock VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="2,0,10,0">
+        <Run Text="Atajo:" /><Run Text="{Binding InputLockHotkey, Mode=OneWay}" FontWeight="SemiBold" />
       </TextBlock>
       <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Foreground="{StaticResource Muted}" />
       <TextBlock Text="{Binding PaneHint}" TextWrapping="Wrap" Width="760" Margin="0,4,0,0"
