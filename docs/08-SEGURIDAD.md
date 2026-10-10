@@ -1,11 +1,9 @@
-# Seguridad, compatibilidad y límites éticos
+# Seguridad, privacidad y compatibilidad
 
-## Principios obligatorios
+## Principios
 
-- No manipular DRM, licencias, tokens, sesiones de cuentas ni antitrampas.
-- No duplicar la identidad de una cuenta (p. ej. dos clientes con la misma cuenta en modo sin conexión).
-- EAC solo se desactiva con la **opción oficial** del juego («Launch game without EAC»); nunca por otros medios.
-- No modificar binarios de Steam ni instalar drivers de kernel por defecto.
+- EAC se desactiva con la **opción oficial** del juego («Launch game without EAC») cuando un componente lo requiere.
+- Sin drivers de kernel por defecto.
 - No cerrar a la fuerza un juego ajeno. Solo se terminan procesos **creados por SplitForge** (visores, servidor 7DTD) tras un cierre/apagado normal fallido.
 - No alterar guardados/configuración de juegos. El servidor 7DTD usa configuración y `UserDataFolder` **propios** de SplitForge.
 - No recopilar ni exportar rutas personales, identificadores Steam, GUID persistentes, MAC ni títulos de ventana en reportes compartibles.
@@ -32,7 +30,7 @@
 1. Preflight de derechos/modos de juego; no lanzar si falla.
 2. Privilegios mínimos; separar control de cuentas/juego.
 3. Plan de restauración antes de modificar ventanas o configuración propia.
-4. Nada de inyección en juegos protegidos; si una modalidad oficial lo permite, documentar cómo activarla desde el juego.
+4. Documentar cómo activar desde el juego cualquier modo que la integración necesite (p. ej. sin EAC).
 5. No persistir credenciales ni secretos.
 6. Mantener un modo diagnóstico de solo lectura y una salida de bloqueo explicativa.
 

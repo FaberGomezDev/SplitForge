@@ -30,13 +30,13 @@ public static class ResearchProfiles
             "SplitForge lo inicia con configuración y guardados propios; no modifica su carpeta."),
         ["275850"] = new("275850", "No Man's Sky", "Investigación posterior", ["NMS.exe"],
             "El modo multijugador y la autenticación deben verificarse. No se presupone cooperativo sin Internet.",
-            "No modificar la autenticación ni abrir procesos duplicados."),
+            "Pendiente de investigar autenticación y sesiones."),
         ["495420"] = new("495420", "State of Decay 2", "Investigación posterior", [],
             "El multijugador puede requerir identidades y servicios en línea distintos.",
             "No prometer modo sin conexión con dos jugadores."),
         ["271590"] = new("271590", "Grand Theft Auto V (Legacy)", "Investigación posterior", ["GTA5.exe"],
             "La campaña no incluye cooperativo local nativo; opciones externas no se presuponen compatibles.",
-            "No intervenir en GTA Online, protección antitrampas ni licencias."),
+            "GTA Online queda fuera del alcance."),
     };
 }
 

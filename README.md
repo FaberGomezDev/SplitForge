@@ -44,7 +44,7 @@ Requiere el SDK de .NET 10. Detalles en [`docs/10-DESARROLLO.md`](docs/10-DESARR
 
 - Una ventana de un juego **no es** una instancia cooperativa; dos clientes necesitan identidades autorizadas y la misma partida.
 - El modo sin conexión de Steam no crea LAN ni autenticación para dos personas.
-- No se modifican ejecutables, DRM, antitrampas, cuentas ni guardados de los juegos. No se cierran juegos ajenos.
+- No se sobrescriben archivos ni guardados de los juegos y no se cierran juegos ajenos.
 - Pantalla completa exclusiva y procesos elevados pueden impedir mover ventanas: usa modo ventana o sin bordes del propio juego.
 - Configuración en `%LOCALAPPDATA%\SplitForge\settings.v2.json`; el `settings.json` del prototipo no se toca.
 

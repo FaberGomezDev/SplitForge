@@ -22,10 +22,6 @@ Manifiestos, carpetas y procesos se leen; no se cambia contenido del juego. La d
 
 Se rechazan dos HWND de un PID y ejecutables distintos. 0.7: hasta 4 clientes, ordenados por PID, revalidados justo antes de mover. No se cierran procesos externos.
 
-## ADR-006 · Aceptada · Ninguna evasión de DRM / antitrampas
-
-No forzar sesiones protegidas ni duplicar licencias/cuentas. Solo modos admitidos y clientes autorizados. Algunos títulos nunca serán soportados sin cambios oficiales.
-
 ## ADR-007 · Aceptada (mínima) · Adaptadores versionados por juego
 
 Implementado el contrato mínimo `IGameAdapter` (manifiesto + preflight de solo lectura) y el primer adaptador (7DTD). Estado máximo automático `INSPECCIONADO`; los superiores requieren evidencia física registrada.
@@ -52,7 +48,7 @@ Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo
 
 ## ADR-013 · Aceptada · 7 Days to Die mediante servidor dedicado oficial y cuentas separadas
 
-**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; cada jugador usa su propia cuenta de Steam (segunda sesión de Steam en otro usuario de Windows o Sandboxie-Plus); EAC solo se desactiva con la opción oficial. **Descartado:** el modo sin conexión con una sola cuenta y Remote Play Together (no aplica a 7DTD en PC). **Consecuencia:** dos jugadores reales requieren dos licencias; SplitForge lo indica antes de empezar.
+**Decisión:** el adaptador lanza el servidor dedicado oficial con configuración y guardados propios; cada jugador usa su propia cuenta de Steam (segunda sesión de Steam en otro usuario de Windows o Sandboxie-Plus); EAC se desactiva con la opción oficial. **Descartado:** el modo sin conexión con una sola cuenta y Remote Play Together (no aplica a 7DTD en PC). **Consecuencia:** dos jugadores reales requieren dos licencias; SplitForge lo indica antes de empezar.
 
 ## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
 

@@ -35,7 +35,7 @@ public sealed record AdapterManifest(
     int MinPlayers,
     int MaxPlayers,
     bool RequiresSeparateAccounts,
-    // Solo refleja una opción OFICIAL del juego (p. ej. "Launch game without EAC"); nunca un bypass.
+    // Refleja una opción oficial del juego (p. ej. "Launch game without EAC").
     bool NeedsAntiCheatDisabledByOfficialOption,
     string Notes);
 

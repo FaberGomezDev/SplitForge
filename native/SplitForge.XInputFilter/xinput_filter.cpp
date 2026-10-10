@@ -6,8 +6,7 @@
 // le asigna en %LOCALAPPDATA%\SplitForge\xinput\asignacion.txt (líneas "PID RANURA").
 // Sin asignación para el PID, es transparente.
 //
-// No inyecta código en otros procesos ni toca DRM/antitrampas. Úsese solo con EAC desactivado
-// mediante la opción oficial del juego.
+// No inyecta código en otros procesos. Úsese con el juego abierto sin EAC (opción oficial del juego).
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

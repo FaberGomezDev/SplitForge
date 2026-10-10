@@ -24,7 +24,7 @@ Camino **legítimo** elegido (ADR-013):
 
 ### Alternativas descartadas para 7DTD
 
-- **Modo sin conexión con una sola cuenta**: misma identidad dos veces; la partida no lo admite y duplicar identidad está prohibido.
+- **Modo sin conexión con una sola cuenta**: misma identidad dos veces; la partida vería al mismo jugador dos veces.
 - **Remote Play Together**: requiere multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
 
 ## Estados formales por juego
@@ -47,7 +47,7 @@ Registrar la versión instalada y la fecha de prueba antes de cambiar un estado.
 ## Pruebas mínimas para aprobar un adaptador
 
 - **Instalación:** AppID, build ID, ruta dentro de la biblioteca, ejecutable comprobado.
-- **Lanzamiento:** clientes autorizados (una cuenta cada uno); sin duplicar identidad.
+- **Lanzamiento:** dos clientes, una cuenta cada uno.
 - **Partida:** se ven en el mismo mundo e interactúan; LAN sin Internet demostrada **solo** si se quiere etiquetar como offline.
 - **Mandos:** cada mando afecta exclusivamente a su cliente.
 - **Pantallas:** regiones correctas, DPI/monitor, restauración al cerrar.

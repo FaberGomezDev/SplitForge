@@ -55,4 +55,4 @@ Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input
 
 - **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se instala desde la pestaña 06 («Instalar filtro» / «Asignar mandos a los clientes» / «Quitar filtro»). Cada cliente ve solo su ranura; los PS4 deben llegar como XInput (Steam Input o DS4Windows) y sin duplicados. Cada proceso que lo carga escribe `estado-PID.txt` (DLL, real cargada, ranura) para comprobarlo.
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
-- Nunca intervenir en antitrampas activos ni instalar drivers de kernel por defecto.
+- Sin drivers de kernel por defecto.
