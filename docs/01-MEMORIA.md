@@ -63,6 +63,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - **Cómo lo hace Nucleus Co-op:** combina (1) emulador de Steam Goldberg para que una copia actúe como varias cuentas, (2) hooks de foco y filtrado de mandos por instancia, (3) colocación de ventanas. SplitForge adopta (2) y (3); **rechaza (1)** porque elude la licencia de Steam (ADR-013).
 - **Modo sin conexión de Steam con una sola cuenta:** no sirve; la identidad es la misma y la partida vería al mismo jugador dos veces.
 - **Remote Play Together:** solo funciona con juegos con multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
+- **Retirado en 0.7 a propósito:** el lanzamiento doble genérico de cualquier `.exe` (pestaña «03 EJECUTABLES» del prototipo; sin aislamiento de cuentas ni guardados, riesgo para partidas) y la demo antigua de dos mundos separados (sustituida por el mundo compartido). Siguen disponibles en el prototipo Python. Los juegos se integran mediante adaptadores con preflight.
 
 ## Estado para la siguiente sesión
 

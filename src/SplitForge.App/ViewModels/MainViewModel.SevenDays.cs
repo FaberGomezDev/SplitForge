@@ -149,9 +149,27 @@ public sealed partial class MainViewModel
         ServerStatus = "Servidor detenido.";
     }
 
+    private int _serverRefreshing;
+
+    /// <summary>La comprobación del puerto puede tardar en Windows: se hace fuera del hilo de la interfaz.</summary>
     private void RefreshServer()
     {
-        var phase = _server.Refresh();
+        if (_server.Phase is ServerPhase.Stopped || Interlocked.Exchange(ref _serverRefreshing, 1) == 1)
+        {
+            ApplyServerState(_server.Phase, null);
+            return;
+        }
+        Task.Run(() => (Phase: _server.Refresh(), Log: _server.TailLog()))
+            .ContinueWith(t =>
+            {
+                Interlocked.Exchange(ref _serverRefreshing, 0);
+                if (t.IsCompletedSuccessfully)
+                    ApplyServerState(t.Result.Phase, t.Result.Log);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void ApplyServerState(ServerPhase phase, IReadOnlyList<string>? log)
+    {
         ServerStatus = phase switch
         {
             ServerPhase.Starting => $"Iniciando (PID {_server.ProcessId})… espera a «LISTO».",
@@ -160,8 +178,8 @@ public sealed partial class MainViewModel
             ServerPhase.Exited => "El servidor terminó inesperadamente. Revisa el registro.",
             _ => "Servidor detenido.",
         };
-        if (phase is ServerPhase.Starting or ServerPhase.Ready or ServerPhase.Exited)
-            ServerLog = string.Join('\n', _server.TailLog());
+        if (log is not null && phase is ServerPhase.Starting or ServerPhase.Ready or ServerPhase.Exited)
+            ServerLog = string.Join('\n', log);
     }
 
     private void OpenSecondSteam() => Guard(() =>

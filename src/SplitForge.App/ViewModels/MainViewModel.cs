@@ -64,7 +64,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitSteam();
         InitSevenDays();
 
-        _timer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
+        _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
         _timer.Tick += (_, _) => OnTick();
         _timer.Start();
         _log.Write($"SplitForge {Version} (.NET {Environment.Version}) iniciado. Sesión de registro {_log.SessionId}.");

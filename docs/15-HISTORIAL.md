@@ -40,7 +40,8 @@ EVIDENCIA AUTOMÁTICA: 112 xUnit + 77 unittest; CI windows-latest verde (pruebas
   humo: SDL3 3.5.0 inicializa en Windows); Linux: hilo de entrada 1000 Hz, visor dibujado bajo Xvfb.
 EVIDENCIA EN WINDOWS REAL (propietario): pendiente.
 NUEVOS RIESGOS: perfiles de botones a recalibrar (GUID SDL3); Sandboxie y Steam; firewall al abrir el servidor.
-LIMITACIONES EXPLÍCITAS: sin aislamiento de mandos dentro del juego; dos jugadores requieren dos cuentas.
+LIMITACIONES EXPLÍCITAS: sin aislamiento de mandos validado dentro del juego; dos jugadores requieren dos cuentas.
+  Retirados a propósito: lanzamiento doble genérico de .exe y demo de dos mundos separados (siguen en el prototipo).
 PRÓXIMO PASO: validar W01–W07; SplitForge_Reporte_7DTD.json; validar el filtro XInput (W16).
 AMPLIACIÓN (mismo día): recuperación de ventanas tras cierre inesperado; filtro XInput nativo C++20
   (native/SplitForge.XInputFilter, ADR-015) con instalación reversible desde la pestaña 06 y prueba de humo en la CI.

@@ -29,15 +29,28 @@ public sealed class SevenDaysServer(IProcessLauncher launcher, Action<string> lo
 {
     public static readonly TimeSpan GracefulTimeout = TimeSpan.FromSeconds(45);
 
+    // Refresh puede llamarse desde un hilo en segundo plano: el estado se protege con este candado.
+    private readonly object _gate = new();
     private IChildProcess? _process;
     private SevenDaysServerOptions _options = new();
+    private volatile ServerPhase _phase = ServerPhase.Stopped;
 
-    public ServerPhase Phase { get; private set; } = ServerPhase.Stopped;
+    public ServerPhase Phase
+    {
+        get => _phase;
+        private set => _phase = value;
+    }
     public string? LogFile { get; private set; }
     public int? ProcessId => _process?.Id;
     public SevenDaysServerOptions Options => _options;
 
     public void Start(string serverExe, SevenDaysServerOptions options, SevenDaysServerPaths paths)
+    {
+        lock (_gate)
+            StartLocked(serverExe, options, paths);
+    }
+
+    private void StartLocked(string serverExe, SevenDaysServerOptions options, SevenDaysServerPaths paths)
     {
         if (Phase is ServerPhase.Starting or ServerPhase.Ready or ServerPhase.Stopping)
             throw new InvalidOperationException("El servidor ya está en marcha.");
@@ -58,24 +71,42 @@ public sealed class SevenDaysServer(IProcessLauncher launcher, Action<string> lo
         log($"Servidor 7DTD iniciado (PID {_process.Id}) en el puerto {options.Port}. Guardados aislados en la carpeta de SplitForge.");
     }
 
-    /// <summary>Actualiza la fase. Listo = el puerto de control local acepta conexiones.</summary>
+    /// <summary>
+    /// Actualiza la fase. Listo = el puerto de control local acepta conexiones. La comprobación de
+    /// red se hace FUERA del candado (puede tardar) para no bloquear a quien arranca o detiene.
+    /// </summary>
     public ServerPhase Refresh()
     {
-        if (_process is null)
-            return Phase;
-        if (_process.HasExited)
+        IChildProcess? process;
+        int telnetPort;
+        lock (_gate)
         {
-            if (Phase != ServerPhase.Exited && Phase != ServerPhase.Stopped)
-                log($"El servidor 7DTD terminó (código {_process.ExitCode}). Revisa el registro del servidor.");
-            Phase = Phase == ServerPhase.Stopping ? ServerPhase.Stopped : ServerPhase.Exited;
-            _process.Dispose();
-            _process = null;
-            return Phase;
+            process = _process;
+            telnetPort = _options.TelnetPort;
+            if (process is null)
+                return Phase;
+            if (process.HasExited)
+            {
+                if (Phase != ServerPhase.Exited && Phase != ServerPhase.Stopped && Phase != ServerPhase.Stopping)
+                    log($"El servidor 7DTD terminó (código {process.ExitCode}). Revisa el registro del servidor.");
+                Phase = Phase == ServerPhase.Stopping ? ServerPhase.Stopped : ServerPhase.Exited;
+                process.Dispose();
+                _process = null;
+                return Phase;
+            }
+            if (Phase != ServerPhase.Starting)
+                return Phase;
         }
-        if (Phase == ServerPhase.Starting && PortOpen(_options.TelnetPort))
+        if (PortOpen(telnetPort))
         {
-            Phase = ServerPhase.Ready;
-            log($"Servidor 7DTD listo. Cada jugador: Unirse a partida → IP 127.0.0.1, puerto {_options.Port}.");
+            lock (_gate)
+            {
+                if (Phase == ServerPhase.Starting && ReferenceEquals(_process, process))
+                {
+                    Phase = ServerPhase.Ready;
+                    log($"Servidor 7DTD listo. Cada jugador: Unirse a partida → IP 127.0.0.1, puerto {_options.Port}.");
+                }
+            }
         }
         return Phase;
     }
@@ -83,13 +114,17 @@ public sealed class SevenDaysServer(IProcessLauncher launcher, Action<string> lo
     /// <summary>Apagado ordenado; espera a que guarde. Termina el proceso propio solo si no responde.</summary>
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        var process = _process;
-        if (process is null)
+        IChildProcess? process;
+        lock (_gate)
         {
-            Phase = ServerPhase.Stopped;
-            return;
+            process = _process;
+            if (process is null)
+            {
+                Phase = ServerPhase.Stopped;
+                return;
+            }
+            Phase = ServerPhase.Stopping;
         }
-        Phase = ServerPhase.Stopping;
         var sent = await TrySendCommandAsync(_options.TelnetPort, "shutdown", cancellationToken).ConfigureAwait(false);
         log(sent ? "Servidor 7DTD: apagado ordenado solicitado (guardando partida)…"
                  : "Servidor 7DTD: el canal de control no respondió.");
@@ -101,9 +136,15 @@ public sealed class SevenDaysServer(IProcessLauncher launcher, Action<string> lo
             process.Kill();
             log("Servidor 7DTD terminado tras agotar el apagado ordenado (proceso creado por SplitForge).");
         }
-        process.Dispose();
-        _process = null;
-        Phase = ServerPhase.Stopped;
+        lock (_gate)
+        {
+            if (ReferenceEquals(_process, process))
+            {
+                process.Dispose();
+                _process = null;
+            }
+            Phase = ServerPhase.Stopped;
+        }
         log("Servidor 7DTD detenido.");
     }
 
@@ -181,5 +222,9 @@ public sealed class SevenDaysServer(IProcessLauncher launcher, Action<string> lo
         }
     }
 
-    public void Dispose() => _process?.Dispose();
+    public void Dispose()
+    {
+        lock (_gate)
+            _process?.Dispose();
+    }
 }
