@@ -198,7 +198,7 @@ PRÓXIMO PASO: corregir la API plana del emulador y probarla; restaurar la DLL o
 
 ```text
 FECHA: 2026-10-10 (tarde)
-RELEASE/COMMIT: commit siguiente a 42cfa1e en main
+RELEASE/COMMIT: dd6170e (main)
 OBJETIVO: que 7DTD arranque con el emulador, dos jugadores en pantalla dividida, cada uno con su mando,
   sin barra de tareas y con un atajo para jugar solo con mandos (peticiones del propietario).
 CAMBIOS EFECTIVOS:
