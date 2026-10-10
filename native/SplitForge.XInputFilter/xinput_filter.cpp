@@ -7,8 +7,11 @@
 // Sin asignación para el PID, es transparente.
 //
 // Estado: cada copia cargada escribe estado-PID-<dll>.txt (7DTD carga xinput1_3 y xinput1_4 a la vez),
-// con la ranura vigente y cuántas lecturas (XInputGetState/Ex) ha atendido. Se reescribe al cambiar la
-// asignación y, como mucho, cada 2 s mientras el juego lee mandos.
+// con la ranura vigente, cuántas lecturas (XInputGetState/Ex) ha atendido y si el foco está forzado.
+// Se reescribe al cambiar la asignación y, como mucho, cada 2 s mientras el juego lee mandos.
+//
+// Con mando asignado, además simula el foco de su ventana (ver «Foco simulado»): en pantalla dividida
+// cada cliente atiende su mando aunque no sea la ventana activa.
 //
 // No inyecta código en otros procesos. Úsese con el juego abierto sin EAC (opción oficial del juego).
 
@@ -89,6 +92,8 @@ std::atomic_flag g_statusBusy; // C++20: empieza libre.
 int g_writtenSlot = -2;                       // Último estado escrito (solo con g_statusBusy tomado).
 unsigned long long g_writtenReads = ~0ull;
 ULONGLONG g_writtenAt = 0;
+std::atomic<bool> g_statusDirty{false};        // Algo cambió (p. ej. el foco): reescribir el estado ya.
+std::atomic<bool> g_focusActive{false};
 wchar_t g_realName[MAX_PATH] = L"xinput1_3.dll";
 
 // Nombre de esta DLL (xinput1_3.dll, xinput1_4.dll...) para cargar la real con el mismo nombre.
@@ -166,7 +171,8 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
     if (g_statusBusy.test_and_set(std::memory_order_acquire))
         return;
     const unsigned long long reads = g_reads.load(std::memory_order_relaxed);
-    const bool due = slot != g_writtenSlot || (reads != g_writtenReads && now - g_writtenAt >= kStatusMs);
+    const bool dirty = g_statusDirty.exchange(false, std::memory_order_relaxed);
+    const bool due = dirty || slot != g_writtenSlot || (reads != g_writtenReads && now - g_writtenAt >= kStatusMs);
     if (due) {
         wchar_t base[MAX_PATH] = {};
         BaseName(base, MAX_PATH);
@@ -178,7 +184,8 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
             && AssignmentPath(path, MAX_PATH * 2, file)
             && swprintf_s(temp, L"%ls.tmp", path) > 0
             && _wfopen_s(&f, temp, L"w") == 0 && f) {
-            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\n", g_realName, Real() ? L"cargada" : L"NO", slot, reads);
+            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\n", g_realName, Real() ? L"cargada" : L"NO",
+                     slot, reads, g_focusActive.load(std::memory_order_relaxed) ? L"forzado" : L"no");
             const bool written = fclose(f) == 0;
             if (written && MoveFileExW(temp, path, MOVEFILE_REPLACE_EXISTING)) {
                 g_writtenSlot = slot;
@@ -190,6 +197,148 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
         }
     }
     g_statusBusy.clear(std::memory_order_release);
+}
+
+// --- Foco simulado (técnica ForceFocus / FocusHooks de Nucleus Co-op) ---
+//
+// Unity solo atiende la entrada de la ventana con foco (en 7DTD: GameManager.OnApplicationFocus →
+// GameIsFocused). En pantalla dividida, cada cliente con mando asignado debe creer que siempre lo tiene:
+//  - su ventana ignora las pérdidas de foco (WM_KILLFOCUS) y las desactivaciones se tratan como
+//    activaciones (WM_ACTIVATE, WM_ACTIVATEAPP, WM_NCACTIVATE);
+//  - GetForegroundWindow / GetActiveWindow / GetFocus de UnityPlayer.dll y del ejecutable devuelven su
+//    ventana (se reescribe su tabla de importaciones: una escritura atómica de puntero, sin parchear código).
+// Solo dentro de este proceso y solo si SplitForge le asignó un mando. Una sola vez por proceso aunque se
+// carguen varias copias del filtro (xinput1_3 y xinput1_4).
+
+std::atomic<HWND> g_window{nullptr};
+WNDPROC g_originalProc = nullptr;
+std::atomic<bool> g_focusStarted{false};
+
+HWND WINAPI FocusedWindow() { return g_window.load(std::memory_order_relaxed); }
+
+LRESULT CALLBACK FocusProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+    case WM_KILLFOCUS:
+        return 0;
+    case WM_ACTIVATE:
+        if (LOWORD(wParam) == WA_INACTIVE)
+            wParam = MAKEWPARAM(WA_ACTIVE, HIWORD(wParam));
+        break;
+    case WM_ACTIVATEAPP:
+    case WM_NCACTIVATE:
+        wParam = TRUE;
+        break;
+    default:
+        break;
+    }
+    return CallWindowProcW(g_originalProc, hwnd, message, wParam, lParam);
+}
+
+struct FindWindowData {
+    DWORD pid;
+    bool anyWindow; // false: solo la ventana de Unity (UnityWndClass)
+    HWND found;
+};
+
+BOOL CALLBACK FindOwnWindow(HWND hwnd, LPARAM lParam) {
+    auto* data = reinterpret_cast<FindWindowData*>(lParam);
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (pid != data->pid || !IsWindowVisible(hwnd) || GetWindow(hwnd, GW_OWNER))
+        return TRUE;
+    wchar_t cls[64] = {};
+    GetClassNameW(hwnd, cls, 64);
+    if (wcscmp(cls, L"UnityWndClass") == 0) {
+        data->found = hwnd;
+        return FALSE;
+    }
+    if (data->anyWindow && !data->found)
+        data->found = hwnd; // Juego que no es Unity: la primera ventana visible propia.
+    return TRUE;
+}
+
+// Sustituye en la tabla de importaciones de `module` las funciones de foco de user32 por FocusedWindow.
+void RedirectFocusImports(HMODULE module) {
+    if (!module)
+        return;
+    auto* base = reinterpret_cast<BYTE*>(module);
+    auto* dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
+    if (dos->e_magic != IMAGE_DOS_SIGNATURE)
+        return;
+    auto* nt = reinterpret_cast<IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+    const auto& dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+    if (!dir.VirtualAddress)
+        return;
+    HMODULE user32 = GetModuleHandleW(L"user32.dll");
+    if (!user32)
+        return;
+    void* targets[] = {
+        reinterpret_cast<void*>(GetProcAddress(user32, "GetForegroundWindow")),
+        reinterpret_cast<void*>(GetProcAddress(user32, "GetActiveWindow")),
+        reinterpret_cast<void*>(GetProcAddress(user32, "GetFocus")),
+    };
+    for (auto* imp = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(base + dir.VirtualAddress); imp->Name; ++imp) {
+        if (_stricmp(reinterpret_cast<const char*>(base + imp->Name), "user32.dll") != 0)
+            continue;
+        for (auto* thunk = reinterpret_cast<IMAGE_THUNK_DATA*>(base + imp->FirstThunk); thunk->u1.Function; ++thunk) {
+            void* current = reinterpret_cast<void*>(thunk->u1.Function);
+            for (void* target : targets) {
+                if (!target || current != target)
+                    continue;
+                DWORD old = 0;
+                if (VirtualProtect(&thunk->u1.Function, sizeof(void*), PAGE_READWRITE, &old)) {
+                    InterlockedExchangePointer(reinterpret_cast<void* volatile*>(&thunk->u1.Function),
+                                               reinterpret_cast<void*>(&FocusedWindow));
+                    VirtualProtect(&thunk->u1.Function, sizeof(void*), old, &old);
+                }
+            }
+        }
+    }
+}
+
+// Hilo propio (nunca en DllMain): espera la ventana del juego y activa el foco simulado.
+DWORD WINAPI FocusThread(void*) {
+    FindWindowData data{GetCurrentProcessId(), false, nullptr};
+    for (int attempt = 0; attempt < 480 && !data.found; ++attempt) { // hasta 2 minutos
+        data.anyWindow = attempt >= 80; // tras 20 s sin ventana de Unity, se acepta cualquier ventana propia
+        EnumWindows(&FindOwnWindow, reinterpret_cast<LPARAM>(&data));
+        if (!data.found)
+            Sleep(250);
+    }
+    if (!data.found)
+        return 0;
+    const HWND hwnd = data.found;
+    g_window.store(hwnd, std::memory_order_relaxed);
+    RedirectFocusImports(GetModuleHandleW(nullptr));
+    RedirectFocusImports(GetModuleHandleW(L"UnityPlayer.dll"));
+    g_originalProc = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(hwnd, GWLP_WNDPROC));
+    SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&FocusProc));
+    g_focusActive.store(true, std::memory_order_relaxed);
+    // Como el bucle de foco de Nucleus: unas cuantas activaciones para que el juego se dé por enfocado.
+    for (int i = 0; i < 8; ++i) {
+        SendMessageW(hwnd, WM_ACTIVATEAPP, TRUE, 0);
+        SendMessageW(hwnd, WM_NCACTIVATE, TRUE, 0);
+        SendMessageW(hwnd, WM_ACTIVATE, WA_ACTIVE, 0);
+        SendMessageW(hwnd, WM_SETFOCUS, 0, 0);
+        Sleep(25);
+    }
+    g_statusDirty.store(true, std::memory_order_relaxed); // reescribir el estado con «foco=forzado»
+    return 0;
+}
+
+// Arranca el foco simulado una sola vez por proceso (aunque haya varias copias del filtro cargadas).
+void StartFocusOnce() {
+    bool expected = false;
+    if (!g_focusStarted.compare_exchange_strong(expected, true))
+        return;
+    wchar_t name[64] = {};
+    swprintf_s(name, L"Local\\SplitForgeFoco-%lu", GetCurrentProcessId());
+    HANDLE guard = CreateMutexW(nullptr, FALSE, name);
+    if (!guard || GetLastError() == ERROR_ALREADY_EXISTS)
+        return; // Otra copia del filtro ya lo hace (el mutex se queda abierto mientras viva el proceso).
+    HANDLE thread = CreateThread(nullptr, 0, &FocusThread, nullptr, 0, nullptr);
+    if (thread)
+        CloseHandle(thread);
 }
 
 // Relee la asignación como mucho una vez por segundo. Formato: "PID RANURA" por línea (ranura 0–3).
@@ -214,6 +363,8 @@ int CurrentSlot() {
         fclose(f);
     }
     g_slot.store(slot, std::memory_order_relaxed);
+    if (slot != kPassThrough)
+        StartFocusOnce(); // pantalla dividida: este cliente debe creer que siempre tiene el foco
     MaybeWriteStatus(slot, now);
     return slot;
 }

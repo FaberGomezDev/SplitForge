@@ -249,6 +249,40 @@ LIMITACIONES EXPLÍCITAS: si 7DTD consulta el foco real o recibe el mando ajeno 
 PRÓXIMO PASO: W16 con la casilla activada y desactivada.
 ```
 
+## 2026-10-10 · Foco simulado: cada mando en su ventana
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: commit siguiente a 7ee4c38 en main
+OBJETIVO: el propietario vio que los mandos no eran independientes (solo atendía la ventana activa).
+CAMBIOS EFECTIVOS: el filtro XInput simula el foco (técnica ForceFocus/FocusHooks de Nucleus) en cada
+  cliente con mando asignado: subclase de la ventana de Unity (WM_KILLFOCUS bloqueado; WM_ACTIVATE,
+  WM_ACTIVATEAPP y WM_NCACTIVATE siempre activos), GetForegroundWindow/GetActiveWindow/GetFocus
+  redirigidos en la tabla de importaciones de UnityPlayer.dll y del ejecutable, activación inicial;
+  estado «foco=forzado». SplitForge recupera el foco real tras dividir (SetForegroundWindowElsewhere).
+EVIDENCIA AUTOMÁTICA: 166 xUnit; filtro compilado sin avisos (MSVC /W4 /WX) y su prueba de humo.
+EVIDENCIA EN WINDOWS REAL: IL de 7DTD: OnApplicationFocus → GameIsFocused; puntero propio por instancia
+  (SoftCursor). «Lanzar J1 y J2» real (pulsado por UI Automation): J1 → mando 1, J2 → mando 2, los dos
+  con foco simulado, arriba/abajo sobre la barra de tareas.
+PRÓXIMO PASO: confirmación física del propietario (W16) y partida común por IP (W14).
+```
+
+## 2026-10-10 · W16: los dos mandos mueven las dos ventanas (causa encontrada)
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit (solo documentación)
+EVIDENCIA EN WINDOWS REAL (propietario + diagnóstico v3 con los dos clientes):
+  - Con el foco simulado en ambos clientes, cada stick mueve LAS DOS ventanas (antes solo atendía la activa).
+  - Los dos clientes tienen cargada la xinput1_4.dll REAL de System32 (origen «sistema»); el filtro solo
+    está cargado como xinput1_3 («juego+sistema»). El juego lee los mandos por la 1.4 sin filtrar.
+  - Descartado: la XInput1_3.dll de System32 no depende de la 1.4 (no la importa).
+  - InControlNative.dll pide XInput1_3/XInput1_4/XInput9_1_0 por nombre; UnityPlayer.dll también.
+PRÓXIMO PASO: averiguar qué módulo carga la 1.4 desde System32 y hacer que esa vía pase por el filtro.
+  Referencia: Nucleus usa Game.Hook.XInputEnabled (XInput interceptado dentro del proceso, sea cual sea
+  la DLL), además de XInputPlusDll con los mismos nombres que SplitForge.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

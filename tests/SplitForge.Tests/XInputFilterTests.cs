@@ -148,7 +148,7 @@ public class XInputFilterTests
         // 7DTD carga xinput1_3 y xinput1_4: cada copia del filtro escribe su propio archivo.
         File.WriteAllText(host.Combine("estado-300-xinput1_3.txt"), "dll=xinput1_3.dll\nreal=cargada\nranura=0\nlecturas=0\n");
         File.WriteAllText(host.Combine("estado-300-xinput1_4.txt"), "dll=xinput1_4.dll\nreal=cargada\nranura=0\nlecturas=5321\n");
-        File.WriteAllText(box.Combine("estado-400-xinput1_4.txt"), "dll=xinput1_4.dll\nreal=cargada\nranura=1\nlecturas=77\n");
+        File.WriteAllText(box.Combine("estado-400-xinput1_4.txt"), "dll=xinput1_4.dll\nreal=cargada\nranura=1\nlecturas=77\nfoco=forzado\n");
         File.WriteAllText(host.Combine("estado-abc.txt"), "dll=x\n");
         File.WriteAllText(host.Combine("estado--5-x.txt"), "dll=x\n");
 
@@ -156,6 +156,8 @@ public class XInputFilterTests
         Assert.Equal([(300, "xinput1_3.dll", 0L), (300, "xinput1_4.dll", 5321L), (400, "xinput1_4.dll", 77L)],
             status.Select(s => (s.Pid, s.Dll, s.Reads)));
         Assert.Equal(1, status[2].Slot);
+        Assert.True(status[2].FocusForced);  // pantalla dividida: el filtro simula el foco
+        Assert.False(status[0].FocusForced); // formato anterior, sin la línea «foco»
     }
 
     [Fact]

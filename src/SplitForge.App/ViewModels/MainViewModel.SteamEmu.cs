@@ -228,6 +228,9 @@ public sealed partial class MainViewModel
         if (_sessions.Active is not null)
             _sessions.Stop();
         _sessions.Attach(handles, pending.Layout);
+        // Como SetForegroundWindowElsewhere de Nucleus: el foco real vuelve a SplitForge y ningún cliente
+        // queda «más enfocado» que el otro; el filtro les simula el foco a los dos.
+        System.Windows.Application.Current?.MainWindow?.Activate();
         Status = "7DTD: J1 y J2 en pantalla dividida, cada uno con su mando.";
     }
 

@@ -87,7 +87,7 @@ Estado real (2026-10-10, PC del propietario, 7DTD build `25661859` = V 3.3.0 b18
 - **Filtro XInput cargado en los dos** por `xinput1_3.dll`, con J1 → mando 1 y J2 → mando 2; las «lecturas» suben en ambos aunque solo uno tenga el foco.
 - Todo lo hace «Lanzar J1 y J2» de la pestaña 07 (ver `docs/05-INTEGRACION-STEAM.md`). La sesión tapa la barra de tareas y **Ctrl+Alt+B** bloquea teclado y ratón para jugar solo con mandos.
 
-W16, primer resultado del propietario: los mandos **no** eran independientes. Respuesta: **foco simulado desde fuera** (ADR-020, casilla en la pestaña 07, activada por defecto), sin probar todavía. Siguiente: repetir W16 con la casilla activada y desactivada. Si no basta, falta la parte de Nucleus que actúa dentro del juego (`ForceFocus` / `FocusHooks`). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
+W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (desde fuera, ADR-020, y dentro del filtro), **cada stick mueve las dos ventanas**. Causa (diagnóstico v3): los dos clientes tienen cargada la `xinput1_4.dll` **real** de System32 (origen «sistema») y el filtro solo actúa en `xinput1_3`; el juego lee los mandos por esa 1.4 sin filtrar. Descartado: la `XInput1_3.dll` del sistema no depende de la 1.4. Siguiente: averiguar qué módulo carga la 1.4 real (InControl la pide por nombre: `XInput1_3`, `XInput1_4`, `XInput9_1_0`) y hacer que también pase por el filtro; Nucleus lo cubre con `Game.Hook.XInputEnabled` (XInput interceptado dentro del proceso, venga de la DLL que venga). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
 
 Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 

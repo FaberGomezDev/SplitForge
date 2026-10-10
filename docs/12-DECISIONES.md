@@ -69,7 +69,9 @@ Las etiquetas `v*` crean una release con ZIP y SHA-256 (prerelease para `v0.*`).
 - la DLL real se verifica en System32;
 - la instalación actualiza solo copias propias sin modificar y nunca deja el manifiesto incompleto.
 
-**Pendiente:** prueba W16 con dos clientes (¿suben las lecturas en ambos?, ¿responde la ventana sin foco?).
+**Foco simulado (2026-10-10, técnica `ForceFocus` / `FocusHooks` de Nucleus):** 7DTD solo atiende la entrada si Unity le notifica el foco (`GameManager.OnApplicationFocus` → `GameIsFocused`), así que en pantalla dividida solo respondía la ventana activa. Con mando asignado, el filtro (una vez por proceso) subclasifica la ventana de Unity: bloquea `WM_KILLFOCUS` y convierte `WM_ACTIVATE`/`WM_ACTIVATEAPP`/`WM_NCACTIVATE` inactivos en activos. Además redirige `GetForegroundWindow`/`GetActiveWindow`/`GetFocus` en la tabla de importaciones de `UnityPlayer.dll` y del ejecutable a su ventana, y le envía una activación inicial. Todo dentro del propio proceso del juego, sin parchear código. Tras dividir la pantalla, SplitForge recupera el foco real (`SetForegroundWindowElsewhere` de Nucleus). El puntero no necesita nada: 7DTD dibuja el suyo por instancia (`SoftCursor`).
+
+**Pendiente:** confirmación física de W16 (cada mando mueve solo su ventana).
 
 ## ADR-016 · Aceptada (experimental) · Emulador de Steam como componente principal (técnica de Goldberg)
 

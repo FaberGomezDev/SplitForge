@@ -380,7 +380,8 @@ public sealed partial class MainViewModel
             var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
             var dlls = string.Join(", ", g.Select(st =>
                 $"{st.Dll}{(st.RealLoaded ? "" : " (¡DLL real NO cargada!)")}{(st.Reads >= 0 ? $" {st.Reads} lecturas" : "")}"));
-            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}";
+            var focus = g.Any(st => st.FocusForced) ? " · foco simulado" : "";
+            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}";
         });
         return ($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots);
     }

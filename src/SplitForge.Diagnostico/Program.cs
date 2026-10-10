@@ -172,7 +172,8 @@ static void PrintFilterStatus()
     {
         Console.WriteLine($"Filtro XInput · PID {s.Pid} · {s.Dll} · DLL real {(s.RealLoaded ? "cargada" : "NO cargada")} · "
                           + $"mando {(s.Slot >= 0 ? (s.Slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")}"
-                          + (s.Reads >= 0 ? $" · {s.Reads} lecturas" : string.Empty));
+                          + (s.Reads >= 0 ? $" · {s.Reads} lecturas" : string.Empty)
+                          + (s.FocusForced ? " · foco simulado" : string.Empty));
     }
 }
 

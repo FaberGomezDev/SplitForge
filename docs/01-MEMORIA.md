@@ -79,6 +79,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - **Remote Play Together:** solo funciona con juegos con multijugador local en PC; 7DTD solo tiene pantalla dividida en consola.
 - **Emulador de Steam = componente principal y permanente** (ADR-016): deja de ser temporal y no se eliminará; el propietario no quiere limitarlo.
 - **Nucleus Co-op como referencia** (instalado en el PC del propietario; su handler de 7DTD, versión 18): SplitForge adopta su configuración en el lanzador (sin juego cruzado, ventana por panel, colocación automática). En vez de editar `platform.cfg`, SplitForge usa los argumentos equivalentes, que el juego admite, y no toca archivos.
+- **Mandos independientes (2026-10-10, noche):** el propietario vio que solo respondía la ventana activa. Se adopta el foco simulado de Nucleus dentro del filtro XInput.
 - **Distribución preferida para 7DTD: arriba y abajo** (el propietario la prefiere; además da paneles más anchos que 16:9).
 - **Retirado en 0.7 a propósito:** el lanzamiento doble genérico de cualquier `.exe` (pestaña «03 EJECUTABLES» del prototipo; sin aislamiento de guardados, riesgo para partidas) y la demo antigua de dos mundos separados (sustituida por el mundo compartido). Siguen disponibles en el prototipo Python. Los juegos se integran mediante adaptadores con preflight.
 
@@ -86,7 +87,9 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide con los dos PS4 conectados: mandos en «01 MANDOS», laboratorio, distribución sin bordes y restauración. La frecuencia del hilo (1000 Hz) ya se midió en su PC sin mandos.
 **P1 (estado 2026-10-10):** emulador y filtro XInput instalados en 7DTD en el PC del propietario. «Lanzar J1 y J2» abre los dos clientes en pantalla dividida, cada uno con su mando asignado (ver `05-INTEGRACION-STEAM.md`).
-**W16 (siguiente prueba física, solo falta el propietario):** primer resultado (2026-10-10): los mandos **no** son independientes (ningún mando mueve solo su ventana). Respuesta: foco simulado desde fuera (ADR-020), activado por defecto en la pestaña 07; repetir W16.
+**Foco simulado (2026-10-10, noche):** desde fuera (ADR-020, casilla de la pestaña 07) y dentro del filtro (estado «foco simulado» en ambos clientes).
+**W16, resultado del propietario:** cada stick mueve **las dos** ventanas. El diagnóstico v3 muestra en ambos clientes la `xinput1_4.dll` real de System32 sin filtrar (el filtro solo está en `xinput1_3`). Siguiente: que la vía `xinput1_4` también pase por el filtro (ver `16-PENDIENTES.md`).
+**W16 (repetir cuando esté resuelto):**
 1. Con los dos clientes abiertos por «Lanzar J1 y J2», pulsar un botón en el mando 2: la ventana de J2 debe avanzar aunque no tenga el foco.
 2. Mover el stick del mando 1: solo debe reaccionar la ventana de J1.
 3. Repetir con «Simular foco» activado y desactivado (pestaña 07) y anotar qué cambia. Si sigue sin responder, falta la parte de Nucleus que actúa dentro del juego (`ForceFocus` / `FocusHooks`).

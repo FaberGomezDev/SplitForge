@@ -27,7 +27,7 @@
 | Ventanas sobre la barra de tareas | Solo ventanas que SplitForge colocó; el orden «siempre encima» se restaura al detener | Si el juego se cierra de golpe no hay nada que restaurar (la ventana ya no existe) |
 | Configuración | `settings.v2.json` atómico; `settings.json` del prototipo solo lectura | — |
 | Diagnóstico de módulos | `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ` solo para enumerar módulos; sus rutas se usan en memoria para clasificar el origen (`sistema`/`juego`/`steam`/`otro`) y nunca se exportan; con EAC activo Windows lo deniega y se informa | — |
-| Filtro XInput nativo (ADR-015) | Se instala con consentimiento solo si ningún cliente tiene EAC cargado; nunca sobrescribe DLL del juego; actualiza o retira solo copias propias sin modificar (SHA-256); carga la DLL real por ruta absoluta y verifica que viene de System32; estado con reemplazo atómico; sin E/S en `DllMain`; compilado con `/guard:cf`, ASLR y DEP | Validar en hardware; simulación de foco aún no implementada |
+| Filtro XInput nativo (ADR-015) | Se instala con consentimiento solo si ningún cliente tiene EAC cargado; nunca sobrescribe DLL del juego; actualiza o retira solo copias propias sin modificar (SHA-256); carga la DLL real por ruta absoluta y verifica que viene de System32; estado con reemplazo atómico; sin E/S en `DllMain`; compilado con `/guard:cf`, ASLR y DEP | Validar en hardware. Foco simulado (solo con mando asignado): subclase de la ventana del propio juego y redirección de 3 importaciones de user32 en su tabla de importaciones; sin parchear código ni tocar otros procesos |
 
 ## Reglas para una integración nueva
 

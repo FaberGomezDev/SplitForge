@@ -6,7 +6,8 @@ namespace SplitForge.Core.Adapters;
 
 /// <summary>Estado que publica cada copia del filtro cargada en un proceso (una por nombre de DLL).</summary>
 /// <param name="Reads">Llamadas a XInputGetState/Ex atendidas (−1 si el filtro es anterior y no lo informa).</param>
-public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1);
+/// <param name="FocusForced">El filtro simula el foco de la ventana (pantalla dividida con mando asignado).</param>
+public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1, bool FocusForced = false);
 
 /// <summary>Resultado de instalar: qué se copió, qué se actualizó y qué se dejó intacto.</summary>
 /// <param name="Updated">Copias antiguas de SplitForge (sin modificar) sustituidas por la versión actual.</param>
@@ -202,7 +203,8 @@ public static class XInputFilter
                     var status = new XInputFilterStatus(pid, values.GetValueOrDefault("dll", "?"),
                         values.GetValueOrDefault("real") == "cargada",
                         int.TryParse(values.GetValueOrDefault("ranura"), out var slot) ? slot : -1,
-                        long.TryParse(values.GetValueOrDefault("lecturas"), out var reads) ? reads : -1);
+                        long.TryParse(values.GetValueOrDefault("lecturas"), out var reads) ? reads : -1,
+                        values.GetValueOrDefault("foco") == "forzado");
                     result.TryAdd((pid, status.Dll.ToLowerInvariant()), status);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
