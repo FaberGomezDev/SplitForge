@@ -168,7 +168,7 @@ PRÓXIMO PASO: validar en hardware.
 
 ```text
 FECHA: 2026-10-10
-RELEASE/COMMIT: commit siguiente a 783da1d en main
+RELEASE/COMMIT: 0f99505 (main)
 OBJETIVO: que la memoria diga la verdad: contrastar docs con el código, las pruebas y el PC real.
 CAMBIOS EFECTIVOS:
   - Docs al día: 158 xUnit, 7 pestañas, comando xinput, CursorLock/GlobalHotkey/SessionRecovery,
