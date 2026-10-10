@@ -18,6 +18,12 @@ Hardware de referencia de pruebas del proyecto: Ryzen 7 7700X, RTX 4060 (8 GB VR
 5. [`docs/05-INTEGRACION-STEAM.md`](docs/05-INTEGRACION-STEAM.md) — límites reales por juego.
 6. [`docs/07-PRUEBAS.md`](docs/07-PRUEBAS.md) y [`docs/08-SEGURIDAD.md`](docs/08-SEGURIDAD.md) antes de tocar procesos, entrada o guardados.
 
+## Reglas de Git (decisión del propietario, obligatorias)
+
+- Trabajar y hacer push **directamente en `main`**. **Nunca** crear ramas `claude/*` ni ramas con nombre de asistente.
+- Los commits y PR **no** llevan firmas de asistente: nada de `Co-Authored-By`, `Claude-Session`, "Generated with" ni similares.
+- Mensajes de commit en español, describiendo el cambio real.
+
 ## Reglas de implementación
 
 - **No reescribir sin necesidad** la ruta probada `ControllerManager` → `SessionManager` → `SharedWorld` → `WorldWriter` → `shared_demo`.

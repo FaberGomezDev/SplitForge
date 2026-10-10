@@ -17,6 +17,18 @@ dist/
 *.whl
 *.zip
 
+# .NET / Visual Studio / C++
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+artifacts/
+publish/
+x64/
+*.pdb
+
 # Local reports and logs (may contain user data)
 SplitForge_Reporte_*.json
 Reporte_*.txt
