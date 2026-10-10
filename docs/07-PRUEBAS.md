@@ -43,7 +43,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 
 ### CI (`.github/workflows/build.yml`, windows-latest)
 
-Se ejecuta en cada push a cualquier rama (también las ramas de trabajo) y en cada PR. Módulo nativo C++ (MSVC `/W4 /WX` + CTest), pruebas .NET y Python, documentación, publicación autónoma win-x64, **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3) y **prueba de arranque de la interfaz**: abre `SplitForge.exe`, selecciona las 6 pestañas con UI Automation, guarda una captura de cada una (artefacto `captura-interfaz`) y exige un cierre ordenado. Esta prueba detectó y permitió corregir un fallo real de cierre (run #4). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz). Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
+Módulo nativo C++ (MSVC `/W4 /WX` + CTest), pruebas .NET y Python, documentación, publicación autónoma win-x64, **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3) y **prueba de arranque de la interfaz**: abre `SplitForge.exe`, selecciona las 6 pestañas con UI Automation, guarda una captura de cada una (artefacto `captura-interfaz`) y exige un cierre ordenado. Esta prueba detectó y permitió corregir un fallo real de cierre (run #4). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz). Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
 
 ### Pruebas de humo en Linux (desarrollo)
 

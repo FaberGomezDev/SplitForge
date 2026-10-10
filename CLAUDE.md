@@ -5,7 +5,7 @@
 
 ## Reglas de Git (decisión del propietario, obligatorias)
 
-- Guardar cada cambio en una **rama de trabajo con nombre descriptivo** (p. ej. `7dtd-diagnostico-xinput`) y hacer push de esa rama; `main` la integra el propietario. **Nunca** crear ramas `claude/*` ni ramas con nombre de asistente.
+- Trabajar y hacer push **directamente en `main`**. **Nunca** crear ramas `claude/*` ni ramas con nombre de asistente.
 - Los commits y PR **no** llevan firmas de asistente: nada de `Co-Authored-By`, `Claude-Session`, "Generated with" ni similares.
 - Mensajes de commit en español, describiendo el cambio real.
 

@@ -20,8 +20,8 @@
 | `SplitForge.App` | WPF + ViewModel por pestañas; `--lab-viewer N` | Bloqueos de UI (no hacer trabajo pesado en el hilo de UI) |
 | `SplitForge.Diagnostico` | `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` (+ `demo-frames`, `visor-lab` para pruebas) | Privacidad de informes |
 | `Core.Adapters.XInputFilter` | `Install` → `XInputInstallResult` (instalado/actualizado/al día/omitido; manifiesto siempre coherente), `IsOwnFile`, `Uninstall`, asignaciones PID → ranura, `ReadStatus` por proceso y DLL (también desde la carpeta de Sandboxie) | Archivos del juego (nunca sobrescribir lo ajeno) |
-| `native/SplitForge.XInputFilter` (C++20) | DLL con la API de XInput (8 funciones + ordinales 100–103); cada proceso ve solo su ranura asignada; DLL real verificada en System32; `estado-PID-<dll>.txt` con ranura y lecturas, actualizado en vivo | Compatibilidad por juego, foco |
 | `Core.Adapters.SteamEmulator` | Emulador de Steam educativo (ADR-016): instalar/restaurar con copia de seguridad + SHA-256, config JSON por identidad, lanzamiento de instancias con variable de entorno | Archivos del juego, EAC, identidades |
+| `native/SplitForge.XInputFilter` (C++20) | DLL con la API de XInput (8 funciones + ordinales 100–103); cada proceso ve solo su ranura asignada; DLL real verificada en System32; `estado-PID-<dll>.txt` con ranura y lecturas, actualizado en vivo | Compatibilidad por juego, foco |
 | `native/SplitForge.SteamEmu` (C++20) | DLL que reimplementa el contrato ABI de `steam_api64.dll` (API plana + interfaces + callbacks + P2P multicast local); experimental, se eliminará tras el experimento | ABI del SDK, NetworkingSockets sin implementar, EAC |
 
 ## Tipos públicos importantes

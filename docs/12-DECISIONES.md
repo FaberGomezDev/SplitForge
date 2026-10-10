@@ -52,7 +52,7 @@ Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo
 
 ## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
 
-Cada push (a `main` o a una rama de trabajo) ejecuta el módulo nativo con su prueba de humo, pruebas .NET y Python, valida docs, publica win-x64 autónomo, ejecuta una prueba de humo y sube el artefacto `SplitForge-win-x64`. Las etiquetas `v*` crean una release con ZIP y SHA-256.
+Cada push a `main` ejecuta el módulo nativo con su prueba de humo, pruebas .NET y Python, valida docs, publica win-x64 autónomo, ejecuta una prueba de humo y sube el artefacto `SplitForge-win-x64`. Las etiquetas `v*` crean una release con ZIP y SHA-256.
 
 ## ADR-015 · Aceptada (experimental) · Filtro XInput por proceso como primer módulo nativo
 

@@ -113,7 +113,6 @@ CAMBIOS EFECTIVOS:
   - Informe 7DTD v3: origen de cada módulo de mando (sistema/juego/steam/otro, sin rutas),
     filtro_xinput_cargado (SHA-256), motor, ranuras XInput conectadas.
   - Estado del filtro y de las ranuras refrescado en segundo plano en la interfaz.
-  - CI también en las ramas de trabajo (paquete para probar antes de integrar).
 EVIDENCIA AUTOMÁTICA: 126 xUnit + 77 unittest; filtro y prueba de humo compilados sin avisos con
   MinGW (-Wall -Wextra -Werror); la prueba de humo (dos copias, reasignación en vivo) corre en la CI de Windows.
 EVIDENCIA EN WINDOWS REAL: el informe del propietario; nada de lo nuevo probado aún en su PC.

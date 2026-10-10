@@ -2,7 +2,7 @@ name: Compilar y probar
 
 on:
   push:
-    branches: ['**'] # También las ramas de trabajo: cada una deja su paquete para probar antes de integrar.
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

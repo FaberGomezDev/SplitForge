@@ -10,7 +10,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 
 - **Mejores tecnologías para eficiencia, optimización y fluidez** → .NET 10 + SDL3 + C++ nativo donde haga falta (ADR-010). Tkinter descartado.
 - Avanzar todo lo posible en cada entrega, no por etapas pequeñas.
-- Git: cada cambio en una **rama de trabajo con nombre descriptivo** (nunca `claude/*`), que el propietario integra en `main`; **sin firmas de asistente** en commits.
+- Git: trabajar en `main`, **sin ramas `claude/*` ni firmas de asistente** en commits.
 - Objetivo inmediato: **7 Days to Die con dos mandos y dos jugadores en la misma partida**.
 
 ## Equipo de referencia y entorno conocido
