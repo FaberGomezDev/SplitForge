@@ -119,4 +119,67 @@ public class InputTests
         Assert.True(b.LX < -0.5f && !b.Fire);
         Assert.NotEqual(a.DeviceId, b.DeviceId);
     }
+
+    [Fact]
+    public void XInputSlotDetectorFindsTheSlotOfThePressedPad()
+    {
+        XInputSlotState[] idle = [new(true), new(true, Buttons: 0x1000), new(false), new(false)];
+        Assert.Null(XInputSlotDetector.NewPress(idle, idle));
+        // Botón mantenido desde antes en la ranura 2 (índice 1): no cuenta; nueva pulsación en la ranura 1.
+        XInputSlotState[] pressed = [new(true, Buttons: 0x1000), new(true, Buttons: 0x1000), new(false), new(false)];
+        Assert.Equal(0, XInputSlotDetector.NewPress(idle, pressed));
+        // Gatillo que cruza el umbral en la ranura 2.
+        XInputSlotState[] trigger = [new(true), new(true, Buttons: 0x1000, RightTrigger: 200), new(false), new(false)];
+        Assert.Equal(1, XInputSlotDetector.NewPress(idle, trigger));
+        // Un mando que se conecta pulsando no se toma como pulsación (evita falsos positivos al reconectar).
+        XInputSlotState[] connecting = [new(true), new(true, Buttons: 0x1000), new(false), new(true, Buttons: 0x0001)];
+        Assert.Null(XInputSlotDetector.NewPress(idle, connecting));
+        Assert.Equal([1, 2], XInputSlotDetector.ConnectedForDisplay(idle));
+    }
+
+    [Theory]
+    [InlineData("ps4", PadKind.StandardGamepad, "PlayStation 4 (DualShock 4)")]
+    [InlineData("ps5", PadKind.StandardGamepad, "PlayStation 5 (DualSense)")]
+    [InlineData("xbox360", PadKind.StandardGamepad, "Xbox 360")]
+    [InlineData("xboxone", PadKind.StandardGamepad, "Xbox One / Series")]
+    [InlineData("standard", PadKind.StandardGamepad, "Mando estándar (XInput)")]
+    [InlineData("", PadKind.StandardGamepad, "Mando estándar (XInput)")]
+    [InlineData("", PadKind.GenericHid, "Genérico (HID)")]
+    public void FriendlyPadTypeLabel(string sdlType, PadKind kind, string expected) =>
+        Assert.Equal(expected, PadTypes.FriendlyLabel(sdlType, kind));
+
+    [Theory]
+    [InlineData(BatteryStatus.Discharging, 80, "Batería 80%")]
+    [InlineData(BatteryStatus.Charging, 45, "Cargando 45%")]
+    [InlineData(BatteryStatus.Charged, -1, "Cargado")]
+    [InlineData(BatteryStatus.Wired, -1, "Cable")]
+    [InlineData(BatteryStatus.Unknown, -1, "—")]
+    [InlineData(BatteryStatus.Discharging, -1, "Batería ?")]
+    public void BatteryLabelReadsForAPlayer(BatteryStatus status, int percent, string expected) =>
+        Assert.Equal(expected, new BatteryInfo(status, percent).Label);
+
+    [Fact]
+    public void BatteryLowOnlyWhenDischargingUnderThreshold()
+    {
+        Assert.True(new BatteryInfo(BatteryStatus.Discharging, 15).IsLow());
+        Assert.False(new BatteryInfo(BatteryStatus.Discharging, 50).IsLow());
+        Assert.False(new BatteryInfo(BatteryStatus.Charging, 5).IsLow()); // Cargando no es aviso.
+        Assert.False(new BatteryInfo(BatteryStatus.Unknown, -1).IsLow());
+    }
+
+    [Fact]
+    public void LockHotkeyDefaultIsCtrlAltL()
+    {
+        Assert.Equal("Ctrl+Alt+L", HotkeySpec.LockDefault.Label);
+        Assert.Equal(0x4Cu, HotkeySpec.LockDefault.VirtualKey);
+        Assert.Equal(HotkeyModifiers.Control | HotkeyModifiers.Alt, HotkeySpec.LockDefault.Modifiers);
+        // Los valores coinciden con MOD_CONTROL (0x2) y MOD_ALT (0x1) de Win32.
+        Assert.Equal(0x3u, (uint)HotkeySpec.LockDefault.Modifiers);
+    }
+
+    [Fact]
+    public void HotkeyLabelListsEveryModifierInOrder() =>
+        Assert.Equal("Ctrl+Alt+Shift+Win+F9",
+            new HotkeySpec(HotkeyModifiers.Control | HotkeyModifiers.Alt | HotkeyModifiers.Shift | HotkeyModifiers.Win, 0x78, "F9").Label);
 }
+

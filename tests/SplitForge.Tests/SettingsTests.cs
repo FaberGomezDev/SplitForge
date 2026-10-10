@@ -41,6 +41,17 @@ public class SettingsTests
     }
 
     [Fact]
+    public void RoundTripKeepsWindowFitAndAspect()
+    {
+        using var tmp = new TempDir();
+        SettingsStore.Save(tmp.Path, new AppSettings { Fit = WindowFit.MantenerProporcion, AspectW = 21, AspectH = 9 });
+        var loaded = SettingsStore.Load(tmp.Path);
+        Assert.Equal(WindowFit.MantenerProporcion, loaded.Fit);
+        Assert.Equal(21, loaded.AspectW);
+        Assert.Equal(9, loaded.AspectH);
+    }
+
+    [Fact]
     public void CorruptedFileFallsBackAndIsKept()
     {
         using var tmp = new TempDir();
@@ -59,5 +70,15 @@ public class SettingsTests
         var s = SettingsStore.Load(tmp.Path);
         Assert.Equal(SplitLayout.MaxGutter, s.Gutter);
         Assert.Equal(1000, s.InputRateHz);
+    }
+
+    [Fact]
+    public void InvalidAspectIsClampedToValidRange()
+    {
+        using var tmp = new TempDir();
+        File.WriteAllText(tmp.Combine(SettingsStore.FileName), """{"AspectW": 0, "AspectH": 999}""");
+        var s = SettingsStore.Load(tmp.Path);
+        Assert.Equal(1, s.AspectW);
+        Assert.Equal(64, s.AspectH);
     }
 }

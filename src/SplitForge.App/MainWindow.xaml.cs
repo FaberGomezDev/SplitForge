@@ -1,14 +1,19 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Interop;
+using SplitForge.Platform;
+
 using SplitForge.App.ViewModels;
 
 namespace SplitForge.App;
 
 public partial class MainWindow : Window
 {
+    private const int MouseLockHotkeyId = 0xB001;
     private readonly MainViewModel _vm;
     private bool _closingConfirmed;
+    private nint _hotkeyWindow;
 
     public MainWindow()
     {
@@ -25,6 +30,26 @@ public partial class MainWindow : Window
             if (LogList.Items.Count > 0)
                 LogList.ScrollIntoView(LogList.Items[^1]);
         };
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        _hotkeyWindow = new WindowInteropHelper(this).Handle;
+        HwndSource.FromHwnd(_hotkeyWindow)?.AddHook(HotkeyHook);
+        var spec = MainViewModel.MouseLockHotkeySpec;
+        if (!GlobalHotkey.Register(_hotkeyWindow, MouseLockHotkeyId, (uint)spec.Modifiers, spec.VirtualKey))
+            _vm.NoteHotkeyUnavailable();
+    }
+
+    private nint HotkeyHook(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
+    {
+        if (msg == GlobalHotkey.WmHotkey && wParam == MouseLockHotkeyId)
+        {
+            _vm.ToggleMouseLock();
+            handled = true;
+        }
+        return nint.Zero;
     }
 
     protected override async void OnClosing(CancelEventArgs e)
@@ -46,6 +71,8 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        if (_hotkeyWindow != nint.Zero)
+            GlobalHotkey.Unregister(_hotkeyWindow, MouseLockHotkeyId);
         _vm.Dispose();
         base.OnClosed(e);
     }

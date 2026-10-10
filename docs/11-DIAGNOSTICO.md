@@ -34,8 +34,15 @@ Herramienta principal (0.7): `SplitForge.Diagnostico.exe` en la carpeta del paqu
 1. Pestaña 06 → «Comprobar»: revisa cada línea del preflight.
 2. Servidor que no llega a «LISTO»: ver el registro en la propia pestaña (también en `%LOCALAPPDATA%\SplitForge\7dtd\logs`). La primera vez puede tardar varios minutos generando el mundo. Comprobar que el puerto (26900 por defecto) no esté en uso.
 3. Cliente que no conecta: ¿EAC coincide con el servidor? (servidor sin EAC ⇒ cliente con «Launch game without EAC»). ¿Misma versión de juego y servidor? Actualiza ambos en Steam.
-4. `SplitForge.Diagnostico.exe 7dtd` con el juego abierto: guarda `SplitForge_Reporte_7DTD.json` con las APIs de mando cargadas por cada cliente. Si dice «Windows denegó la lectura de módulos», EAC está activo.
-5. Anotar si la ventana **sin foco** sigue procesando el juego y los mandos: es la clave para el módulo nativo.
+4. `SplitForge.Diagnostico.exe 7dtd` con el juego abierto guarda `SplitForge_Reporte_7DTD.json` (esquema v3). Si dice «Windows denegó la lectura de módulos», EAC está activo. Cómo leerlo:
+   - `familias`: APIs de mando cargadas (`xinput`, `directinput`, `hid`, `incontrol`, `windows_gaming_input`...).
+   - `origenes`: de dónde viene cada DLL de mando: `sistema`, `juego`, `steam` u `otro`. Una `xinput1_4.dll` con origen `juego` es el filtro instalado.
+   - `filtro_xinput_cargado`: copias del filtro de SplitForge cargadas, verificadas por SHA-256.
+   - `ranuras_xinput`: ranuras con mando según Windows.
+   - `motor`: `unity` si carga `UnityPlayer.dll`.
+   - Informe real del 2026-10-10 (v2, un cliente): `xinput1_3` + `xinput1_4`, `dinput8`, `hid`, `incontrolnative`; ver `05-INTEGRACION-STEAM.md`.
+5. `SplitForge.Diagnostico.exe xinput` muestra las ranuras XInput con mando, la ranura de cada pulsación en vivo y el estado del filtro en cada cliente. Ese estado sale de `%LOCALAPPDATA%\SplitForge\xinput\estado-PID-<dll>.txt` y, para el jugador 2, de la carpeta por defecto del sandbox `SplitForge_J2`. Si un cliente asignado tiene las «lecturas» en 0 mientras el juego responde al mando, el juego no lee por esa DLL.
+6. Anotar si la ventana **sin foco** sigue procesando el juego y los mandos: es la clave para el siguiente paso del módulo nativo.
 
 ## F. Reportes seguros
 

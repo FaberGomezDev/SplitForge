@@ -5,7 +5,7 @@
 
 ## Reglas de Git (decisión del propietario, obligatorias)
 
-- Trabajar y hacer push **directamente en `main`**. **Nunca** crear ramas `claude/*` ni ramas con nombre de asistente.
+- Guardar cada cambio en una **rama de trabajo con nombre descriptivo** (p. ej. `7dtd-diagnostico-xinput`) y hacer push de esa rama; `main` la integra el propietario. **Nunca** crear ramas `claude/*` ni ramas con nombre de asistente.
 - Los commits y PR **no** llevan firmas de asistente: nada de `Co-Authored-By`, `Claude-Session`, "Generated with" ni similares.
 - Mensajes de commit en español, describiendo el cambio real.
 
@@ -49,7 +49,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | `src/SplitForge.Input` | `SdlInputService`: SDL3 en hilo dedicado, eventos en segundo plano, luz/vibración por jugador |
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
-| `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `mandos` |
+| `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` |
 | `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015); CMake + prueba de humo |
 | `native/SplitForge.SteamEmu` | C++20: emulador educativo temporal de `steam_api64.dll` (ADR-016); integrado en la pestaña 07 y publicado como `native\SplitForge.SteamEmu`; **eliminar tras el experimento** |
 | `tests/SplitForge.Tests` | xUnit (Core) |
@@ -81,7 +81,7 @@ En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y s
 
 ## Próxima meta explícita
 
-Validar la 0.7 en el PC del propietario (mandos, laboratorio, pantalla dividida) y obtener `SplitForge_Reporte_7DTD.json` con 7DTD abierto **sin EAC**. Con esa evidencia, validar el **filtro XInput nativo** (ADR-015) o añadir simulación de foco si el juego la exige (ver `docs/06-PLAN-DE-DESARROLLO.md`).
+Ya hay evidencia real (2026-10-10, un cliente sin EAC): 7DTD carga `xinput1_3.dll` y `xinput1_4.dll`, además de DirectInput, HID e InControl, y los dos mandos llegan a Windows como `Xbox 360 Controller` (ver `docs/05-INTEGRACION-STEAM.md`). Siguiente: prueba **W16** con dos clientes. Consiste en instalar el filtro, detectar la ranura de cada mando, asignarlas, comprobar que suben las «lecturas» de cada cliente y que cada mando mueve solo su ventana, y anotar si la ventana sin foco responde. Después, guardar un informe v3 con los dos clientes abiertos.
 
 ## Memoria de desarrollo
 

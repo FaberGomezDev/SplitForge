@@ -15,6 +15,13 @@ public sealed class PadRow : Observable
     public string Label => $"{Info.Name}  ·  ID {Info.DeviceId}";
     public string Kind => Info.GamepadType.Length > 0 ? $"{Info.KindLabel} ({Info.GamepadType})" : Info.KindLabel;
 
+    /// <summary>Tipo legible: «PlayStation 4 (DualShock 4)», «Xbox 360», «Genérico (HID)»…</summary>
+    public string Type => PadTypes.FriendlyLabel(Info.GamepadType, Info.Kind);
+
+    private string _battery = "—";
+    /// <summary>Carga en tiempo real: «Batería 80%», «Cargando 45%», «Cable».</summary>
+    public string Battery { get => _battery; set => Set(ref _battery, value); }
+
     private string _path = "";
     public string Path { get => _path; set => Set(ref _path, value); }
 
@@ -117,6 +124,7 @@ public sealed partial class MainViewModel
                 row.Update(info);
             }
             row.Path = snap.Paths.TryGetValue(info.DeviceId, out var path) ? path.ToString() : "-";
+            row.Battery = (snap.Batteries.TryGetValue(info.DeviceId, out var bat) ? bat : BatteryInfo.Unknown).Label;
             row.Live = snap.States.TryGetValue(info.DeviceId, out var s)
                 ? $"X={s.LX:+0.00;-0.00}  Y={s.LY:+0.00;-0.00}  Disparo={(s.Fire ? "SÍ" : "no")}  Impulso={(s.Dash ? "SÍ" : "no")}  Escudo={(s.Shield ? "SÍ" : "no")}"
                 : "SIN LECTURA (revisa el perfil o el modo de lectura)";

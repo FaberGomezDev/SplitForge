@@ -111,6 +111,25 @@ internal static unsafe partial class Native
     [LibraryImport("user32.dll")]
     public static partial int SetProcessDpiAwarenessContext(nint value);
 
+    [LibraryImport("user32.dll")]
+    public static partial nint GetForegroundWindow();
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int GetClientRect(nint hwnd, out RECT rect);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int ClientToScreen(nint hwnd, ref POINT point);
+
+    // ClipCursor(NULL) libera el confinamiento; con un RECT lo fija.
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int ClipCursor(RECT* rect);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int RegisterHotKey(nint hwnd, int id, uint modifiers, uint virtualKey);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial int UnregisterHotKey(nint hwnd, int id);
+
     // kernel32
     [LibraryImport("kernel32.dll", SetLastError = true)]
     public static partial nint OpenProcess(uint access, int inherit, uint processId);
@@ -130,6 +149,9 @@ internal static unsafe partial class Native
     [LibraryImport("kernel32.dll", EntryPoint = "K32GetModuleBaseNameW", SetLastError = true)]
     public static partial uint GetModuleBaseName(nint process, nint module, char* name, uint size);
 
+    [LibraryImport("kernel32.dll", EntryPoint = "K32GetModuleFileNameExW", SetLastError = true)]
+    public static partial uint GetModuleFileNameEx(nint process, nint module, char* name, uint size);
+
     [LibraryImport("kernel32.dll", EntryPoint = "CreateWaitableTimerExW", SetLastError = true)]
     public static partial nint CreateWaitableTimerEx(nint attributes, nint name, uint flags, uint access);
 
@@ -138,4 +160,21 @@ internal static unsafe partial class Native
 
     [LibraryImport("kernel32.dll")]
     public static partial uint WaitForSingleObject(nint handle, uint milliseconds);
+
+    // xinput1_4 (System32, Windows 8+): solo lectura de estado para identificar ranuras.
+    [StructLayout(LayoutKind.Sequential)]
+    public struct XInputState
+    {
+        public uint PacketNumber;
+        public ushort Buttons;
+        public byte LeftTrigger;
+        public byte RightTrigger;
+        public short ThumbLX;
+        public short ThumbLY;
+        public short ThumbRX;
+        public short ThumbRY;
+    }
+
+    [LibraryImport("xinput1_4.dll", EntryPoint = "XInputGetState")]
+    public static partial uint XInputGetState(uint userIndex, out XInputState state);
 }

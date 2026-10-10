@@ -7,7 +7,7 @@
 - [x] Dos PS4 Bluetooth leídos con SDL en el equipo del usuario (prototipo Python).
 - [x] Mundo simulado una sola vez, dos visores y estados separados.
 - [x] Reconstrucción en .NET 10 + SDL3 + WPF (ADR-010): entrada en hilo dedicado, simulación a 120 Hz, IPC binario, visores con GPU.
-- [x] Pruebas automáticas (112 xUnit + 77 unittest) y CI en Windows con paquete autónomo.
+- [x] Pruebas automáticas (126 xUnit + 77 unittest) y CI en Windows con paquete autónomo.
 - [x] Registro local con identificador de sesión, sin datos privados.
 - [ ] **Validar la 0.7 en el PC del propietario** (W01–W07 de `07-PRUEBAS.md`).
 - [ ] Automatizar pruebas Windows end-to-end (captura de ventanas, reconexión).
@@ -19,7 +19,8 @@
 - [x] Juego instalado en el PC de pruebas; arranca sin EAC con la opción oficial.
 - [x] Escenario definido: servidor dedicado oficial + un cliente por jugador (ADR-013).
 - [x] Preflight, servidor local aislado, Sandboxie-Plus para el Steam del jugador 2, pantalla dividida (implementado, sin validar).
-- [ ] `SplitForge_Reporte_7DTD.json` con uno y con dos clientes abiertos (APIs de mando, ¿la ventana sin foco sigue funcionando?).
+- [x] `SplitForge_Reporte_7DTD.json` con **un** cliente sin EAC (2026-10-10): `xinput1_3` + `xinput1_4`, DirectInput, HID, InControl; mandos como `Xbox 360 Controller`.
+- [ ] Informe v3 con **dos** clientes abiertos y anotación de si la ventana sin foco sigue funcionando.
 
 **Criterio de salida:** dos clientes conectados al servidor local de SplitForge.
 
@@ -27,7 +28,9 @@
 
 - [x] Primer método implementado: filtro XInput por proceso en C++20 (`native/SplitForge.XInputFilter`, ADR-015), con prueba de humo en la CI de Windows.
 - [x] Reversible: instalar/retirar con consentimiento, sin sobrescribir archivos del juego (manifiesto con SHA-256).
-- [ ] Confirmar con el diagnóstico real que 7DTD carga XInput; si exige foco, añadir simulación de foco al módulo nativo.
+- [x] Confirmado con el diagnóstico real que 7DTD carga XInput (`xinput1_3` y `xinput1_4`).
+- [x] Instrumentación para la prueba real: estado por DLL con contador de lecturas, DLL real comprobada en System32, detección de la ranura XInput de cada mando, actualización segura del filtro, informe v3 y comando `xinput`.
+- [ ] Comprobar con dos clientes (W16) si las lecturas suben en ambos y si la ventana sin foco lee su mando; decidir el siguiente paso con esa evidencia.
 - [ ] Verificar en Windows 11 con dos PS4 reales: cada mando controla solo su cliente.
 
 **Criterio de salida:** una partida de 7DTD con J1 y J2 visibles entre sí, entrada aislada y cierre seguro → estado `INPUT_AISLADO_VALIDADO`.
@@ -55,6 +58,6 @@
 
 ## Orden concreto del próximo sprint
 
-1. Propietario: descargar `SplitForge-win-x64`, validar mandos y laboratorio, enviar `SplitForge_Reporte_7DTD.json`.
-2. Con el informe: ADR del método de aislamiento y primera versión del módulo nativo.
-3. Prueba real de dos jugadores y registro de evidencias en `05-INTEGRACION-STEAM.md`.
+1. ~~Propietario: enviar `SplitForge_Reporte_7DTD.json`~~ → recibido (2026-10-10, un cliente sin EAC).
+2. Propietario: descargar el nuevo `SplitForge-win-x64` de esta rama. Primero, con los clientes cerrados, «Instalar filtro». Luego abrir dos clientes sin EAC y pulsar «Detectar» y «Asignar». Por último, comprobar las lecturas y el control de cada ventana (W16) y guardar un informe v3.
+3. Con esa evidencia: registrar `INPUT_AISLADO_VALIDADO` o decidir el siguiente método (ADR) en `05-INTEGRACION-STEAM.md`.

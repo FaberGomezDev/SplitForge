@@ -28,6 +28,7 @@ sequenceDiagram
 - **Frecuencia:** plazos absolutos con `SDL_DelayNS` (temporizador de alta resolución de SDL3, sin girar la CPU). Medido: **1000 Hz en Windows** (VM de la CI, run #2) y en Linux tras la corrección; la primera versión midió 646 Hz por acumulación de retrasos.
 - **Hotplug:** `SDL_EVENT_JOYSTICK_ADDED/REMOVED`; un mando desconectado deja de aparecer y el jugador queda en `SIN LECTURA`; nunca se intercambian J1/J2 en silencio.
 - **Identificación física:** `IdentifyPlayer` enciende la barra de luz del PS4 con el color del jugador (J1 turquesa, J2 naranja, J3 violeta, J4 amarillo), fija el índice de jugador y vibra 250 ms.
+- **Tipo y carga en vivo:** la pestaña «01 MANDOS» muestra el tipo legible de cada mando (PlayStation 4/5, Xbox 360/One, estándar o genérico HID) y su carga en tiempo real (`SDL_GetJoystickPowerInfo`, leída una vez por segundo): «Batería 80%», «Cargando 45%», «Cargado» o «Cable». Con `?` cuando el mando por Bluetooth no informa el porcentaje.
 
 ## Política de lectura (ADR-002, vigente)
 
@@ -45,7 +46,7 @@ sequenceDiagram
 
 1. `joy.cpl`: ambos figuran y responden en *Propiedades → Probar*.
 2. `SplitForge.Diagnostico.exe mandos`: aparecen los dos y cambian X/Y **con otra ventana en primer plano**.
-3. Pestaña **01 MANDOS**: estado en vivo; frecuencia del hilo cercana a 1000 Hz; «Identificar» enciende las luces.
+3. Pestaña **01 MANDOS**: tipo de cada mando, carga en vivo, estado en vivo; frecuencia del hilo cercana a 1000 Hz; «Identificar» enciende las luces.
 4. Pestaña **02 MUNDO COMPARTIDO**: cada mando mueve **su** nave; disparo, escudo e impulso por separado.
 5. Desconectar/reconectar uno; reasignar en vivo.
 
@@ -53,6 +54,9 @@ sequenceDiagram
 
 Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input), mientras que XInput funciona en segundo plano. Antes de escribir el módulo nativo hay que saber qué API usa cada juego: `SplitForge.Diagnostico.exe 7dtd` lista los módulos de entrada cargados (XInput, DirectInput, HID, Windows.Gaming.Input, SDL, overlay de Steam, EAC). Opciones según la evidencia:
 
-- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se instala desde la pestaña 06 («Instalar filtro» / «Asignar mandos a los clientes» / «Quitar filtro»). Cada cliente ve solo su ranura; los PS4 deben llegar como XInput (Steam Input o DS4Windows) y sin duplicados. Cada proceso que lo carga escribe `estado-PID.txt` (DLL, real cargada, ranura) para comprobarlo.
+- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se gestiona desde la pestaña 06 con «Instalar filtro», «Detectar», «Asignar mandos a los clientes» y «Quitar filtro».
+  - Cada cliente ve solo su ranura, y los mandos deben llegar como XInput sin duplicados.
+  - Cada copia cargada escribe `estado-PID-<dll>.txt` con la DLL, si cargó la real, la ranura y las lecturas. 7DTD carga dos copias, `xinput1_3` y `xinput1_4`, y por las lecturas se ve cuál usa de verdad.
+- **Ranuras XInput:** XInput numera los mandos del 1 al 4. «Detectar» pide pulsar un botón en el mando de cada jugador y elige su ranura; también lo hace `SplitForge.Diagnostico.exe xinput`. La lectura se hace en un hilo de fondo, nunca en el de la interfaz. En el PC del propietario (2026-10-10), SDL3 ve los dos mandos como `Xbox 360 Controller`, es decir, como XInput.
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
 - Sin drivers de kernel por defecto.

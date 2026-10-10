@@ -50,6 +50,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _orientationStacked = _settings.Orientation == SplitOrientation.Stacked;
         _gutter = _settings.Gutter;
         _borderless = _settings.Borderless;
+        _fitKeepAspect = _settings.Fit == SplitForge.Core.Layout.WindowFit.MantenerProporcion;
+        _selectedAspect = new AspectRatio(_settings.AspectW, _settings.AspectH) is { IsValid: true } a ? a : AspectRatio.SixteenNine;
         _selectedMode = _settings.InputMode;
         _serverPort = _settings.SevenDays.Port;
         _serverMaxPlayers = _settings.SevenDays.MaxPlayers;
@@ -64,6 +66,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitSteam();
         InitSevenDays();
         InitSteamEmu();
+        InitLock();
+        RefreshPaneHint();
 
         _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
         _timer.Tick += (_, _) => OnTick();
@@ -86,6 +90,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
             {
                 Raise(nameof(OrientationSideBySide));
                 SaveSettings();
+                RefreshPaneHint();
             }
         }
     }
@@ -103,7 +108,10 @@ public sealed partial class MainViewModel : Observable, IDisposable
         set
         {
             if (Set(ref _gutter, value))
+            {
                 SaveSettings();
+                RefreshPaneHint();
+            }
         }
     }
 
@@ -117,6 +125,62 @@ public sealed partial class MainViewModel : Observable, IDisposable
                 SaveSettings();
         }
     }
+
+    public IReadOnlyList<AspectRatio> AspectChoices { get; } = AspectRatio.Common;
+
+    private bool _fitKeepAspect;
+    /// <summary>true = centrar el juego con su proporción (sin deformar); false = rellenar toda la región.</summary>
+    public bool FitKeepAspect
+    {
+        get => _fitKeepAspect;
+        set
+        {
+            if (Set(ref _fitKeepAspect, value))
+            {
+                SaveSettings();
+                ApplyLayoutLive();
+                RefreshPaneHint();
+            }
+        }
+    }
+
+    private AspectRatio _selectedAspect = AspectRatio.SixteenNine;
+    public AspectRatio SelectedAspect
+    {
+        get => _selectedAspect;
+        set
+        {
+            if (Set(ref _selectedAspect, value))
+            {
+                SaveSettings();
+                if (_fitKeepAspect)
+                    ApplyLayoutLive();
+                RefreshPaneHint();
+            }
+        }
+    }
+
+    private string _paneHint = "";
+    /// <summary>Resolución sugerida por panel para que el juego encaje sin deformarse.</summary>
+    public string PaneHint { get => _paneHint; set => Set(ref _paneHint, value); }
+
+    /// <summary>Si hay una sesión activa, reaplica la distribución al cambiar una opción.</summary>
+    private void ApplyLayoutLive()
+    {
+        if (_sessions.Active is not null)
+            Guard(() => _sessions.Relayout(Layout()), quiet: true);
+    }
+
+    /// <summary>Calcula el tamaño de cada panel (2 jugadores) para que el usuario fije esa resolución en el juego.</summary>
+    private void RefreshPaneHint() => Guard(() =>
+    {
+        var regions = SplitLayout.Compute(_windows.PrimaryWorkArea(), 2,
+            OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide, Gutter);
+        regions = SplitLayout.ApplyFit(regions, FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar, SelectedAspect);
+        var sizes = string.Join(" · ", regions.Select((r, i) => $"J{i + 1} {r.Width}×{r.Height}"));
+        PaneHint = $"Resolución por panel (2 jugadores): {sizes}. Pon cada cliente en modo ventana a ese tamaño para que encaje sin bordes."
+            + (FitKeepAspect ? $" Proporción fija {SelectedAspect.Label}." : "");
+    }, quiet: true);
 
     private string _status = "Listo.";
     public string Status
@@ -136,7 +200,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
     public ICommand RelayoutCommand { get; }
 
     private LayoutOptions Layout() =>
-        new(OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide, Gutter, Borderless);
+        new(OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide, Gutter, Borderless,
+            FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar, SelectedAspect);
 
     private void Relayout() => Guard(() =>
     {
@@ -149,6 +214,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _labLoop?.Dispose();
         _labLoop = null;
         _sessions.Stop();
+        ReleaseCursor(); // Al deshacer la pantalla dividida, el ratón vuelve a ser libre.
         Status = "Sesión detenida; ventanas restauradas.";
     }
 
@@ -162,6 +228,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         }
         CaptureTick(snapshot);
         RefreshLabStatus();
+        ApplyMouseLock();
         if (++_tickCount % 15 == 0) // ≈ 2 Hz
         {
             Guard(_sessions.Tick, quiet: true);
@@ -170,6 +237,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
             if (active is { Pending: false, WindowHandles.Count: >= 2 })
                 Status = $"Sesión activa · {active.WindowHandles.Count} ventanas organizadas";
         }
+        if (_tickCount % 60 == 0) // ≈ 0,5 Hz, en segundo plano: filtro XInput y ranuras conectadas.
+            RefreshFilterStatus();
     }
 
     private void AppendLog(string line)
@@ -186,6 +255,9 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Orientation = OrientationStacked ? SplitOrientation.Stacked : SplitOrientation.SideBySide,
             Gutter = Gutter,
             Borderless = Borderless,
+            Fit = FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar,
+            AspectW = SelectedAspect.W,
+            AspectH = SelectedAspect.H,
             InputMode = _input.Mode,
             Mappings = new(_input.Mappings),
             SevenDays = ServerOptions(),
@@ -244,6 +316,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
     public void Dispose()
     {
         _timer.Stop();
+        ReleaseCursor();
         _labLoop?.Dispose();
         _sessions.Dispose();
         _server.Dispose();

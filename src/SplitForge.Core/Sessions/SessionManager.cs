@@ -225,6 +225,7 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
     private void Place(ActiveSession session, IReadOnlyList<nint> handles)
     {
         var regions = SplitLayout.Compute(windows.PrimaryWorkArea(), handles.Count, session.Layout.Orientation, session.Layout.Gutter);
+        regions = SplitLayout.ApplyFit(regions, session.Layout.Fit, session.Layout.EffectiveAspect);
         // Primero capturar TODAS las posiciones originales: si una colocación falla, Stop() las restaura.
         foreach (var hwnd in handles)
         {
@@ -248,7 +249,8 @@ public sealed class SessionManager(IWindowSystem windows, IProcessLauncher launc
         session.WindowHandles.Clear();
         session.WindowHandles.AddRange(handles);
         session.Pending = false;
-        log($"Ventanas colocadas ({session.Layout.Orientation}, separación {session.Layout.Gutter} px"
+        var fitText = session.Layout.Fit == WindowFit.MantenerProporcion ? $", proporción {session.Layout.EffectiveAspect.Label}" : "";
+        log($"Ventanas colocadas ({session.Layout.Orientation}, separación {session.Layout.Gutter} px{fitText}"
             + (session.Layout.Borderless ? ", sin bordes)." : ")."));
     }
 

@@ -48,6 +48,7 @@ public sealed partial class MainViewModel
     public ICommand InstallFilterCommand { get; private set; } = null!;
     public ICommand AssignFilterCommand { get; private set; } = null!;
     public ICommand RemoveFilterCommand { get; private set; } = null!;
+    public ICommand DetectSlotCommand { get; private set; } = null!;
 
     public IReadOnlyList<int> XInputSlots { get; } = [1, 2, 3, 4];
 
@@ -59,6 +60,11 @@ public sealed partial class MainViewModel
 
     private string _filterStatus = "Filtro XInput no instalado.";
     public string FilterStatus { get => _filterStatus; set => Set(ref _filterStatus, value); }
+
+    private string _xinputSlots = "Ranuras XInput: sin comprobar.";
+    public string XInputSlotsStatus { get => _xinputSlots; set => Set(ref _xinputSlots, value); }
+
+    private bool _detectingSlot;
 
     private string XInputFolder => Path.Combine(_dataFolder, "xinput");
 
@@ -101,6 +107,7 @@ public sealed partial class MainViewModel
         InstallFilterCommand = new RelayCommand(InstallFilter);
         AssignFilterCommand = new RelayCommand(AssignFilter);
         RemoveFilterCommand = new RelayCommand(RemoveFilter);
+        DetectSlotCommand = new RelayCommand(p => _ = DetectSlotAsync(p as string == "2" ? 2 : 1), _ => !_detectingSlot);
     }
 
     private InstalledGame? FindGame(string appId) => SteamGames.FirstOrDefault(r => r.AppId == appId)?.Game;
@@ -237,14 +244,66 @@ public sealed partial class MainViewModel
             throw new InvalidOperationException("Hay un cliente de 7DTD con EAC activo. Ciérralo y ábrelo con «Launch game without EAC» antes de instalar el filtro.");
         var dll = Path.Combine(AppContext.BaseDirectory, "native", XInputFilter.DllFileName);
         if (!Confirm("Filtro XInput (experimental)",
-                "Se copiará el filtro de SplitForge en la carpeta de 7 Days to Die con los nombres de XInput que falten "
-                + "(xinput1_3/1_4/9_1_0). No se sobrescribe ningún archivo del juego y se puede retirar en cualquier momento.\n\n"
-                + "Úsalo SOLO con los clientes sin EAC. Los PS4 deben llegar al juego como mandos XInput (Steam Input o DS4Windows).\n\n¿Instalar?"))
+                "Se copiará el filtro de SplitForge en la carpeta de 7 Days to Die con los nombres de XInput que use "
+                + "(7DTD carga xinput1_3 y xinput1_4). No se sobrescribe ningún archivo del juego: solo se actualizan copias "
+                + "anteriores del propio filtro, y se puede retirar en cualquier momento.\n\n"
+                + "Úsalo SOLO con los clientes sin EAC y con los clientes cerrados (se cargará al abrirlos).\n\n¿Instalar?"))
             return;
-        var installed = XInputFilter.Install(folder, dll, XInputFilter.KnownNames);
-        _log.Write($"Filtro XInput instalado en 7DTD: {(installed.Count > 0 ? string.Join(", ", installed) : "ya estaba")}. Reinicia los clientes para que lo carguen.");
+        var result = XInputFilter.Install(folder, dll, XInputFilter.KnownNames);
+        var parts = new List<string>();
+        if (result.Installed.Count > 0)
+            parts.Add("instalado: " + string.Join(", ", result.Installed));
+        if (result.Updated.Count > 0)
+            parts.Add("actualizado: " + string.Join(", ", result.Updated));
+        if (result.AlreadyCurrent.Count > 0)
+            parts.Add("ya al día: " + string.Join(", ", result.AlreadyCurrent));
+        _log.Write($"Filtro XInput en 7DTD → {string.Join(" · ", parts)}. Reinicia los clientes para que lo carguen.");
+        if (result.Skipped.Count > 0)
+        {
+            var message = $"El juego ya trae {string.Join(", ", result.Skipped)} (o lo cambió otra herramienta): SplitForge no lo toca. "
+                          + "El filtro no podrá actuar sobre esa DLL; si el juego lee los mandos por ella, el aislamiento no funcionará.";
+            _log.Write(message);
+            MessageBox.Show(message, "Filtro XInput", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         RefreshFilterStatus();
     });
+
+    /// <summary>Pide pulsar un botón en el mando del jugador y elige su ranura XInput (lectura en segundo plano).</summary>
+    private async Task DetectSlotAsync(int player)
+    {
+        _detectingSlot = true;
+        CommandManager.InvalidateRequerySuggested();
+        XInputSlotsStatus = $"Pulsa cualquier botón en el mando del J{player} (10 s)…";
+        try
+        {
+            var slot = await Task.Run(() => XInputProbe.WaitForPress(TimeSpan.FromSeconds(10)));
+            if (slot is null)
+            {
+                XInputSlotsStatus = "No se detectó ninguna pulsación en un mando XInput. ¿Llegan los mandos como XInput (p. ej. «Xbox 360 Controller»)?";
+                return;
+            }
+            var chosen = slot.Value + 1;
+            if (player == 1)
+            {
+                if (SlotPlayer2 == chosen)
+                    SlotPlayer2 = SlotPlayer1; // Intercambio explícito: nunca dos jugadores con la misma ranura.
+                SlotPlayer1 = chosen;
+            }
+            else
+            {
+                if (SlotPlayer1 == chosen)
+                    SlotPlayer1 = SlotPlayer2;
+                SlotPlayer2 = chosen;
+            }
+            XInputSlotsStatus = $"J{player} → mando XInput {chosen}. Pulsa «Asignar mandos a los clientes» para aplicarlo.";
+            _log.Write($"Ranura XInput detectada para J{player}: {chosen}.");
+        }
+        finally
+        {
+            _detectingSlot = false;
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
 
     private void AssignFilter() => Guard(() =>
     {
@@ -270,28 +329,60 @@ public sealed partial class MainViewModel
         RefreshFilterStatus();
     });
 
+    private int _filterRefreshing;
+
+    /// <summary>
+    /// Estado del filtro y de las ranuras XInput. Enumerar procesos y leer archivos se hace fuera del hilo
+    /// de la interfaz; el resultado se publica de vuelta en él.
+    /// </summary>
     private void RefreshFilterStatus()
     {
+        if (Interlocked.Exchange(ref _filterRefreshing, 1) == 1)
+            return;
+        var dataFolder = _dataFolder;
+        string? gameFolder;
         try
         {
-            var folder = SevenDaysFolder();
-            var installed = XInputFilter.InstalledNames(folder);
-            if (installed.Count == 0)
-            {
-                FilterStatus = "Filtro XInput no instalado.";
-                return;
-            }
-            var alive = ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.GameExe).ToHashSet();
-            var status = XInputFilter.ReadStatus(XInputFolder, alive);
-            FilterStatus = $"Instalado ({string.Join(", ", installed)}). "
-                + (status.Count == 0
-                    ? "Ningún cliente lo ha cargado aún (reinicia los clientes; en Sandboxie el estado queda dentro del sandbox)."
-                    : string.Join(" · ", status.Select(st => $"PID {st.Pid}: {st.Dll}, real {(st.RealLoaded ? "OK" : "NO")}, mando {(st.Slot >= 0 ? (st.Slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")}")));
+            gameFolder = SevenDaysFolder();
         }
         catch (InvalidOperationException)
         {
-            FilterStatus = "7 Days to Die no detectado.";
+            gameFolder = null;
         }
+        Task.Run(() => DescribeFilter(gameFolder, dataFolder))
+            .ContinueWith(t =>
+            {
+                Interlocked.Exchange(ref _filterRefreshing, 0);
+                if (!t.IsCompletedSuccessfully)
+                    return;
+                FilterStatus = t.Result.Filter;
+                if (!_detectingSlot)
+                    XInputSlotsStatus = t.Result.Slots;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private static (string Filter, string Slots) DescribeFilter(string? gameFolder, string dataFolder)
+    {
+        var connected = XInputProbe.ConnectedSlots();
+        var slots = connected.Count > 0
+            ? $"Ranuras XInput con mando: {string.Join(", ", connected)}. Usa «Detectar» para saber cuál es cada mando."
+            : "Ninguna ranura XInput con mando: los mandos deben llegar a Windows como XInput (p. ej. «Xbox 360 Controller»).";
+        if (gameFolder is null)
+            return ("7 Days to Die no detectado.", slots);
+        var installed = XInputFilter.InstalledNames(gameFolder);
+        if (installed.Count == 0)
+            return ("Filtro XInput no instalado.", slots);
+        var status = WindowsDiagnostics.XInputStatus(dataFolder);
+        if (status.Count == 0)
+            return ($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots);
+        var perClient = status.GroupBy(st => st.Pid).Select(g =>
+        {
+            var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
+            var dlls = string.Join(", ", g.Select(st =>
+                $"{st.Dll}{(st.RealLoaded ? "" : " (¡DLL real NO cargada!)")}{(st.Reads >= 0 ? $" {st.Reads} lecturas" : "")}"));
+            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}";
+        });
+        return ($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots);
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>
@@ -303,7 +394,10 @@ public sealed partial class MainViewModel
             return;
         File.WriteAllText(dialog.FileName, report.ToJson());
         var families = report.Clients.Where(c => c.Input is not null).SelectMany(c => c.Input!.Families.Keys).Distinct().ToList();
-        MessageBox.Show($"Clientes analizados: {report.ClientCount}\nAPIs de entrada: {(families.Count > 0 ? string.Join(", ", families) : "ninguna detectada")}\n\n"
+        var filtered = report.Clients.Count(c => c.FilterLoaded.Count > 0);
+        MessageBox.Show($"Clientes analizados: {report.ClientCount}\nAPIs de entrada: {(families.Count > 0 ? string.Join(", ", families) : "ninguna detectada")}\n"
+                        + $"Clientes con el filtro XInput cargado: {filtered}\n"
+                        + $"Ranuras XInput con mando: {(report.XInputSlots is { Count: > 0 } slots ? string.Join(", ", slots) : "ninguna")}\n\n"
                         + "El informe no incluye rutas, cuentas ni títulos de ventana.", "Diagnóstico guardado");
     });
 }

@@ -87,4 +87,13 @@ public sealed class SystemProcessLauncher : IProcessLauncher
     }
 }
 
-public sealed record LayoutOptions(SplitOrientation Orientation, int Gutter, bool Borderless);
+public sealed record LayoutOptions(
+    SplitOrientation Orientation,
+    int Gutter,
+    bool Borderless,
+    WindowFit Fit = WindowFit.Rellenar,
+    AspectRatio Aspect = default)
+{
+    /// <summary>Proporción efectiva: la elegida o 16:9 si no se fijó una válida.</summary>
+    public AspectRatio EffectiveAspect => Aspect.IsValid ? Aspect : AspectRatio.SixteenNine;
+}
