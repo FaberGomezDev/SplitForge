@@ -34,7 +34,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 
 ### CI (`.github/workflows/build.yml`, windows-latest)
 
-Pruebas .NET y Python, documentación, publicación autónoma win-x64 y **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows.
+Pruebas .NET y Python, documentación, publicación autónoma win-x64 y **prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3). Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz). Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
 
 ### Pruebas de humo en Linux (desarrollo)
 

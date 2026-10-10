@@ -63,7 +63,31 @@ jobs:
           ./artifacts/SplitForge/SplitForge.Diagnostico.exe mandos --segundos 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - uses: actions/upload-artifact@v5
+      - name: Prueba de arranque de la interfaz (captura de pantalla)
+        shell: pwsh
+        run: |
+          $p = Start-Process artifacts/SplitForge/SplitForge.exe -PassThru
+          Start-Sleep -Seconds 12
+          if ($p.HasExited) { Write-Error "SplitForge.exe se cerró al arrancar (código $($p.ExitCode))"; exit 1 }
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          [System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          New-Item -ItemType Directory -Force capturas | Out-Null
+          $bmp.Save("$PWD/capturas/interfaz.png")
+          $p.CloseMainWindow() | Out-Null
+          if (-not $p.WaitForExit(15000)) { Write-Error "SplitForge.exe no se cerró de forma ordenada"; $p.Kill(); exit 1 }
+          Get-Content "$env:LOCALAPPDATA/SplitForge/splitforge-net.log" -Tail 20
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: captura-interfaz
+          path: capturas
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v6
         with:
           name: SplitForge-win-x64
           path: artifacts/SplitForge

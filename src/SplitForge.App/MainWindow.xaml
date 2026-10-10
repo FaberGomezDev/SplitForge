@@ -2,8 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}" Width="1120" Height="860" MinWidth="900" MinHeight="700"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        FontFamily="Segoe UI" FontSize="13">
   <Grid Margin="18">
+    <Grid.Resources>
+      <!-- Solo para el árbol lógico de la ventana: no cruza las plantillas de los controles. -->
+      <Style TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+    </Grid.Resources>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
@@ -224,8 +232,8 @@
                       <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Icon}" Foreground="{Binding Color}" FontWeight="Bold" FontSize="15" />
-                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Foreground="{StaticResource Muted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

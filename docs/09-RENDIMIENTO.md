@@ -9,7 +9,7 @@ Ryzen 7 7700X (8C/16T), RTX 4060 8 GB, 32 GB RAM, dos PS4, Windows 11. No se ha 
 | Decisión | Motivo | Evidencia |
 | --- | --- | --- |
 | .NET 10 en lugar de Python/Tkinter | JIT/AOT, hilos reales sin GIL, interop Win32 directa | ADR-010 |
-| Entrada SDL3 en hilo propio a ≤1000 Hz | Latencia de entrada independiente de la interfaz (antes 60 Hz con fluctuaciones del temporizador Tk) | 1000 Hz medidos en Linux; 646 Hz en la VM Windows antes de corregir la acumulación de retrasos |
+| Entrada SDL3 en hilo propio a ≤1000 Hz | Latencia de entrada independiente de la interfaz (antes 60 Hz con fluctuaciones del temporizador Tk) | 1000 Hz medidos en Windows (CI) y Linux; 646 Hz antes de corregir la acumulación de retrasos |
 | Publicación de instantáneas solo con cambios | Sin basura a 1 kHz cuando no se toca el mando | Diseño |
 | Esperas con temporizador de alta resolución (`SDL_DelayNS`, `CREATE_WAITABLE_TIMER_HIGH_RESOLUTION`) | Precisión de ~1 ms sin girar la CPU (no robar núcleos al juego) | Diseño; medir en el PC del propietario |
 | Simulación del laboratorio a 120 Hz en su hilo | Estable aunque la UI se bloquee (diálogos) | Diseño |

@@ -18,17 +18,8 @@
   <SolidColorBrush x:Key="Fail" Color="#FF7A7A" />
   <SolidColorBrush x:Key="Pending" Color="#F2C46D" />
 
-  <Style TargetType="Window">
-    <Setter Property="Background" Value="{StaticResource Bg}" />
-    <Setter Property="Foreground" Value="{StaticResource Text}" />
-    <Setter Property="FontFamily" Value="Segoe UI" />
-    <Setter Property="FontSize" Value="13" />
-  </Style>
-
-  <Style TargetType="TextBlock">
-    <Setter Property="Foreground" Value="{StaticResource Text}" />
-    <Setter Property="TextWrapping" Value="Wrap" />
-  </Style>
+  <!-- Ojo: un estilo implícito de TextBlock aquí (nivel aplicación) afectaría también al texto
+       dentro de las plantillas (ComboBox, etc.). El de TextBlock vive en MainWindow. -->
 
   <Style x:Key="Heading" TargetType="TextBlock">
     <Setter Property="FontSize" Value="18" />
