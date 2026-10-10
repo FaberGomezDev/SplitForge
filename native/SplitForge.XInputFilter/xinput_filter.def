@@ -1,0 +1,14 @@
+; Exportaciones con los nombres y ordinales de las DLL de XInput de Windows.
+EXPORTS
+    XInputGetState=SF_XInputGetState
+    XInputSetState=SF_XInputSetState
+    XInputGetCapabilities=SF_XInputGetCapabilities
+    XInputEnable=SF_XInputEnable
+    XInputGetDSoundAudioDeviceGuids=SF_XInputGetDSoundAudioDeviceGuids
+    XInputGetBatteryInformation=SF_XInputGetBatteryInformation
+    XInputGetKeystroke=SF_XInputGetKeystroke
+    XInputGetAudioDeviceIds=SF_XInputGetAudioDeviceIds
+    XInputGetStateEx=SF_XInputGetStateEx @100 NONAME
+    XInputWaitForGuideButton=SF_XInputWaitForGuideButton @101 NONAME
+    XInputCancelGuideButtonWait=SF_XInputCancelGuideButtonWait @102 NONAME
+    XInputPowerOffController=SF_XInputPowerOffController @103 NONAME

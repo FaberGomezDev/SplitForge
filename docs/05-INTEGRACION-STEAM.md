@@ -20,7 +20,7 @@ Camino **legítimo** elegido (ADR-013):
 | EAC | Servidor sin EAC por defecto (los clientes deben coincidir) | Opción oficial de Steam: Propiedades → General → Preguntar al iniciar → «Launch game without EAC» |
 | Pantalla | Distribuye las ventanas de los clientes (orden por PID, intercambiable), sin bordes, y las restaura al detener | Juego en modo ventana / ventana sin bordes |
 | Apagado | `shutdown` por telnet local, espera hasta 45 s y solo entonces termina el proceso propio | — |
-| Mandos | Identifica físicamente cada mando (luz/vibración). **Aislamiento dentro del juego: pendiente del módulo nativo** | Diagnóstico `7dtd` con los clientes abiertos |
+| Mandos | Identifica físicamente cada mando (luz/vibración). **Filtro XInput por proceso (experimental, ADR-015)**: instalar, asignar J1/J2 a ranuras y retirar, sin sobrescribir archivos del juego | Clientes sin EAC; PS4 como XInput (Steam Input o DS4Windows); diagnóstico `7dtd` para confirmar que carga XInput |
 
 ### Lo que NO se hará (y por qué)
 

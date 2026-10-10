@@ -13,7 +13,8 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## Diseño técnico
 
-- Método del módulo nativo: filtro XInput por proceso, simulación de foco, o ambos (según el diagnóstico).
+- Filtro XInput implementado (experimental): ¿lo carga 7DTD? ¿Basta o hace falta simulación de foco? (según el diagnóstico).
+- Clientes en Sandboxie: el `estado-PID.txt` del filtro queda dentro del sandbox (escritura virtualizada); la asignación sí se lee.
 - Identificador estable tras reconexión Bluetooth sin guardar seriales en reportes (hoy: reasignación explícita).
 - Fullscreen exclusivo, DPI mixto y varios monitores (hoy: área útil del monitor principal).
 - ~~Cierre de golpe con clientes sin bordes~~ → resuelto: `SessionRecovery` guarda posiciones/estilos y los restaura al siguiente arranque si el handle sigue siendo del mismo proceso.

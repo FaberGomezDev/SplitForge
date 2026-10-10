@@ -7,7 +7,7 @@
 - [x] Dos PS4 Bluetooth leídos con SDL en el equipo del usuario (prototipo Python).
 - [x] Mundo simulado una sola vez, dos visores y estados separados.
 - [x] Reconstrucción en .NET 10 + SDL3 + WPF (ADR-010): entrada en hilo dedicado, simulación a 120 Hz, IPC binario, visores con GPU.
-- [x] Pruebas automáticas (106 xUnit + 77 unittest) y CI en Windows con paquete autónomo.
+- [x] Pruebas automáticas (112 xUnit + 77 unittest) y CI en Windows con paquete autónomo.
 - [x] Registro local con identificador de sesión, sin datos privados.
 - [ ] **Validar la 0.7 en el PC del propietario** (W01–W07 de `07-PRUEBAS.md`).
 - [ ] Automatizar pruebas Windows end-to-end (captura de ventanas, reconexión).
@@ -26,9 +26,9 @@
 
 ## P2 — Un mando por ventana dentro del juego (módulo nativo C++)
 
-- [ ] Elegir método según el diagnóstico (filtro XInput por proceso; simulación de foco si el juego exige foco).
-- [ ] Implementar `native/` en C++20 con ADR, pruebas y activación solo con EAC desactivado por la opción oficial.
-- [ ] Reversible: instalar/retirar con consentimiento, sin modificar archivos existentes del juego.
+- [x] Primer método implementado: filtro XInput por proceso en C++20 (`native/SplitForge.XInputFilter`, ADR-015), con prueba de humo en la CI de Windows.
+- [x] Reversible: instalar/retirar con consentimiento, sin sobrescribir archivos del juego (manifiesto con SHA-256).
+- [ ] Confirmar con el diagnóstico real que 7DTD carga XInput; si exige foco, añadir simulación de foco al módulo nativo.
 - [ ] Verificar en Windows 11 con dos PS4 reales: cada mando controla solo su cliente.
 
 **Criterio de salida:** una partida de 7DTD con J1 y J2 visibles entre sí, entrada aislada y cierre seguro → estado `INPUT_AISLADO_VALIDADO`.

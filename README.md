@@ -27,7 +27,7 @@ Diagnóstico por consola (solo lectura): `SplitForge.Diagnostico.exe 7dtd | mand
 2. **El servidor dedicado gratuito** «7 Days to Die Dedicated Server» (Steam → Biblioteca → Herramientas). SplitForge lo arranca con configuración y guardados propios.
 3. **Clientes sin EAC** con la opción oficial: Steam → Propiedades → General → *Preguntar al iniciar* → **Launch game without EAC**.
 4. Cada jugador se une a `127.0.0.1:26900`; SplitForge divide la pantalla.
-5. **Pendiente:** que cada mando controle solo su ventana dentro del juego (módulo nativo C++). Para diseñarlo hace falta el informe `SplitForge.Diagnostico.exe 7dtd` con el juego abierto.
+5. **Un mando por ventana (experimental):** el filtro XInput nativo en C++ hace que cada cliente vea solo su mando (pestaña 06 → *Instalar filtro* → *Asignar mandos*). Requiere los PS4 como mandos XInput (Steam Input o DS4Windows). Sin validar todavía en hardware: confirma con `SplitForge.Diagnostico.exe 7dtd` que el juego carga XInput.
 
 ## Desarrollo
 

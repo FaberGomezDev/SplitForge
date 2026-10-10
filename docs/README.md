@@ -32,8 +32,10 @@
 
 **Implementado en 0.7 (.NET):** entrada SDL3 en hilo dedicado de hasta 1000 Hz con eventos en segundo plano; laboratorio con simulación a 120 Hz en su hilo y visores SDL3/Direct3D; IPC binario versionado; distribución de 2 a 4 ventanas con modo sin bordes reversible; biblioteca Steam y preflight; inspección de clientes; adaptador experimental de 7 Days to Die (servidor dedicado oficial local con configuración y guardados aislados, Steam del jugador 2 en Sandboxie-Plus, pantalla dividida); diagnóstico de APIs de mando de 7DTD; CI en Windows con paquete autónomo.
 
-**Verificado automáticamente:** 106 pruebas xUnit + 77 unittest; CI en Windows verde (SDL3 3.5.0 inicializa); en Linux el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
+**Verificado automáticamente:** 112 pruebas xUnit + 77 unittest; CI en Windows verde (SDL3 3.5.0 inicializa); en Linux el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
-**No implementado / no verificado:** la 0.7 en el hardware del propietario; un mando por ventana **dentro** de juegos comerciales (módulo nativo C++ pendiente de evidencia); dos jugadores reales en 7DTD (requiere segunda cuenta con el juego); métricas de FPS/VRAM.
+**Experimental, sin validar en hardware:** filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015).
+
+**No implementado / no verificado:** la 0.7 en el hardware del propietario; simulación de foco para juegos que la exijan; dos jugadores reales en 7DTD (requiere segunda cuenta con el juego); métricas de FPS/VRAM.
 
 > `docs/` no sustituye las pruebas: documenta contratos y conocimiento acumulado. Para agentes, leer también [`../CLAUDE.md`](../CLAUDE.md).

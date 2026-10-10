@@ -19,6 +19,8 @@
 | `SplitForge.LabViewer` · `LabViewer.Run(jugador, stdin)` | Título de ventana exacto `SplitForge MUNDO COMPARTIDO - Jugador N` | `SessionManager` busca ese título |
 | `SplitForge.App` | WPF + ViewModel por pestañas; `--lab-viewer N` | Bloqueos de UI (no hacer trabajo pesado en el hilo de UI) |
 | `SplitForge.Diagnostico` | `steam`, `ventanas`, `7dtd`, `mandos` (+ `demo-frames`, `visor-lab` para pruebas) | Privacidad de informes |
+| `Core.Adapters.XInputFilter` | Instalar/retirar el filtro nativo (manifiesto + SHA-256), asignaciones PID → ranura, estado por proceso | Archivos del juego (nunca sobrescribir) |
+| `native/SplitForge.XInputFilter` (C++20) | DLL con la API de XInput (8 funciones + ordinales 100–103); cada proceso ve solo su ranura asignada | Compatibilidad por juego, foco |
 
 ## Tipos públicos importantes
 

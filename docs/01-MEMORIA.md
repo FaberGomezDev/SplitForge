@@ -36,7 +36,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 | v0.6 | Asociación HWND/PID/exe; dos procesos del mismo exe antes de distribuir. | 72 pruebas; sin aceptación física de dos clientes |
 | 0.6.0+docs | `CLAUDE.md`, `docs/`, chequeo de documentación. | 75 pruebas |
 | 2026-10-10 | Repositorio en GitHub; diagnóstico Python `diagnostico_7dtd.py` (APIs de mando de 7DTD). | 77 pruebas Python |
-| **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; CI Windows. | 106 xUnit; humo SDL3 en Linux; **sin prueba en el PC del propietario** |
+| **0.7.0** | Reconstrucción en .NET 10 + SDL3 + WPF; adaptador experimental 7DTD; CI Windows. | 112 xUnit; humo SDL3 en Linux; **sin prueba en el PC del propietario** |
 
 ## Incidente PS4: causa, corrección y reglas (siguen vigentes en 0.7)
 
@@ -54,6 +54,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 - Steam detectado/diagnosticado: **SÍ, solo lectura**.
 - Servidor dedicado 7DTD local con guardados aislados: **implementado**, no probado en el PC del propietario.
 - Dos/cuatro ventanas de clientes distribuidas sin bordes: **implementado**, eficacia por juego no comprobada.
+- Un mando por cliente dentro del juego: **filtro XInput nativo implementado (experimental)**, sin validar en hardware.
 - Dos clientes de 7DTD en la misma partida con dos mandos aislados: **NO** (falta segunda cuenta y módulo nativo de entrada).
 - FPS/frametimes/VRAM medidos: **NO**.
 
@@ -66,7 +67,7 @@ Una PC Windows con juegos de Steam compatibles, 2–4 jugadores, cada uno con ma
 ## Estado para la siguiente sesión
 
 **P0:** que el propietario descargue el artefacto `SplitForge-win-x64` de la CI (o ejecute `Compilar_SplitForge.bat`) y valide: mandos en «01 MANDOS» (incluida la frecuencia del hilo), laboratorio con dos PS4, distribución sin bordes y restauración.
-**P1:** con 7DTD abierto sin EAC (idealmente dos instancias), `SplitForge.Diagnostico.exe 7dtd` → `SplitForge_Reporte_7DTD.json`, y anotar si la ventana sin foco sigue funcionando. Con eso se elige el método del módulo nativo C++ (filtro XInput por proceso, foco simulado, etc.).
+**P1:** con 7DTD abierto sin EAC (idealmente dos instancias), `SplitForge.Diagnostico.exe 7dtd` → `SplitForge_Reporte_7DTD.json`, y anotar si la ventana sin foco sigue funcionando. Si carga XInput, probar el filtro nativo (W16); si exige foco, añadir simulación de foco al módulo nativo.
 **P2:** segunda cuenta de Steam con 7DTD para la prueba real de dos jugadores.
 
 ## Política de actualización de memoria

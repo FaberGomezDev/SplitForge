@@ -16,6 +16,9 @@ Diagnósticos (solo lectura), desde una consola en esta carpeta:
   SplitForge.Diagnostico.exe steam     -> juegos Steam instalados
 Los informes se guardan en el Escritorio y no incluyen rutas, cuentas ni títulos de ventana.
 
+Filtro XInput nativo (experimental): carpeta native\. Se instala desde la pestaña 06 solo con
+los clientes de 7DTD sin EAC; nunca sobrescribe archivos del juego y se retira con "Quitar filtro".
+
 Configuración y registro: %LOCALAPPDATA%\SplitForge\ (settings.v2.json, splitforge-net.log).
 La configuración de la versión Python (settings.json) no se modifica.
 

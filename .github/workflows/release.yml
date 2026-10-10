@@ -19,6 +19,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Módulo nativo C++ (filtro XInput) y su prueba de humo
+        shell: pwsh
+        run: |
+          cmake -S native/SplitForge.XInputFilter -B native/build -A x64
+          cmake --build native/build --config Release
+          ctest --test-dir native/build -C Release --output-on-failure
+
       - name: Pruebas .NET
         run: dotnet test SplitForge.slnx -c Release --blame-hang-timeout 60s
 
@@ -27,6 +34,8 @@ jobs:
         run: |
           dotnet publish src/SplitForge.App -c Release -r win-x64 --self-contained -o artifacts/SplitForge
           dotnet publish src/SplitForge.Diagnostico -c Release -r win-x64 --self-contained -o artifacts/SplitForge
+          New-Item -ItemType Directory -Force artifacts/SplitForge/native | Out-Null
+          Copy-Item native/build/Release/SplitForge.XInputFilter.dll artifacts/SplitForge/native/
           Copy-Item LEEME_DESCARGA.txt artifacts/SplitForge/LEEME.txt
           Get-ChildItem artifacts/SplitForge -Filter *.pdb | Remove-Item
           $zip = "artifacts/SplitForge-${{ github.ref_name }}-win-x64.zip"

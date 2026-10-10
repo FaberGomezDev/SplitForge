@@ -50,6 +50,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
 | `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `mandos` |
+| `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015); CMake + prueba de humo |
 | `tests/SplitForge.Tests` | xUnit (Core) |
 | `launcher.py`, `splitforge/`, `tests/test_*.py` | Prototipo Python 0.6 (referencia; no ampliar salvo diagnósticos) |
 
@@ -79,7 +80,7 @@ En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y s
 
 ## Próxima meta explícita
 
-Validar la 0.7 en el PC del propietario (mandos, laboratorio, pantalla dividida) y obtener `SplitForge_Reporte_7DTD.json` con 7DTD abierto **sin EAC**. Con esa evidencia, implementar el **módulo nativo C++ de un mando por ventana** (ver `docs/06-PLAN-DE-DESARROLLO.md`). Para dos jugadores reales en 7DTD hace falta **una segunda cuenta de Steam con el juego**.
+Validar la 0.7 en el PC del propietario (mandos, laboratorio, pantalla dividida) y obtener `SplitForge_Reporte_7DTD.json` con 7DTD abierto **sin EAC**. Con esa evidencia, validar el **filtro XInput nativo** (ADR-015) o añadir simulación de foco si el juego la exige (ver `docs/06-PLAN-DE-DESARROLLO.md`). Para dos jugadores reales en 7DTD hace falta **una segunda cuenta de Steam con el juego**.
 
 ## Memoria de desarrollo
 

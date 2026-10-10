@@ -25,7 +25,7 @@
 | Visores del laboratorio | IPC binario con validación estricta; procesos propios | — |
 | Configuración | `settings.v2.json` atómico; `settings.json` del prototipo solo lectura | — |
 | Diagnóstico de módulos | `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ` solo para enumerar nombres de módulos; con EAC activo Windows lo deniega y se informa | — |
-| Módulo nativo (futuro) | Solo con EAC desactivado oficialmente, reversible y con consentimiento | Requiere ADR y revisión específica |
+| Filtro XInput nativo (ADR-015) | Se instala con consentimiento solo si ningún cliente tiene EAC cargado; nunca sobrescribe DLL del juego; retira solo lo propio (SHA-256); carga la DLL real por ruta absoluta de System32; sin E/S en `DllMain`; compilado con `/guard:cf`, ASLR y DEP | Validar en hardware; simulación de foco aún no implementada |
 
 ## Reglas para una integración nueva
 

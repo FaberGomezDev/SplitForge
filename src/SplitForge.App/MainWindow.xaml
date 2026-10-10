@@ -261,7 +261,21 @@
               <Button Content="▦  Dividir pantalla con los clientes" Style="{StaticResource PrimaryButton}" Command="{Binding TileSevenCommand}" />
               <Button Content="⇄  Intercambiar J1 / J2" Command="{Binding SwapSevenCommand}" />
             </StackPanel>
-            <TextBlock Style="{StaticResource Warning}" Text="Pendiente: un mando por ventana DENTRO del juego (módulo nativo C++). Guarda el diagnóstico con los dos clientes abiertos para elegir el método según las APIs de mando que carga 7DTD." />
+            <TextBlock Style="{StaticResource Heading}" Text="4 · Un mando por ventana (filtro XInput nativo · EXPERIMENTAL)" FontSize="15" Margin="0,12,0,4" />
+            <TextBlock Style="{StaticResource Hint}" Text="Cada cliente ve solo su mando. Requisitos: clientes SIN EAC, el diagnóstico debe mostrar «xinput» y los PS4 deben llegar al juego como mandos XInput (Steam Input o DS4Windows, sin duplicados). Si el juego exige foco (Windows.Gaming.Input), este filtro no basta." />
+            <WrapPanel Margin="0,0,0,6">
+              <TextBlock Text="Mando XInput de J1" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer1}" Width="55" Margin="0,0,14,0" />
+              <TextBlock Text="Mando XInput de J2" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <ComboBox ItemsSource="{Binding XInputSlots}" SelectedItem="{Binding SlotPlayer2}" Width="55" Margin="0,0,14,0" />
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+              <Button Content="Instalar filtro" Command="{Binding InstallFilterCommand}" />
+              <Button Content="Asignar mandos a los clientes" Style="{StaticResource PrimaryButton}" Command="{Binding AssignFilterCommand}" />
+              <Button Content="Quitar filtro" Command="{Binding RemoveFilterCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding FilterStatus}" Foreground="{StaticResource Muted}" />
+            <TextBlock Style="{StaticResource Warning}" Text="Sin validar en hardware. Guarda el diagnóstico 7DTD con los clientes abiertos: si no carga XInput o exige foco, el siguiente paso es la simulación de foco en el módulo nativo." />
           </StackPanel>
         </ScrollViewer>
       </TabItem>

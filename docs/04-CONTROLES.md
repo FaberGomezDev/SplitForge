@@ -49,10 +49,10 @@ sequenceDiagram
 4. Pestaña **02 MUNDO COMPARTIDO**: cada mando mueve **su** nave; disparo, escudo e impulso por separado.
 5. Desconectar/reconectar uno; reasignar en vivo.
 
-## Camino pendiente para juegos de Steam (módulo nativo C++)
+## Un mando por ventana dentro del juego (módulo nativo C++)
 
 Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input), mientras que XInput funciona en segundo plano. Antes de escribir el módulo nativo hay que saber qué API usa cada juego: `SplitForge.Diagnostico.exe 7dtd` lista los módulos de entrada cargados (XInput, DirectInput, HID, Windows.Gaming.Input, SDL, overlay de Steam, EAC). Opciones según la evidencia:
 
-- **XInput:** filtro por proceso (cada cliente ve solo su ranura), con PS4 expuestos como mandos XInput (Steam Input o DS4Windows) y sin duplicados.
+- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se instala desde la pestaña 06 («Instalar filtro» / «Asignar mandos a los clientes» / «Quitar filtro»). Cada cliente ve solo su ranura; los PS4 deben llegar como XInput (Steam Input o DS4Windows) y sin duplicados. Cada proceso que lo carga escribe `estado-PID.txt` (DLL, real cargada, ranura) para comprobarlo.
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
 - Nunca intervenir en antitrampas activos ni instalar drivers de kernel por defecto.

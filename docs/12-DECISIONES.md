@@ -57,3 +57,8 @@ Un único hilo llama a SDL3 (hasta 1000 Hz, plazos absolutos, eventos en segundo
 ## ADR-014 · Aceptada · CI en Windows con artefacto autónomo
 
 Cada push a `main` ejecuta pruebas .NET y Python, valida docs, publica win-x64 autónomo, ejecuta una prueba de humo y sube el artefacto `SplitForge-win-x64`. Las etiquetas `v*` crean una release con ZIP y SHA-256.
+
+## ADR-015 · Aceptada (experimental) · Filtro XInput por proceso como primer módulo nativo
+
+**Decisión:** primer componente C++ (`native/SplitForge.XInputFilter`): una DLL que se copia en la carpeta del juego con el nombre de la DLL de XInput que este carga y reenvía todo a la DLL real de System32, pero hace que cada proceso vea **un único mando**: la ranura física que SplitForge le asigna por PID en `%LOCALAPPDATA%\SplitForge\xinput\asignacion.txt`. Sin asignación es transparente. **Por qué:** XInput es la vía de mandos más común en juegos de PC y, a diferencia de Windows.Gaming.Input, funciona sin foco; es la técnica de aislamiento más simple y reversible (no inyecta en otros procesos, no escribe memoria ajena). **Límites:** solo con EAC desactivado mediante la opción oficial; los PS4 deben llegar como XInput (Steam Input o DS4Windows); si el juego exige foco hará falta además la simulación de foco. **Garantías:** nunca sobrescribe archivos del juego, retira solo lo que instaló (SHA-256), prueba de humo en la CI de Windows. **Pendiente:** validar con el diagnóstico real de 7DTD.
+

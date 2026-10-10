@@ -36,12 +36,14 @@ CAMBIOS EFECTIVOS: solución SplitForge.slnx (Core, Windows, Input, LabViewer, A
   entrada SDL3 en hilo dedicado ≤1000 Hz; simulación 120 Hz; IPC binario; ventanas 2–4 sin bordes;
   adaptador 7DTD (servidor dedicado oficial aislado, Sandboxie-Plus, pantalla dividida, diagnóstico);
   CI Windows con paquete autónomo y releases por etiqueta; documentación actualizada (ADR-010…014).
-EVIDENCIA AUTOMÁTICA: 106 xUnit + 77 unittest; CI windows-latest verde (pruebas, publicación,
+EVIDENCIA AUTOMÁTICA: 112 xUnit + 77 unittest; CI windows-latest verde (pruebas, publicación,
   humo: SDL3 3.5.0 inicializa en Windows); Linux: hilo de entrada 1000 Hz, visor dibujado bajo Xvfb.
 EVIDENCIA EN WINDOWS REAL (propietario): pendiente.
 NUEVOS RIESGOS: perfiles de botones a recalibrar (GUID SDL3); Sandboxie y Steam; firewall al abrir el servidor.
 LIMITACIONES EXPLÍCITAS: sin aislamiento de mandos dentro del juego; dos jugadores requieren dos cuentas.
-PRÓXIMO PASO: validar W01–W07; SplitForge_Reporte_7DTD.json; módulo nativo C++.
+PRÓXIMO PASO: validar W01–W07; SplitForge_Reporte_7DTD.json; validar el filtro XInput (W16).
+AMPLIACIÓN (mismo día): recuperación de ventanas tras cierre inesperado; filtro XInput nativo C++20
+  (native/SplitForge.XInputFilter, ADR-015) con instalación reversible desde la pestaña 06 y prueba de humo en la CI.
 ```
 
 ## Siguiente entrada (plantilla)

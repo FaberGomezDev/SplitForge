@@ -19,6 +19,20 @@ echo [3/3] Publicando SplitForge.Diagnostico.exe ...
 dotnet publish src\SplitForge.Diagnostico -c Release -r win-x64 --self-contained -o publish\SplitForge --nologo
 if errorlevel 1 goto :error
 copy /y LEEME_DESCARGA.txt publish\SplitForge\LEEME.txt >nul
+rem Modulo nativo C++ (opcional: requiere CMake y Visual Studio Build Tools con C++).
+where cmake >nul 2>&1
+if errorlevel 1 (
+  echo [AVISO] Sin CMake: el filtro XInput nativo no se compila. Descargalo del paquete de GitHub Actions si lo necesitas.
+) else (
+  cmake -S native\SplitForge.XInputFilter -B native\build -A x64 >nul && cmake --build native\build --config Release >nul
+  if exist "native\build\Release\SplitForge.XInputFilter.dll" (
+    if not exist "publish\SplitForge\native" mkdir "publish\SplitForge\native"
+    copy /y native\build\Release\SplitForge.XInputFilter.dll publish\SplitForge\native\ >nul
+    echo Filtro XInput nativo compilado.
+  ) else (
+    echo [AVISO] No se pudo compilar el filtro XInput nativo.
+  )
+)
 echo.
 echo Listo: publish\SplitForge\SplitForge.exe
 pause

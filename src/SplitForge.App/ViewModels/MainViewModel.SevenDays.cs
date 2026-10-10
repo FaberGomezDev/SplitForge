@@ -45,6 +45,22 @@ public sealed partial class MainViewModel
     public ICommand TileSevenCommand { get; private set; } = null!;
     public ICommand SwapSevenCommand { get; private set; } = null!;
     public ICommand ExportSevenCommand { get; private set; } = null!;
+    public ICommand InstallFilterCommand { get; private set; } = null!;
+    public ICommand AssignFilterCommand { get; private set; } = null!;
+    public ICommand RemoveFilterCommand { get; private set; } = null!;
+
+    public IReadOnlyList<int> XInputSlots { get; } = [1, 2, 3, 4];
+
+    private int _slotPlayer1 = 1;
+    public int SlotPlayer1 { get => _slotPlayer1; set => Set(ref _slotPlayer1, value); }
+
+    private int _slotPlayer2 = 2;
+    public int SlotPlayer2 { get => _slotPlayer2; set => Set(ref _slotPlayer2, value); }
+
+    private string _filterStatus = "Filtro XInput no instalado.";
+    public string FilterStatus { get => _filterStatus; set => Set(ref _filterStatus, value); }
+
+    private string XInputFolder => Path.Combine(_dataFolder, "xinput");
 
     private string _sevenState = "Sin comprobar.";
     public string SevenState { get => _sevenState; set => Set(ref _sevenState, value); }
@@ -82,6 +98,9 @@ public sealed partial class MainViewModel
         TileSevenCommand = new RelayCommand(() => TileSeven(), () => _sessions.Active is null);
         SwapSevenCommand = new RelayCommand(SwapSeven);
         ExportSevenCommand = new RelayCommand(ExportSevenDiagnostic);
+        InstallFilterCommand = new RelayCommand(InstallFilter);
+        AssignFilterCommand = new RelayCommand(AssignFilter);
+        RemoveFilterCommand = new RelayCommand(RemoveFilter);
     }
 
     private InstalledGame? FindGame(string appId) => SteamGames.FirstOrDefault(r => r.AppId == appId)?.Game;
@@ -105,6 +124,7 @@ public sealed partial class MainViewModel
         SevenChecks.Clear();
         foreach (var check in preflight.Checks)
             SevenChecks.Add(new CheckRow(check));
+        RefreshFilterStatus();
         SevenState = preflight.State == CompatibilityState.Bloqueado
             ? "BLOQUEADO: falta 7 Days to Die."
             : $"Estado: {preflight.State.ToString().ToUpperInvariant()} (experimental). Nunca se marca compatible sin prueba física.";
@@ -178,6 +198,81 @@ public sealed partial class MainViewModel
             TileSeven();
         }
         _log.Write("Orden de jugadores de 7DTD invertido.");
+    }
+
+    /// <summary>Carpeta de instalación validada (dentro de steamapps/common) de 7DTD.</summary>
+    private string SevenDaysFolder()
+    {
+        var game = FindGame(ResearchProfiles.SevenDaysToDie) ?? throw new InvalidOperationException("7 Days to Die no aparece instalado.");
+        var (folder, inside) = PreflightEvaluator.SafeInstallFolder(game);
+        if (!inside || !Directory.Exists(folder))
+            throw new InvalidOperationException("La carpeta de 7 Days to Die no es válida.");
+        return folder;
+    }
+
+    private void InstallFilter() => Guard(() =>
+    {
+        var folder = SevenDaysFolder();
+        var report = WindowsDiagnostics.SevenDays([]);
+        if (report.Clients.Any(c => c.Input?.AntiCheatLoaded == true || !c.ModulesReadable))
+            throw new InvalidOperationException("Hay un cliente de 7DTD con EAC activo. Ciérralo y ábrelo con «Launch game without EAC» antes de instalar el filtro.");
+        var dll = Path.Combine(AppContext.BaseDirectory, "native", XInputFilter.DllFileName);
+        if (!Confirm("Filtro XInput (experimental)",
+                "Se copiará el filtro de SplitForge en la carpeta de 7 Days to Die con los nombres de XInput que falten "
+                + "(xinput1_3/1_4/9_1_0). No se sobrescribe ningún archivo del juego y se puede retirar en cualquier momento.\n\n"
+                + "Úsalo SOLO con los clientes sin EAC. Los PS4 deben llegar al juego como mandos XInput (Steam Input o DS4Windows).\n\n¿Instalar?"))
+            return;
+        var installed = XInputFilter.Install(folder, dll, XInputFilter.KnownNames);
+        _log.Write($"Filtro XInput instalado en 7DTD: {(installed.Count > 0 ? string.Join(", ", installed) : "ya estaba")}. Reinicia los clientes para que lo carguen.");
+        RefreshFilterStatus();
+    });
+
+    private void AssignFilter() => Guard(() =>
+    {
+        var game = FindGame(ResearchProfiles.SevenDaysToDie) ?? throw new InvalidOperationException("7 Days to Die no aparece instalado.");
+        var report = WindowsDiagnostics.InspectGame(game);
+        if (report.ClientHandles.Count < 2)
+            throw new InvalidOperationException($"Se necesitan al menos dos clientes abiertos (hay {report.DistinctPids}).");
+        var pidByHandle = report.Windows.ToDictionary(w => w.Handle, w => w.Pid);
+        IReadOnlyList<nint> ordered = _sevenSwap ? [.. report.ClientHandles.Reverse()] : report.ClientHandles;
+        var wanted = new List<int> { SlotPlayer1 - 1, SlotPlayer2 - 1 };
+        wanted.AddRange(Enumerable.Range(0, 4).Where(s => !wanted.Contains(s)));
+        var assignments = ordered.Select((h, i) => (pidByHandle[h], wanted[i])).ToList();
+        XInputFilter.WriteAssignments(XInputFolder, assignments);
+        _log.Write("Asignación XInput: " + string.Join(" · ", assignments.Select((a, i) => $"J{i + 1} → mando {a.Item2 + 1}")) + ".");
+        RefreshFilterStatus();
+    });
+
+    private void RemoveFilter() => Guard(() =>
+    {
+        var removed = XInputFilter.Uninstall(SevenDaysFolder());
+        XInputFilter.ClearAssignments(XInputFolder);
+        _log.Write($"Filtro XInput retirado ({removed.Count} archivo(s)).");
+        RefreshFilterStatus();
+    });
+
+    private void RefreshFilterStatus()
+    {
+        try
+        {
+            var folder = SevenDaysFolder();
+            var installed = XInputFilter.InstalledNames(folder);
+            if (installed.Count == 0)
+            {
+                FilterStatus = "Filtro XInput no instalado.";
+                return;
+            }
+            var alive = ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.GameExe).ToHashSet();
+            var status = XInputFilter.ReadStatus(XInputFolder, alive);
+            FilterStatus = $"Instalado ({string.Join(", ", installed)}). "
+                + (status.Count == 0
+                    ? "Ningún cliente lo ha cargado aún (reinicia los clientes; en Sandboxie el estado queda dentro del sandbox)."
+                    : string.Join(" · ", status.Select(st => $"PID {st.Pid}: {st.Dll}, real {(st.RealLoaded ? "OK" : "NO")}, mando {(st.Slot >= 0 ? (st.Slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")}")));
+        }
+        catch (InvalidOperationException)
+        {
+            FilterStatus = "7 Days to Die no detectado.";
+        }
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>

@@ -3,7 +3,9 @@
 ## Suites automáticas
 
 ```sh
-dotnet test SplitForge.slnx -c Release          # 106 pruebas xUnit (Core)
+dotnet test SplitForge.slnx -c Release          # 112 pruebas xUnit (Core)
+cmake -S native/SplitForge.XInputFilter -B native/build -A x64 && cmake --build native/build --config Release
+ctest --test-dir native/build -C Release        # prueba de humo del filtro XInput (Windows)
 python -m unittest discover -s tests -v         # 77 pruebas del prototipo Python
 python tools/check_docs.py                      # enlaces y documentos obligatorios
 ```
@@ -24,6 +26,11 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Adaptador 7DTD (preflight, configuración del servidor, escape XML, opciones inválidas, apagado ordenado con telnet falso, salida inesperada).
 - Configuración (importación de la versión Python sin tocarla, ida y vuelta, archivo dañado, saneado).
 - Diagnóstico de módulos de entrada.
+- Filtro XInput (.NET): nunca sobrescribe DLL del juego, retira solo lo propio sin modificar, asignaciones válidas y únicas, estado por proceso vivo.
+
+### Filtro XInput nativo (C++)
+
+`smoke_test.cpp` (CTest en la CI): carga el filtro como `xinput1_4.dll`, asigna la ranura 2 al proceso y verifica que carga la DLL real de System32, que los índices 1–3 aparecen desconectados y que escribe `estado-PID.txt` correcto. Compila sin avisos con MSVC `/W4 /WX` (CI) y MinGW `-Wall -Wextra -Werror` (Linux).
 
 ### CI (`.github/workflows/build.yml`, windows-latest)
 
@@ -53,6 +60,7 @@ Pruebas .NET y Python, documentación, publicación autónoma win-x64 y **prueba
 | W13 | Diagnóstico 7DTD | Informe con APIs de mando; sin rutas ni títulos |
 | W14 | Dos cuentas 7DTD | Dos clientes en la misma partida (requiere segunda cuenta) |
 | W15 | Cierre | Cerrar SplitForge restaura ventanas y apaga el servidor propio |
+| W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; `estado-PID.txt` muestra la ranura |
 
 **Resultado físico conocido:** laboratorio v0.4 y Steam v0.5 confirmados en el prototipo. La 0.7 no tiene filas confirmadas todavía.
 
