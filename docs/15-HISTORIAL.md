@@ -332,7 +332,7 @@ PRÓXIMO PASO: W14, que J1 y J2 se encuentren en la misma partida en este PC.
 
 ```text
 FECHA: 2026-10-10 (noche)
-RELEASE/COMMIT: este commit
+RELEASE/COMMIT: 0c13111 en main
 OBJETIVO: que J1 y J2 se encuentren en la misma partida en este PC (el propietario: «la conexión local»;
   después: «averigua cómo lo hace Nucleus y lo mejoramos»).
 CAUSA DEL INTENTO FALLIDO DEL PROPIETARIO (registros de 20:14–20:20, «Conectar a IP» a mano):
