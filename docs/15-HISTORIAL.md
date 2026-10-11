@@ -412,7 +412,7 @@ PRÓXIMO PASO: sesión de juego normal; lista «Unirse a partida»; unión J2 �
 
 ```text
 FECHA: 2026-10-10 (noche)
-RELEASE/COMMIT: este commit
+RELEASE/COMMIT: 7ae5845 en main
 OBJETIVO: el propietario pide un diseño propio de juegos, quitando lo innecesario (7DTD es el primero
   de varios).
 CAMBIOS EFECTIVOS (ADR-024): navegación JUGAR / MANDOS / AVANZADO; pantalla JUGAR con biblioteca,
