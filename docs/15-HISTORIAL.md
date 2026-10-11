@@ -507,7 +507,7 @@ PRÓXIMO PASO: confirmación del propietario (W23, W24) y siguiente juego: No Ma
 
 ```text
 FECHA: 2026-10-11 (tarde)
-RELEASE/COMMIT: (ver el registro de git de esta fecha)
+RELEASE/COMMIT: faa4773 en main
 OBJETIVO: el propietario pide seguir con No Man's Sky (AppID 275850, build 25732212).
 HECHO (solo lectura, sin ejecutar el juego): el multijugador va por PlayFab (el ejecutable importa
   PartyWin y PlayFabMultiplayer y no pide ninguna interfaz SteamNetworking); el ejecutable lleva la
