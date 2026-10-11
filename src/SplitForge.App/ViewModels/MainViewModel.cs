@@ -51,6 +51,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _gutter = _settings.Gutter;
         _borderless = _settings.Borderless;
         _coverTaskbar = _settings.CoverTaskbar;
+        _blackBackdrop = _settings.BlackBackdrop;
         _fitKeepAspect = _settings.Fit == SplitForge.Core.Layout.WindowFit.MantenerProporcion;
         _selectedAspect = new AspectRatio(_settings.AspectW, _settings.AspectH) is { IsValid: true } a ? a : AspectRatio.SixteenNine;
         _selectedMode = _settings.InputMode;
@@ -146,6 +147,38 @@ public sealed partial class MainViewModel : Observable, IDisposable
         }
     }
 
+    private readonly SessionBackdrop _backdrop = new();
+    private bool _blackBackdrop;
+    /// <summary>true = un fondo negro tapa el escritorio detrás de la pantalla dividida (uniones y franjas).</summary>
+    public bool BlackBackdrop
+    {
+        get => _blackBackdrop;
+        set
+        {
+            if (Set(ref _blackBackdrop, value))
+            {
+                SaveSettings();
+                Guard(SyncBackdrop, quiet: true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Llamado a ≈2 Hz y al cambiar la sesión: el fondo sigue a la sesión (misma zona, justo debajo de sus
+    /// ventanas) y desaparece con ella. Si nada cambió, no hace nada.
+    /// </summary>
+    private void SyncBackdrop()
+    {
+        var active = _sessions.Active;
+        if (!_blackBackdrop || active is not { Pending: false, WindowHandles.Count: >= 2 })
+        {
+            _backdrop.Hide();
+            return;
+        }
+        var covers = active.Layout.CoverTaskbar;
+        _backdrop.Show(covers ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea(), active.WindowHandles, covers);
+    }
+
     private bool _fitKeepAspect;
     /// <summary>true = centrar el juego con su proporción (sin deformar); false = rellenar toda la región.</summary>
     public bool FitKeepAspect
@@ -232,6 +265,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _labLoop?.Dispose();
         _labLoop = null;
         _sessions.Stop();
+        _backdrop.Hide();
         ReleaseCursor(); // Al deshacer la pantalla dividida, el ratón vuelve a ser libre.
         ReleaseInputLock(); // Y el teclado y el ratón vuelven a funcionar.
         Status = "Sesión detenida; ventanas restauradas.";
@@ -252,6 +286,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
         {
             Guard(_sessions.Tick, quiet: true);
             Guard(TileEmulatedClientsWhenReady, quiet: true);
+            Guard(CloseEmulatedClientsStep, quiet: true);
+            Guard(SyncBackdrop, quiet: true);
             Guard(SyncFakeFocus, quiet: true);
             RefreshServer();
             var active = _sessions.Active;
@@ -277,7 +313,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Gutter = Gutter,
             Borderless = Borderless,
             CoverTaskbar = CoverTaskbar,
-            Fit = FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar,
+            BlackBackdrop = BlackBackdrop,
+            Fit =FitKeepAspect ? WindowFit.MantenerProporcion : WindowFit.Rellenar,
             AspectW = SelectedAspect.W,
             AspectH = SelectedAspect.H,
             InputMode = _input.Mode,
@@ -293,6 +330,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
                 EmulatorDll = SteamEmuDllPath,
                 AutoJoin = SteamEmuAutoJoin,
                 QuickContinue = SteamEmuQuickContinue,
+                IsolateSaves = SteamEmuIsolateSaves,
             },
             FakeFocus = FakeFocusEnabled,
         };
@@ -344,6 +382,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         ReleaseCursor();
         ReleaseInputLock();
         _fakeFocus.Dispose();
+        _backdrop.Dispose();
         _labLoop?.Dispose();
         _sessions.Dispose();
         _server.Dispose();

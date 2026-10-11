@@ -330,13 +330,15 @@
             <TextBlock Text="Cada jugador guarda en %LOCALAPPDATA%\SplitForge\steamemu\AppID-J1 y AppID-J2." Foreground="{StaticResource Muted}" Margin="0,0,0,8" />
 
             <TextBlock Style="{StaticResource Heading}" Text="Lanzar (con Steam cerrado)" FontSize="15" />
-            <TextBlock Style="{StaticResource Hint}" Text="«Lanzar J1 y J2» lo hace todo: abre cada cliente sin juego cruzado (EOS) y con el tamaño de su panel (mínimo 16:9), asigna a cada uno su mando si el filtro XInput está instalado (pestaña 06: Instalar filtro y Detectar) y divide la pantalla cuando aparecen las ventanas. Para jugar juntos: J1 crea o carga una partida y J2 entra sola en ella (también si J2 estaba en otra partida: la guarda y sale). A mano: en J2, «Conectar a IP» con 127.0.0.1." Margin="0,0,0,6" />
-            <CheckBox Content="J2 entra sola en la partida de J1" IsChecked="{Binding SteamEmuAutoJoin}" Margin="0,0,0,2" />
-            <CheckBox Content="J1 arranca cargando su última partida (sin pasar por el menú)" IsChecked="{Binding SteamEmuQuickContinue}" Margin="0,0,0,6" />
+            <TextBlock Style="{StaticResource Hint}" Text="«Lanzar J1 y J2» lo hace todo: abre cada cliente sin juego cruzado (EOS) y con el tamaño de su panel (mínimo 16:9), asigna a cada uno su mando si el filtro XInput está instalado (pestaña 06: Instalar filtro y Detectar) y divide la pantalla cuando aparecen las ventanas. Para jugar juntos: J1 crea o carga una partida y, en J2, «Unirse a partida» → «Conectar a IP» con 127.0.0.1. Las casillas automatizan esos pasos." Margin="0,0,0,6" />
+            <CheckBox Content="J2 usa su propia carpeta de datos (no comparte guardados con J1)" IsChecked="{Binding SteamEmuIsolateSaves}" Margin="0,0,0,2" />
+            <CheckBox Content="Cuando un jugador abre una partida, el otro entra solo (J1 o J2; si estaba en otra partida, la guarda y sale)" IsChecked="{Binding SteamEmuAutoJoin}" Margin="0,0,0,2" />
+            <CheckBox Content="J1 no pasa por el menú: carga directamente su última partida" IsChecked="{Binding SteamEmuQuickContinue}" Margin="0,0,0,6" />
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
               <Button Content="▶  Lanzar J1" Command="{Binding LaunchSteamEmu1Command}" />
               <Button Content="▶  Lanzar J2" Command="{Binding LaunchSteamEmu2Command}" />
               <Button Content="▶  Lanzar J1 y J2" Style="{StaticResource PrimaryButton}" Command="{Binding LaunchSteamEmuBothCommand}" />
+              <Button Content="■  Cerrar J1 y J2" Command="{Binding CloseSteamEmuClientsCommand}" ToolTip="Cierre normal, como cerrar la ventana: primero J2 y, cuando ha salido, J1 (que guarda la partida). Nunca a la fuerza." />
             </StackPanel>
             <CheckBox Content="Simular foco en cada ventana (FakeFocus de Nucleus)" IsChecked="{Binding FakeFocusEnabled}" Margin="0,0,0,4" />
             <TextBlock Style="{StaticResource Hint}" Text="Experimental: SplitForge envía a cada ventana de la pantalla dividida los mensajes de activación de Windows para que la ventana sin foco siga procesando su mando. No modifica el juego." Margin="0,0,0,2" />
@@ -357,6 +359,8 @@
       <CheckBox Content="Sin bordes" IsChecked="{Binding Borderless}" />
       <CheckBox Content="Tapar barra de tareas" IsChecked="{Binding CoverTaskbar}"
                 ToolTip="La pantalla dividida usa el monitor completo y las ventanas quedan por encima de la barra de tareas. Al detener, todo vuelve a su sitio." />
+      <CheckBox Content="Fondo negro" IsChecked="{Binding BlackBackdrop}"
+                ToolTip="Una ventana negra detrás de los juegos tapa el escritorio en la unión entre ventanas y en las franjas. No consume recursos: no dibuja nada ni toma el foco. Desaparece al detener la sesión." />
       <CheckBox Content="Mantener proporción" IsChecked="{Binding FitKeepAspect}"
                 ToolTip="Centra el juego con su proporción, sin deformarlo. Deja franjas si la región no coincide." />
       <ComboBox ItemsSource="{Binding AspectChoices}" SelectedItem="{Binding SelectedAspect}" DisplayMemberPath="Label"

@@ -17,11 +17,20 @@ public sealed record SteamEmuOptions
     public int AppId { get; init; } = 251570;
     public string EmulatorDll { get; init; } = "";
 
-    /// <summary>J2 entra sola en la partida de J1 en cuanto J1 la abre (el emulador se lo pide al juego).</summary>
-    public bool AutoJoin { get; init; } = true;
+    /// <summary>
+    /// J2 entra sola en la partida de J1 en cuanto J1 la abre (el emulador se lo pide al juego). Desactivada
+    /// por defecto: al propietario le resultó un comportamiento inesperado; queda como opción.
+    /// </summary>
+    public bool AutoJoin { get; init; }
 
     /// <summary>J1 arranca cargando su última partida (argumento <c>-quick-continue</c> de 7DTD).</summary>
     public bool QuickContinue { get; init; }
+
+    /// <summary>
+    /// J2 usa su propia carpeta de datos (<c>-UserDataFolder</c>): no ve ni puede abrir las partidas de J1,
+    /// así dos instancias nunca escriben el mismo guardado.
+    /// </summary>
+    public bool IsolateSaves { get; init; } = true;
 }
 
 public sealed record AppSettings
@@ -31,6 +40,9 @@ public sealed record AppSettings
     public bool Borderless { get; init; } = true;
     /// <summary>Sesión de juego en el monitor completo, con las ventanas por encima de la barra de tareas.</summary>
     public bool CoverTaskbar { get; init; } = true;
+
+    /// <summary>Fondo negro detrás de la pantalla dividida: tapa el escritorio en las uniones y franjas.</summary>
+    public bool BlackBackdrop { get; init; } = true;
     public WindowFit Fit { get; init; } = WindowFit.Rellenar;
     public int AspectW { get; init; } = 16;
     public int AspectH { get; init; } = 9;

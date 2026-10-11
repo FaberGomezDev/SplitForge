@@ -57,21 +57,74 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
     /// -crossplatform / -serverplatforms como «-clave=valor» (PlatformManager.GetCommandLineOverrides).
     /// Con <paramref name="quickContinue"/>, el juego carga su última partida al abrir el menú principal
     /// (<c>-quick-continue</c>, que el propio juego consulta en XUiC_MainMenu.OnOpen).
+    /// Con <paramref name="userDataFolder"/>, el juego guarda partidas, mundos y perfiles en esa carpeta en
+    /// vez de en <c>%APPDATA%\7DaysToDie</c> (preferencia de lanzamiento <c>UserDataFolder</c> del juego).
     /// </summary>
-    public static IReadOnlyList<string> EmulatedClientArguments(int width, int height, bool quickContinue = false)
+    public static IReadOnlyList<string> EmulatedClientArguments(int width, int height, bool quickContinue = false,
+        string? userDataFolder = null)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentOutOfRangeException(nameof(width), "El tamaño de la ventana debe ser positivo.");
         var inv = System.Globalization.CultureInfo.InvariantCulture;
         List<string> arguments =
         [
-            "-crossplatform=None", "-serverplatforms=Steam", "-noeac",
+            // ServerEnabled es la opción «multijugador» de la pantalla de partida del propio juego: con ella
+            // apagada la partida arranca sin conexión («Starting offline server») y el otro jugador no puede
+            // entrar. Se preajusta encendida; el jugador puede cambiarla en esa pantalla.
+            // SUPUESTO sin comprobar: que al continuar una partida no la sustituya el valor guardado en ella.
+            "-crossplatform=None", "-serverplatforms=Steam", "-noeac", "-ServerEnabled=true",
             "-screen-fullscreen", "0", "-popupwindow",
             "-screen-width", width.ToString(inv), "-screen-height", height.ToString(inv),
         ];
         if (quickContinue)
             arguments.Add("-quick-continue");
+        if (!string.IsNullOrWhiteSpace(userDataFolder))
+            arguments.Add("-UserDataFolder=" + userDataFolder);
         return arguments;
+    }
+
+    /// <summary>Archivo de perfiles de personaje dentro de la carpeta de datos (<c>Saves\sdcs_profiles.sdf</c>).</summary>
+    public const string ProfilesFile = "sdcs_profiles.sdf";
+
+    /// <summary>Carpeta de datos propia de un jugador invitado, dentro de los datos de SplitForge.</summary>
+    public static string ClientDataFolder(string splitForgeDataFolder, int player) =>
+        Path.Combine(splitForgeDataFolder, "7dtd", "clientes", "J" + player.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    /// <summary>
+    /// Prepara la carpeta de datos propia de un jugador. La primera vez copia los perfiles de personaje de la
+    /// carpeta normal del juego, para que pueda entrar en una partida sin crear uno. Nunca sobrescribe lo que
+    /// ya hay en la carpeta del jugador y nunca escribe en la carpeta normal del juego.
+    /// </summary>
+    /// <returns>true si se copiaron los perfiles en esta llamada.</returns>
+    public static bool PrepareClientDataFolder(string gameDataFolder, string clientDataFolder)
+    {
+        var saves = Path.Combine(clientDataFolder, "Saves");
+        Directory.CreateDirectory(saves);
+        var source = Path.Combine(gameDataFolder, "Saves", ProfilesFile);
+        var target = Path.Combine(saves, ProfilesFile);
+        if (File.Exists(target) || !File.Exists(source))
+            return false;
+        File.Copy(source, target, overwrite: false);
+        return true;
+    }
+
+    /// <summary>
+    /// A quién pedir ahora el cierre normal de una sesión: primero los invitados y, cuando ya no queda
+    /// ninguno abierto, el anfitrión (el primero de la lista), para que guarde con todos fuera.
+    /// </summary>
+    /// <returns>El PID al que pedir el cierre, o null si hay que esperar o no queda nadie.</returns>
+    public static int? NextToClose(IReadOnlyList<int> launchedHostFirst, IReadOnlySet<int> alive, IReadOnlySet<int> requested)
+    {
+        for (var i = launchedHostFirst.Count - 1; i >= 1; i--)
+        {
+            var guest = launchedHostFirst[i];
+            if (alive.Contains(guest))
+                return requested.Contains(guest) ? null : guest;
+        }
+        if (launchedHostFirst.Count == 0)
+            return null;
+        var host = launchedHostFirst[0];
+        return alive.Contains(host) && !requested.Contains(host) ? host : null;
     }
 
     public AdapterManifest Manifest { get; } = new(

@@ -44,8 +44,21 @@ public sealed partial class MainViewModel
         set { if (Set(ref _steamEmuDllPath, value)) SaveSettings(); }
     }
 
-    private bool _steamEmuAutoJoin = true;
-    /// <summary>J2 entra sola en la partida de J1 (el emulador se lo pide al juego como una invitación de Steam).</summary>
+    public ICommand CloseSteamEmuClientsCommand { get; private set; } = null!;
+
+    private bool _steamEmuIsolateSaves = true;
+    /// <summary>J2 guarda en su propia carpeta de datos: no ve ni puede abrir las partidas de J1.</summary>
+    public bool SteamEmuIsolateSaves
+    {
+        get => _steamEmuIsolateSaves;
+        set { if (Set(ref _steamEmuIsolateSaves, value)) SaveSettings(); }
+    }
+
+    private bool _steamEmuAutoJoin;
+    /// <summary>
+    /// Cuando un jugador abre una partida, el otro entra solo en ella, sea quien sea el que la abre (el
+    /// emulador se lo pide al juego como una invitación de Steam).
+    /// </summary>
     public bool SteamEmuAutoJoin
     {
         get => _steamEmuAutoJoin;
@@ -77,6 +90,8 @@ public sealed partial class MainViewModel
         _steamEmuDllPath = _settings.SteamEmu.EmulatorDll;
         _steamEmuAutoJoin = _settings.SteamEmu.AutoJoin;
         _steamEmuQuickContinue = _settings.SteamEmu.QuickContinue;
+        _steamEmuIsolateSaves = _settings.SteamEmu.IsolateSaves;
+        CloseSteamEmuClientsCommand = new RelayCommand(CloseEmulatedClients);
     }
 
     private string SteamEmuDll()
@@ -107,9 +122,10 @@ public sealed partial class MainViewModel
     private void WriteSteamEmuConfig(int player)
     {
         var (steamId, persona) = player == 1 ? (SteamId1, Persona1) : (SteamId2, Persona2);
-        // Solo J2 se une sola: J1 es quien abre la partida.
+        // En los dos sentidos: quien esté en el menú entra en la partida que abra el otro. Quien ya aloja una
+        // partida no recibe la petición (lo decide el emulador).
         var config = SteamEmulator.BuildConfig(SteamEmuAppId, steamId, persona,
-            SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, player), autoJoin: player == 2 && SteamEmuAutoJoin);
+            SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, player), autoJoin: SteamEmuAutoJoin);
         File.WriteAllText(SteamEmuConfigFile(player), config, new System.Text.UTF8Encoding(false));
     }
 
@@ -174,11 +190,27 @@ public sealed partial class MainViewModel
         WriteSteamEmuConfig(player);
         var panel = plan.Panels[player - 1];
         var quickContinue = player == 1 && SteamEmuQuickContinue;
+        // J1 juega con los guardados normales del juego; los invitados, con su propia carpeta de datos.
+        string? dataFolder = null;
+        if (player > 1 && SteamEmuIsolateSaves)
+        {
+            dataFolder = SevenDaysToDieAdapter.ClientDataFolder(_dataFolder, player);
+            var gameData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "7DaysToDie");
+            if (SevenDaysToDieAdapter.PrepareClientDataFolder(gameData, dataFolder))
+                _log.Write($"J{player}: carpeta de datos propia creada, con una copia de los perfiles de personaje.");
+        }
         var spec = SteamEmulator.InstanceLaunch(plan.Exe, SteamEmuConfigFile(player),
-            SevenDaysToDieAdapter.EmulatedClientArguments(panel.Width, panel.Height, quickContinue));
+            SevenDaysToDieAdapter.EmulatedClientArguments(panel.Width, panel.Height, quickContinue, dataFolder));
         using var process = _steamEmuLauncher.Start(spec);
         _log.Write($"J{player} de 7DTD lanzado con identidad emulada ({SpecPersona(player)}), ventana {panel.Width}×{panel.Height}, sin juego cruzado (EOS)"
-                   + (quickContinue ? ", cargando su última partida." : player == 2 && SteamEmuAutoJoin ? ", se unirá sola a la partida de J1." : "."));
+                   + (dataFolder is null ? "" : ", guardados propios")
+                   + (quickContinue ? ", cargando su última partida." : SteamEmuAutoJoin ? ", entrará solo en la partida que abra el otro jugador." : "."));
+        // El anfitrión (J1) va siempre el primero: es el último en cerrarse.
+        _emuClients.RemoveAll(pid => !ProcessAlive(pid));
+        if (player == 1)
+            _emuClients.Insert(0, process.Id);
+        else
+            _emuClients.Add(process.Id);
         return process.Id;
     }
 
@@ -315,6 +347,75 @@ public sealed partial class MainViewModel
     }
 
     private string SpecPersona(int player) => player == 1 ? Persona1 : Persona2;
+
+    /// <summary>Clientes lanzados desde esta pestaña (el anfitrión primero) y cierre ordenado en curso.</summary>
+    private readonly List<int> _emuClients = [];
+    private readonly HashSet<int> _emuCloseRequested = [];
+    private DateTime? _emuCloseDeadline;
+
+    private static bool ProcessAlive(int pid)
+    {
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(pid);
+            return !process.HasExited;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Cierra los clientes lanzados desde aquí como lo haría el jugador al cerrar la ventana (WM_CLOSE, nunca
+    /// a la fuerza): primero los invitados y, cuando ya han salido, el anfitrión, que guarda la partida.
+    /// </summary>
+    private void CloseEmulatedClients() => Guard(() =>
+    {
+        _emuClients.RemoveAll(pid => !ProcessAlive(pid));
+        if (_emuClients.Count == 0)
+        {
+            Status = "No hay clientes de 7DTD lanzados desde SplitForge.";
+            return;
+        }
+        _emuCloseRequested.Clear();
+        _emuCloseDeadline = DateTime.UtcNow.AddSeconds(90);
+        _log.Write("Cierre de J1 y J2 pedido: primero los invitados, después el anfitrión (cierre normal, guardando).");
+        CloseEmulatedClientsStep();
+    });
+
+    /// <summary>Llamado a ≈2 Hz mientras hay un cierre en curso.</summary>
+    private void CloseEmulatedClientsStep()
+    {
+        if (_emuCloseDeadline is not { } deadline)
+            return;
+        var alive = _emuClients.Where(ProcessAlive).ToHashSet();
+        if (alive.Count == 0)
+        {
+            _emuCloseDeadline = null;
+            _emuClients.Clear();
+            XInputFilter.ClearAssignments(XInputFolder);
+            StopSession();
+            Status = "J1 y J2 cerrados; pantalla restaurada.";
+            _log.Write("J1 y J2 cerrados con normalidad.");
+            return;
+        }
+        if (DateTime.UtcNow > deadline)
+        {
+            _emuCloseDeadline = null;
+            Status = "Algún cliente de 7DTD no se ha cerrado: sal desde su menú. SplitForge no lo cierra a la fuerza.";
+            _log.Write(Status);
+            return;
+        }
+        if (SevenDaysToDieAdapter.NextToClose(_emuClients, alive, _emuCloseRequested) is not { } pid)
+            return; // Esperando a que salga el anterior.
+        var window = _windows.EnumerateWindows().FirstOrDefault(w => w.Pid == pid && w.Title == SevenDaysToDieAdapter.WindowTitle);
+        if (window.Handle == 0)
+            return; // Aún sin ventana: se reintenta en el siguiente paso.
+        _windows.RequestClose(window.Handle);
+        _emuCloseRequested.Add(pid);
+        Status = $"Cerrando 7DTD ({_emuCloseRequested.Count} de {_emuClients.Count})…";
+    }
 
     private void PickSteamEmuDll() => Guard(() =>
     {

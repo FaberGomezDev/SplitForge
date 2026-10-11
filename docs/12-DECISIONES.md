@@ -176,5 +176,17 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Evidencia (2026-10-10, 7DTD real):** lanzados con las dos casillas, J1 carga su partida y a los 111 s el anfitrión registra «Player 'SplitForgeJ2' joined the game» y `PlayerSpawnedInWorld (reason: JoinMultiplayer)`. Autenticación `k_EAuthSessionResponseOK`; J2 entra además en el lobby de J1 por su ID.
 
-**Límites:** la lista de servidores del juego (`ISteamMatchmakingServers`) sigue vacía: comprobado solo que el lobby de J1 es visible y unible desde el emulador, no que la pantalla «Unirse a partida» lo muestre. El descubrimiento usa multicast: hace falta una interfaz de red activa. **Riesgo abierto:** J1 y J2 comparten la carpeta de guardados; si en J2 se carga la misma partida que aloja J1, las dos instancias la tienen abierta a la vez (ocurrió 45 s en la prueba; ver `16-PENDIENTES.md`).
+**Ajustes tras probarlo el propietario (2026-10-10, noche):** la unión automática le resultó inesperada y que J1 cargara partida sin elegir mundo, incorrecto. Queda así: las dos automatizaciones son opciones **desactivadas por defecto**; la unión automática funciona **en los dos sentidos** (entra solo quien esté en el menú, sea J1 o J2; quien aloja una partida no recibe la petición); y J2 usa por defecto **su propia carpeta de datos** (`-UserDataFolder` del juego, en `%LOCALAPPDATA%\SplitForge\7dtd\clientes\J2`, con una copia inicial de los perfiles de personaje), de modo que dos instancias no pueden abrir el mismo guardado. «Cerrar J1 y J2» pide el cierre normal (WM_CLOSE) primero a los invitados y, cuando han salido, al anfitrión.
+
+**Límites:** la lista de servidores del juego (`ISteamMatchmakingServers`) sigue vacía: comprobado solo que el lobby de J1 es visible y unible desde el emulador, no que la pantalla «Unirse a partida» lo muestre. El descubrimiento usa multicast: hace falta una interfaz de red activa. **Riesgo resuelto:** J1 y J2 compartían la carpeta de guardados y en la primera prueba J2 tuvo abierta 45 s la partida que alojaba J1; con la carpeta de datos propia de J2 ya no puede ocurrir.
+
+## ADR-023 · Aceptada · Fondo negro detrás de la pantalla dividida
+
+**Contexto:** el propietario ve las uniones entre las ventanas de los juegos (por la separación entre paneles se ve el escritorio) y pide un fondo negro a pantalla completa «que disimule», óptimo y eficiente.
+
+**Decisión:** `SessionBackdrop` (SplitForge.Windows): una ventana Win32 propia, sin marco, con el pincel negro del sistema. No tiene contenido, temporizadores ni dibujo propio; no toma el foco (`WS_EX_NOACTIVATE`) ni aparece en la barra de tareas o en Alt+Tab (`WS_EX_TOOLWINDOW`). Ocupa la zona de la sesión (monitor completo si tapa la barra de tareas; si no, el área útil) y se mantiene **justo debajo** de la ventana de la sesión que esté más abajo (`BackdropPlan`, lógica pura y probada), así nunca tapa un juego. La interfaz lo sincroniza a ≈2 Hz y solo actúa si algo cambió. Aparece con la sesión y desaparece al detenerla. Casilla «Fondo negro» junto a «Tapar barra de tareas», activada por defecto (`BlackBackdrop` en `settings.v2.json`).
+
+**Por qué una ventana nativa y no una de WPF:** WPF crearía otra superficie de Direct3D a pantalla completa para no dibujar nada.
+
+**Evidencia (2026-10-10):** con los dos visores del laboratorio y con dos clientes reales de 7DTD, el fondo queda inmediatamente debajo de las dos ventanas y los dos píxeles de la unión pasan del color del escritorio a negro (`000000`); al detener la sesión, desaparece.
 

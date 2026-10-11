@@ -361,6 +361,32 @@ LIMITACIONES EXPLÍCITAS: sin sesión de juego real de los dos; la lista «Unirs
 PRÓXIMO PASO: sesión real con los dos mandos; decidir el aislamiento de guardados de J2.
 ```
 
+## 2026-10-10 · Fondo negro, guardados propios de J2 y automatizaciones como opción
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit
+OBJETIVO: lo que pidió el propietario tras probar W14: la unión automática le resultó inesperada; J1 no
+  debe cargar partida sin elegir mundo y la unión debe funcionar en los dos sentidos; se ven las uniones
+  entre ventanas y pide un fondo negro eficiente.
+CAMBIOS EFECTIVOS:
+  - Fondo negro (ADR-023): SessionBackdrop, ventana Win32 sin dibujo propio justo debajo de las ventanas
+    de la sesión; BackdropPlan en Core; casilla «Fondo negro» (activada).
+  - Unión automática y carga automática de J1: opciones desactivadas por defecto; la unión funciona para
+    J1 y para J2. Yo había dejado activada la carga automática tras mi prueba: restaurada a desactivada.
+  - J2 con carpeta de datos propia (-UserDataFolder) y copia inicial de perfiles; casilla activada.
+  - «Cerrar J1 y J2»: cierre normal, invitados primero y anfitrión al final.
+EVIDENCIA AUTOMÁTICA: 183 xUnit (7 nuevas: fondo, carpeta de J2, orden de cierre, valores por defecto).
+EVIDENCIA EN WINDOWS REAL: laboratorio (dos visores) y dos clientes de 7DTD lanzados con el paquete nuevo:
+  el fondo (1920×1080) queda inmediatamente debajo de las dos ventanas y la unión pasa a negro (000000);
+  desaparece al detener. J2 arranca con -UserDataFolder, crea ahí serveradmin.xml, tiene sus perfiles y
+  llega al menú; J1 arranca sin -quick-continue.
+LIMITACIONES EXPLÍCITAS: sin comprobar con el juego: entrar en partida con la carpeta propia de J2, la
+  unión automática J2 → J1 y «Cerrar J1 y J2» dentro de una partida. Una primera comprobación del fondo usó
+  por error una compilación antigua de la aplicación (dotnet test no recompila bin\Release de la App).
+PRÓXIMO PASO: que el propietario juegue una sesión; con sus registros, cerrar esas tres comprobaciones.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

@@ -101,6 +101,58 @@ internal static unsafe partial class Native
     [LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
     public static partial int PostMessage(nint hwnd, uint msg, nint wParam, nint lParam);
 
+    // Ventana propia mínima (fondo negro de la sesión).
+    public const uint WS_POPUP = 0x80000000;
+    public const uint WS_EX_TOOLWINDOW = 0x00000080;
+    public const uint WS_EX_NOACTIVATE = 0x08000000;
+    public const uint WM_MOUSEACTIVATE = 0x0021;
+    public const nint MA_NOACTIVATE = 3;
+    public const int BLACK_BRUSH = 4;
+    public const uint GW_HWNDNEXT = 2;
+    public const int SW_HIDE = 0;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WNDCLASSEXW
+    {
+        public uint cbSize;
+        public uint style;
+        public delegate* unmanaged[Stdcall]<nint, uint, nint, nint, nint> lpfnWndProc;
+        public int cbClsExtra;
+        public int cbWndExtra;
+        public nint hInstance;
+        public nint hIcon;
+        public nint hCursor;
+        public nint hbrBackground;
+        public char* lpszMenuName;
+        public char* lpszClassName;
+        public nint hIconSm;
+    }
+
+    [LibraryImport("user32.dll", EntryPoint = "RegisterClassExW", SetLastError = true)]
+    public static partial ushort RegisterClassEx(WNDCLASSEXW* windowClass);
+
+    [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", SetLastError = true)]
+    public static partial nint CreateWindowEx(uint exStyle, char* className, char* windowName, uint style,
+        int x, int y, int width, int height, nint parent, nint menu, nint instance, nint param);
+
+    [LibraryImport("user32.dll", EntryPoint = "DefWindowProcW")]
+    public static partial nint DefWindowProc(nint hwnd, uint msg, nint wParam, nint lParam);
+
+    [LibraryImport("user32.dll")]
+    public static partial int DestroyWindow(nint hwnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial nint GetTopWindow(nint hwnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial nint GetWindow(nint hwnd, uint command);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial nint GetStockObject(int index);
+
+    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW")]
+    public static partial nint GetModuleHandle(char* moduleName);
+
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     public static partial nint GetWindowLongPtr(nint hwnd, int index);
 

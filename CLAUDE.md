@@ -91,7 +91,9 @@ W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (
 
 **W14 superado (2026-10-10, ADR-022):** J2 entra sola en la partida de J1. El emulador responde al ticket por el canal del servidor de juego, anuncia la partida y el lobby de J1 a las demás instancias y le entrega a J2 la misma petición que Steam al pulsar «Unirse» (`GameServerChangeRequested_t` → `127.0.0.1:26900`). Con las casillas «J2 entra sola en la partida de J1» y «J1 arranca cargando su última partida» (pestaña 07), «Lanzar J1 y J2» deja a los dos en el mismo mundo sin tocar los menús (comprobado con el juego real: 111 s).
 
-Siguiente: sesión de juego real de los dos jugadores con sus mandos; decidir si J2 usa su propia carpeta de datos (hoy comparte guardados con J1: riesgo en `docs/16-PENDIENTES.md`); comprobar si «Unirse a partida» lista la de J1.
+Preferencias del propietario (2026-10-10): **nada automático sin pedirlo**. J1 elige su mundo; la unión automática y la carga automática de J1 son casillas desactivadas por defecto, y la unión vale en los dos sentidos. J2 usa su propia carpeta de datos (`%LOCALAPPDATA%\SplitForge\7dtd\clientes\J2`, `-UserDataFolder`): no comparte guardados con J1. Un fondo negro (ADR-023) tapa el escritorio detrás de los juegos. Tras una prueba, restaurar cualquier ajuste del propietario que se haya cambiado.
+
+Siguiente: sesión de juego real de los dos jugadores; con sus registros, comprobar lo que falta (unirse con la carpeta propia de J2, unión J2 → J1, «Cerrar J1 y J2» dentro de una partida) y si «Unirse a partida» lista la del otro jugador.
 
 Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 

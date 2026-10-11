@@ -22,14 +22,68 @@ public class SteamEmulatorTests
         var arguments = SevenDaysToDieAdapter.EmulatedClientArguments(1920, 540, quickContinue: true);
         Assert.Equal("-quick-continue", arguments[^1]);
         Assert.Contains("-noeac", arguments);
+        // La partida debe ser multijugador para que el otro jugador pueda entrar.
+        Assert.Contains("-ServerEnabled=true", arguments);
     }
 
     [Fact]
-    public void AutoJoinIsOnAndQuickContinueOffByDefault()
+    public void AutomaticStepsAreOptInAndGuestSavesAreIsolatedByDefault()
     {
         var options = new SplitForge.Core.Settings.SteamEmuOptions();
-        Assert.True(options.AutoJoin);
+        Assert.False(options.AutoJoin);      // Al propietario le sorprendió: queda como opción.
         Assert.False(options.QuickContinue);
+        Assert.True(options.IsolateSaves);   // Dos instancias nunca deben escribir el mismo guardado.
+    }
+
+    [Fact]
+    public void GuestGetsItsOwnDataFolderArgument()
+    {
+        Assert.DoesNotContain(SevenDaysToDieAdapter.EmulatedClientArguments(1920, 540), a => a.StartsWith("-UserDataFolder", StringComparison.Ordinal));
+        var folder = SevenDaysToDieAdapter.ClientDataFolder(@"C:\datos\SplitForge", 2);
+        Assert.Equal(@"C:\datos\SplitForge\7dtd\clientes\J2", folder);
+        Assert.Contains("-UserDataFolder=" + folder, SevenDaysToDieAdapter.EmulatedClientArguments(1920, 540, userDataFolder: folder));
+    }
+
+    [Fact]
+    public void GuestDataFolderCopiesProfilesOnceAndNeverOverwrites()
+    {
+        using var tmp = new TempDir();
+        var game = tmp.Combine("juego");
+        var guest = tmp.Combine("J2");
+        Directory.CreateDirectory(Path.Combine(game, "Saves"));
+        var source = Path.Combine(game, "Saves", SevenDaysToDieAdapter.ProfilesFile);
+        File.WriteAllText(source, "perfil de J1");
+
+        Assert.True(SevenDaysToDieAdapter.PrepareClientDataFolder(game, guest));
+        var copy = Path.Combine(guest, "Saves", SevenDaysToDieAdapter.ProfilesFile);
+        Assert.Equal("perfil de J1", File.ReadAllText(copy));
+
+        File.WriteAllText(copy, "perfil propio de J2");
+        File.WriteAllText(source, "J1 cambió el suyo");
+        Assert.False(SevenDaysToDieAdapter.PrepareClientDataFolder(game, guest));
+        Assert.Equal("perfil propio de J2", File.ReadAllText(copy));
+        Assert.Equal("J1 cambió el suyo", File.ReadAllText(source)); // La carpeta del juego no se toca.
+
+        // Sin perfiles en el juego: se crea la carpeta y el jugador creará el suyo.
+        var empty = tmp.Combine("J3");
+        Assert.False(SevenDaysToDieAdapter.PrepareClientDataFolder(tmp.Combine("sin-juego"), empty));
+        Assert.True(Directory.Exists(Path.Combine(empty, "Saves")));
+    }
+
+    [Fact]
+    public void SessionClosesGuestsFirstAndTheHostLast()
+    {
+        int[] launched = [10, 20]; // anfitrión, invitado
+        var none = new HashSet<int>();
+        Assert.Equal(20, SevenDaysToDieAdapter.NextToClose(launched, new HashSet<int> { 10, 20 }, none));
+        // Pedido el cierre del invitado y aún abierto: se espera, no se toca al anfitrión.
+        Assert.Null(SevenDaysToDieAdapter.NextToClose(launched, new HashSet<int> { 10, 20 }, new HashSet<int> { 20 }));
+        Assert.Equal(10, SevenDaysToDieAdapter.NextToClose(launched, new HashSet<int> { 10 }, new HashSet<int> { 20 }));
+        Assert.Null(SevenDaysToDieAdapter.NextToClose(launched, new HashSet<int> { 10 }, new HashSet<int> { 10, 20 }));
+        Assert.Null(SevenDaysToDieAdapter.NextToClose(launched, none, none));
+        Assert.Null(SevenDaysToDieAdapter.NextToClose([], none, none));
+        // Solo el anfitrión abierto desde el principio.
+        Assert.Equal(10, SevenDaysToDieAdapter.NextToClose(launched, new HashSet<int> { 10 }, none));
     }
 
     private static string GameFolder(TempDir tmp, bool unityLayout = false)

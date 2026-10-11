@@ -47,7 +47,7 @@
 - Servidor dedicado de 7DTD (AppID 294420) y Sandboxie-Plus **no instalados**.
 - Controladores ViGEmBus y HidHide instalados.
 
-**Verificado automáticamente:** 176 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador (esta última con la API plana de Steamworks.NET). La CI en Windows comprueba además que la API plana generada está al día. En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
+**Verificado automáticamente:** 183 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador (esta última con la API plana de Steamworks.NET). La CI en Windows comprueba además que la API plana generada está al día. En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
 **Experimental, sin validar en hardware:**
 - Filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
