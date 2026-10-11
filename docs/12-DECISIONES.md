@@ -186,6 +186,8 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Decisión:** `SessionBackdrop` (SplitForge.Windows): una ventana Win32 propia, sin marco, con el pincel negro del sistema. No tiene contenido, temporizadores ni dibujo propio; no toma el foco (`WS_EX_NOACTIVATE`) ni aparece en la barra de tareas o en Alt+Tab (`WS_EX_TOOLWINDOW`). Ocupa la zona de la sesión (monitor completo si tapa la barra de tareas; si no, el área útil) y se mantiene **justo debajo** de la ventana de la sesión que esté más abajo (`BackdropPlan`, lógica pura y probada), así nunca tapa un juego. La interfaz lo sincroniza a ≈2 Hz y solo actúa si algo cambió. Aparece con la sesión y desaparece al detenerla. Casilla «Fondo negro» junto a «Tapar barra de tareas», activada por defecto (`BlackBackdrop` en `settings.v2.json`).
 
+**La sesión termina sola cuando ya no queda ninguna de sus ventanas** (el jugador salió de los juegos desde su menú): se quita el fondo y se sueltan el ratón y el bloqueo de entrada. La primera versión no lo hacía y el fondo, a pantalla completa y por encima de todo, se quedaba tapando el escritorio hasta cerrar SplitForge (lo encontró el propietario). Además, el fondo nunca se muestra si no existe ninguna ventana de la sesión.
+
 **Por qué una ventana nativa y no una de WPF:** WPF crearía otra superficie de Direct3D a pantalla completa para no dibujar nada.
 
 **Evidencia (2026-10-10):** con los dos visores del laboratorio y con dos clientes reales de 7DTD, el fondo queda inmediatamente debajo de las dos ventanas y los dos píxeles de la unión pasan del color del escritorio a negro (`000000`); al detener la sesión, desaparece.

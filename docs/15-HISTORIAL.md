@@ -387,6 +387,27 @@ LIMITACIONES EXPLÍCITAS: sin comprobar con el juego: entrar en partida con la c
 PRÓXIMO PASO: que el propietario juegue una sesión; con sus registros, cerrar esas tres comprobaciones.
 ```
 
+## 2026-10-10 · El fondo negro se quedaba al salir de los juegos
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit
+FALLO (propietario): al salir de los dos juegos desde su menú, la pantalla negra seguía y tapaba el
+  escritorio; había que cerrar SplitForge.
+CAUSA: una sesión de ventanas existentes seguía «activa» con sus ventanas ya destruidas; el fondo,
+  a pantalla completa y por encima de todo, la seguía.
+CAMBIOS EFECTIVOS: la sesión termina sola cuando no queda ninguna de sus ventanas (se quita el fondo y
+  se sueltan ratón y bloqueo de entrada); el fondo no se muestra sin ventanas de la sesión. Unión
+  automática desactivada en los ajustes del propietario (la señaló como inesperada tres veces).
+EVIDENCIA AUTOMÁTICA: 183 xUnit.
+EVIDENCIA EN WINDOWS REAL: laboratorio, terminando los visores desde fuera: con un visor el fondo sigue;
+  sin ninguno, desaparece, queda «Los juegos se cerraron: sesión terminada» y SplitForge sigue abierto.
+  Del propietario, con 7DTD: J1 abrió su mundo como público y J2 entró (sola, y después a mano por
+  «Conectar a IP» con 127.0.0.1); al volver a entrar, J2 conserva posición y progreso.
+LIMITACIONES EXPLÍCITAS: el arreglo no se ha visto aún con los juegos reales (sí con el laboratorio).
+PRÓXIMO PASO: sesión de juego normal; lista «Unirse a partida»; unión J2 → J1; «Cerrar J1 y J2».
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

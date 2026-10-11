@@ -179,6 +179,25 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _backdrop.Show(covers ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea(), active.WindowHandles, covers);
     }
 
+    /// <summary>
+    /// Llamado a ≈2 Hz. Si todas las ventanas de la sesión han desaparecido (el jugador salió de los juegos
+    /// desde su propio menú), la sesión termina sola: se quita el fondo negro y se sueltan el ratón y el
+    /// bloqueo de entrada. Sin esto, el fondo quedaba a pantalla completa tapando el escritorio.
+    /// </summary>
+    private void EndSessionWhenWindowsAreGone()
+    {
+        if (_sessions.Active is not { Pending: false, WindowHandles.Count: >= 2 } active)
+            return;
+        foreach (var handle in active.WindowHandles)
+        {
+            if (_windows.ProcessId(handle) is not null)
+                return; // Queda al menos una ventana: la sesión sigue.
+        }
+        StopSession();
+        Status = "Los juegos se cerraron: sesión terminada y pantalla restaurada.";
+        _log.Write(Status);
+    }
+
     private bool _fitKeepAspect;
     /// <summary>true = centrar el juego con su proporción (sin deformar); false = rellenar toda la región.</summary>
     public bool FitKeepAspect
@@ -287,6 +306,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Guard(_sessions.Tick, quiet: true);
             Guard(TileEmulatedClientsWhenReady, quiet: true);
             Guard(CloseEmulatedClientsStep, quiet: true);
+            Guard(EndSessionWhenWindowsAreGone, quiet: true);
             Guard(SyncBackdrop, quiet: true);
             Guard(SyncFakeFocus, quiet: true);
             RefreshServer();

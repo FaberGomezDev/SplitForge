@@ -34,6 +34,15 @@ public sealed unsafe class SessionBackdrop : IDisposable
     /// </summary>
     public void Show(Region area, IReadOnlyList<nint> sessionWindows, bool topmost)
     {
+        // Nunca un fondo sin juegos encima: a pantalla completa y por delante de todo, taparía el escritorio.
+        var anyAlive = false;
+        for (var i = 0; i < sessionWindows.Count && !anyAlive; i++)
+            anyAlive = Native.IsWindow(sessionWindows[i]) != 0;
+        if (!anyAlive)
+        {
+            Hide();
+            return;
+        }
         EnsureWindow();
         if (!_visible || area != _area || topmost != _topmost)
         {
