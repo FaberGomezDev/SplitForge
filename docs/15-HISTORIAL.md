@@ -365,7 +365,7 @@ PRÓXIMO PASO: sesión real con los dos mandos; decidir el aislamiento de guarda
 
 ```text
 FECHA: 2026-10-10 (noche)
-RELEASE/COMMIT: este commit
+RELEASE/COMMIT: d9e8401 en main
 OBJETIVO: lo que pidió el propietario tras probar W14: la unión automática le resultó inesperada; J1 no
   debe cargar partida sin elegir mundo y la unión debe funcionar en los dos sentidos; se ven las uniones
   entre ventanas y pide un fondo negro eficiente.
