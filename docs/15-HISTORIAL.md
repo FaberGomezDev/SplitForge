@@ -528,7 +528,7 @@ PRÓXIMO PASO: decisión del propietario sobre la segunda copia (GOG recomendada
 
 ```text
 FECHA: 2026-10-11 (tarde)
-RELEASE/COMMIT: (ver el registro de git de esta fecha)
+RELEASE/COMMIT: 401198d en main
 DECISIÓN DEL PROPIETARIO: J1 en Steam y J2 con una copia en GOG. Se le pide no comprar hasta comprobar
   que el mando se puede aislar en la copia de Steam.
 SONDA (una instancia por Steam, solo hasta el menú; tools/sonda_nms.ps1): el filtro, puesto de forma
