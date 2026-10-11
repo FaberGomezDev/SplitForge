@@ -524,6 +524,26 @@ LIMITACIONES EXPLÍCITAS: nada ejecutado; los supuestos (XInput con Steam Input 
 PRÓXIMO PASO: decisión del propietario sobre la segunda copia (GOG recomendada) o cambiar de juego.
 ```
 
+## 2026-10-11 · No Man's Sky: ruta elegida y sonda con una instancia
+
+```text
+FECHA: 2026-10-11 (tarde)
+RELEASE/COMMIT: (ver el registro de git de esta fecha)
+DECISIÓN DEL PROPIETARIO: J1 en Steam y J2 con una copia en GOG. Se le pide no comprar hasta comprobar
+  que el mando se puede aislar en la copia de Steam.
+SONDA (una instancia por Steam, solo hasta el menú; tools/sonda_nms.ps1): el filtro, puesto de forma
+  temporal como xinput9_1_0.dll, se carga y el juego lee XInput unas 12 veces por segundo; se instalan
+  el foco simulado y el puntero propio; la ventana (clase GLFW30) se captura con PrintWindow y el juego
+  cierra con WM_CLOSE. PERO los botones del mando de prueba (cruceta, A mantenida) no hacen nada y el
+  juego sigue mostrando iconos de ratón.
+SUPUESTO: con Steam abierto recibe el mando por Steam Input (activado para mandos Xbox en ese Steam; el
+  juego trae sus configuraciones de Steam Input). Por ahí el filtro no puede aislarlo.
+CAMBIOS EFECTIVOS: documentación y tools/sonda_nms.ps1. Ningún cambio de código. El filtro se retiró de
+  la carpeta del juego al terminar; Steam quedó abierto (estaba cerrado antes de la sonda).
+PRÓXIMO PASO: que el propietario desactive Steam Input solo para este juego y repetir la sonda. Si
+  responde, seguir con la ruta A1; si no, replantear antes de comprar nada.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

@@ -25,6 +25,26 @@
 | En el PC solo hay la copia de Steam | Sin GOG Galaxy, sin copia de la Tienda de Microsoft ni carpeta `XboxGames`, sin Sandboxie-Plus |
 | El handler de Nucleus Co-op no sirve para esta versión | Su propia descripción (2021): solo funciona con la versión antigua, que usaba la API de Steam para el multijugador. Emplea un emulador de Steam, un parcheador de la protección del ejecutable y una copia enlazada de la carpeta del juego por instancia |
 
+## Sonda con una instancia (2026-10-11, copia de Steam, solo hasta el menú)
+
+Decisión del propietario: **ruta A1** (J1 en Steam, J2 con una copia en GOG). Antes de comprar se comprobó con la copia de Steam si el mando se puede aislar. El filtro se puso de forma temporal como `xinput9_1_0.dll` en `Binaries` y se retiró al terminar; no se entró en ninguna partida.
+
+| Comprobado | Resultado |
+| --- | --- |
+| El juego carga el filtro | Sí: `dll=XINPUT9_1_0.dll`, DLL real cargada, lecturas que suben |
+| Ventana del juego | Clase `GLFW30`, título «No Man's Sky» |
+| Foco simulado y puntero propio | Se instalan (`foco=forzado`, `puntero=propio`); sin comprobar su efecto |
+| Captura de su ventana | Funciona con `PrintWindow` (Vulkan, sin bordes) |
+| Cierre normal | Sale con `WM_CLOSE` desde el menú |
+| **Botones del mando de prueba** | **Sin efecto**: ni la cruceta ni mantener A cambian nada en el menú, y el juego sigue mostrando los iconos de ratón |
+| Ritmo de lecturas XInput | Unas 12 por segundo, constante: parece una consulta de «¿hay mando?», no la lectura de cada fotograma |
+| Steam Input | Activado en el Steam del propietario para mandos Xbox (`SteamController_XBoxSupport = 1`), sin ajuste propio para este juego. El juego trae sus configuraciones de Steam Input (`GAMEDATA\INPUT\controller_*.vdf`) y carga `steamclient64.dll` y la superposición |
+| `previa=si` | La `xinput1_4.dll` real ya estaba cargada antes que el filtro (¿la superposición de Steam?) |
+
+**Lectura (supuesto):** con Steam abierto, la copia de Steam recibe el mando por **Steam Input**, no por XInput. Por ahí el filtro no puede aislarlo: Steam le daría los dos mandos a J1.
+
+**Siguiente comprobación (necesita al propietario):** desactivar Steam Input **solo para este juego** (Steam › Biblioteca › No Man's Sky › Propiedades › Mando › «Desactivar Steam Input») y repetir la sonda. Si entonces responde al mando de prueba, el filtro puede aislarlo y la ruta A1 es viable; si no, la copia de Steam no sirve para un jugador con mando propio. **No comprar la segunda copia hasta saberlo.** La copia de GOG no lleva Steam Input: allí se espera XInput directo (sin comprobar).
+
 ## Lo que cambia respecto a 7 Days to Die
 
 En 7DTD un jugador aloja la partida en su propio PC y el otro entra por la red local; por eso bastó con dar a cada instancia una identidad emulada. **En No Man's Sky eso no existe:**
@@ -57,7 +77,7 @@ Consecuencia: para dos jugadores en la misma partida hacen falta **dos copias de
 
 | Prueba | Resultado | Evidencia / condiciones |
 | --- | --- | --- |
-| Iniciar 1 cliente oficial | Pendiente | El propietario tiene guardados (15 archivos), pero SplitForge no lo ha lanzado |
+| Iniciar 1 cliente oficial | Hecho (2026-10-11) | Lanzado por Steam con el filtro cargado; llega al menú y cierra con normalidad. Sin entrar en partida |
 | Dos clientes en una PC | Pendiente | Requiere la segunda copia |
 | Un mismo mundo/partida | Pendiente | |
 | LAN sin Internet real | **No existe** | El multijugador pasa por servicios en línea |
@@ -76,4 +96,5 @@ Consecuencia: para dos jugadores en la misma partida hacen falta **dos copias de
 ## Datos de validación
 
 - Configuración y fecha: 2026-10-11, inspección de solo lectura (`dumpbin`, cadenas del ejecutable, existencia de carpetas).
-- Resultado final: `NO VALIDADO`. Bloqueado a la espera de la decisión del propietario sobre la segunda copia.
+- Sonda de una instancia: 2026-10-11, lanzada con `steam://rungameid/275850`, mando de prueba del filtro y captura de la ventana del juego.
+- Resultado final: `NO VALIDADO`. Ruta elegida: A1. Bloqueado hasta repetir la sonda con Steam Input desactivado para el juego.

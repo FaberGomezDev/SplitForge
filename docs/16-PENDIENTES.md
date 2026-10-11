@@ -23,10 +23,10 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## No Man's Sky (siguiente juego pedido)
 
-Detalle en [`plans/no-mans-sky.md`](plans/no-mans-sky.md). Bloqueado por una decisión del propietario: hace falta una segunda copia con otra cuenta.
+Detalle en [`plans/no-mans-sky.md`](plans/no-mans-sky.md). El propietario eligió la ruta A1 (2026-10-11): J1 en Steam y J2 con una copia en GOG. **Aún no comprada, a propósito.**
 
-- ¿Qué segunda copia? GOG (recomendada), segunda cuenta de Steam (exige dos clientes de Steam a la vez) o Xbox / Game Pass (dudosa).
-- ¿Lee los mandos por XInput con Steam Input desactivado para el juego? Si no, el filtro no puede aislarlos.
+- **Bloqueante:** con Steam abierto, la copia de Steam no responde al mando de prueba del filtro (sonda de una instancia, 2026-10-11). Supuesto: recibe el mando por Steam Input. Falta que el propietario desactive Steam Input para este juego y repetir la sonda. Si tampoco responde, la copia de Steam no sirve para un jugador con mando propio.
+- ¿Lee la copia de GOG los mandos por XInput? Se espera que sí (no lleva Steam Input). Sin comprobar hasta tenerla.
 - ¿Atiende el mando la ventana sin foco? El foco simulado del filtro busca primero la ventana de Unity y no cubre `GetKeyboardState` ni Raw Input.
 - ¿Caben dos instancias en 8 GB de VRAM? Sin medir.
 - ¿Acepta el propietario usar el filtro de mandos en un juego en línea? No hay antitrampas y el juego admite mods; riesgo bajo, no nulo.
