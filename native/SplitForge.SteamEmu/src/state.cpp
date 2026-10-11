@@ -188,6 +188,8 @@ bool LoadConfig(Config& out, const std::string& path) {
         if (v->kind() == Json::Kind::String && !v->str().empty())
             out.multicastAddress = v->str();
     }
+    if (const Json* v = root.find("auto_join"))
+        out.autoJoin = v->kind() == Json::Kind::Bool && v->boolean();
     out.configPath = path;
     return true;
 }
@@ -209,8 +211,9 @@ SteamAPICall_t EmuState::NewApiCall() {
     return call;
 }
 
-void EmuState::QueueCallback(int iCallback, const void* data, size_t size) {
+void EmuState::QueueCallback(int iCallback, const void* data, size_t size, int pipe) {
     CallbackEvent event;
+    event.pipe = pipe;
     event.iCallback = iCallback;
     event.data.assign(static_cast<const uint8_t*>(data), static_cast<const uint8_t*>(data) + size);
     events.push_back(std::move(event));
@@ -270,6 +273,9 @@ void InvokeRun(void* object, CallbackEvent& event, bool isCallResult, bool faile
     } else {
         if (base->m_iCallback != event.iCallback)
             return;
+        // k_ECallbackFlagsGameServer (0x02): cada callback llega solo a los objetos de su canal.
+        if (((base->m_nCallbackFlags & 0x02) != 0) != (event.pipe == kGameServerPipe))
+            return;
         auto run = reinterpret_cast<RunParamFn>(base->vtbl[0]);
         run(object, event.data.data());
     }
@@ -278,8 +284,9 @@ void InvokeRun(void* object, CallbackEvent& event, bool isCallResult, bool faile
 } // namespace
 
 void EmuState::PruneConsumedEvents() {
-    while (!events.empty() && events.front().consumed)
-        events.pop_front();
+    // No solo los del principio: un evento del canal del servidor que nadie recoge no debe retener el resto.
+    events.erase(std::remove_if(events.begin(), events.end(), [](const CallbackEvent& e) { return e.consumed; }),
+                 events.end());
 }
 
 void EmuState::DispatchRunCallbacks() {
@@ -327,38 +334,118 @@ void EmuState::DispatchRunCallbacks() {
     }
 }
 
-bool EmuState::PopManual(CallbackMsg_t* out) {
-    if (!lastManualValid)
-        PruneConsumedEvents();
+bool EmuState::PopManual(int pipe, CallbackMsg_t* out) {
+    pipe = pipe == kGameServerPipe ? kGameServerPipe : kUserPipe;
+    PruneConsumedEvents();
     for (auto& event : events) {
-        if (event.consumed)
+        if (event.consumed || event.pipe != pipe)
             continue;
-        lastManual.m_hSteamUser = 1;
+        CallbackMsg_t& message = lastManual[pipe];
+        message.m_hSteamUser = pipe;
         if (event.apiCall != 0) {
             // Call result: se anuncia con SteamAPICallCompleted_t; el juego pide los datos después
             // con SteamAPI_ManualDispatch_GetAPICallResult (apiResults los conserva hasta entonces).
-            lastCompleted.m_hAsyncCall = event.apiCall;
-            lastCompleted.m_iCallback = event.iCallback;
-            lastCompleted.m_cubParam = static_cast<uint32_t>(event.data.size());
-            lastManual.m_iCallback = k_iCallback_SteamAPICallCompleted;
-            lastManual.m_pubParam = reinterpret_cast<uint8_t*>(&lastCompleted);
-            lastManual.m_cubParam = static_cast<int>(sizeof(lastCompleted));
+            lastCompleted[pipe].m_hAsyncCall = event.apiCall;
+            lastCompleted[pipe].m_iCallback = event.iCallback;
+            lastCompleted[pipe].m_cubParam = static_cast<uint32_t>(event.data.size());
+            message.m_iCallback = k_iCallback_SteamAPICallCompleted;
+            message.m_pubParam = reinterpret_cast<uint8_t*>(&lastCompleted[pipe]);
+            message.m_cubParam = static_cast<int>(sizeof(lastCompleted[pipe]));
         } else {
-            lastManual.m_iCallback = event.iCallback;
-            lastManual.m_pubParam = event.data.data();
-            lastManual.m_cubParam = static_cast<int>(event.data.size());
+            // Copia propia: el juego lee el mensaje hasta FreeLastCallback y la cola puede cambiar antes.
+            lastManualData[pipe] = event.data;
+            message.m_iCallback = event.iCallback;
+            message.m_pubParam = lastManualData[pipe].data();
+            message.m_cubParam = static_cast<int>(lastManualData[pipe].size());
         }
-        lastManualValid = true;
         event.consumed = true;
         if (out)
-            *out = lastManual;
+            *out = message;
         return true;
     }
     return false;
 }
 
-void EmuState::FreeLastManual() {
-    lastManualValid = false;
+void EmuState::FreeLastManual(int) {}
+
+// Se llama desde el hilo del juego en cada fotograma. Con «auto_join», cuando otra instancia abre una
+// partida se pide al juego que se una, igual que Steam al pulsar «Unirse a la partida» de un amigo.
+void EmuState::PumpNetwork() {
+    if (!initialized || !config.autoJoin)
+        return;
+    const uint64_t now = GetTickCount64();
+    if (now < nextNetworkPump)
+        return;
+    nextNetworkPump = now + 500;
+    if (gameServerLoggedOn)
+        return; // Este proceso aloja su propia partida.
+    for (const RemoteServer& server : net.Servers()) {
+        if (now - server.firstSeen < 3000)
+            continue; // Margen para que el anfitrión termine de abrir su servidor.
+        uint32_t& invited = invitedSessions[server.owner];
+        if (invited == server.session)
+            continue; // Una sola petición por partida abierta.
+        invited = server.session;
+        GameServerChangeRequested_t request{};
+        std::snprintf(request.m_rgchServer, sizeof(request.m_rgchServer), "%s:%u", server.address.c_str(),
+                      static_cast<unsigned>(server.port));
+        QueueCallback(k_iCallback_GameServerChangeRequested, &request, sizeof(request));
+        Log("Unión automática: se pide al juego conectar a %s (anfitrión %llu)", request.m_rgchServer,
+            static_cast<unsigned long long>(server.owner));
+        return;
+    }
+}
+
+void EmuState::UpdateServerAnnouncement() {
+    net.SetLocalServer(gameServerPort, gameServerInitialized && gameServerLoggedOn && gameServerPort != 0);
+}
+
+void EmuState::AnnounceLobby(const Lobby& lobby) {
+    // Como en Steam, un lobby privado no aparece en las búsquedas de otros.
+    if (lobby.owner != config.steamId || lobby.type == k_ELobbyTypePrivate) {
+        net.RemoveLocalLobby(lobby.id);
+        return;
+    }
+    RemoteLobby snapshot;
+    snapshot.id = lobby.id;
+    snapshot.owner = lobby.owner;
+    snapshot.type = lobby.type;
+    snapshot.memberLimit = lobby.memberLimit;
+    snapshot.gameServerIp = lobby.gameServerIp;
+    snapshot.gameServerPort = lobby.gameServerPort;
+    snapshot.gameServerSteamId = lobby.gameServerSteamId;
+    snapshot.data = lobby.data;
+    net.SetLocalLobby(snapshot);
+}
+
+Lobby* EmuState::FindLobby(CSteamID id) {
+    if (const auto it = lobbies.find(id); it != lobbies.end())
+        return &it->second;
+    if (const auto it = remoteLobbies.find(id); it != remoteLobbies.end())
+        return &it->second;
+    return nullptr;
+}
+
+// Actualiza la copia local de los lobbies que anuncian otras instancias.
+void EmuState::RefreshRemoteLobbies() {
+    std::map<CSteamID, Lobby> fresh;
+    for (const RemoteLobby& remote : net.Lobbies()) {
+        Lobby lobby;
+        lobby.id = remote.id;
+        lobby.owner = remote.owner;
+        lobby.type = remote.type;
+        lobby.memberLimit = remote.memberLimit;
+        lobby.gameServerIp = remote.gameServerIp;
+        lobby.gameServerPort = remote.gameServerPort;
+        lobby.gameServerSteamId = remote.gameServerSteamId;
+        lobby.data = remote.data;
+        lobby.members.push_back(remote.owner);
+        // Si este proceso ya entró en ese lobby, sigue contando como miembro.
+        if (const auto it = remoteLobbies.find(remote.id); it != remoteLobbies.end() && it->second.members.size() > 1)
+            lobby.members.push_back(config.steamId);
+        fresh.emplace(remote.id, std::move(lobby));
+    }
+    remoteLobbies = std::move(fresh);
 }
 
 bool EmuState::GetApiResult(SteamAPICall_t call, void* out, size_t size, int expected, bool* failed) {

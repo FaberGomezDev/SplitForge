@@ -344,6 +344,31 @@ int RunPeer(const std::wstring& dir) {
     }
     if (!statsOk)
         return Fail("par: no llegó el callback de stats");
+
+    // El par hace de anfitrión, como J1 en 7DTD: abre su servidor de juego y un lobby público con datos.
+    auto serverInit = Export<bool (*)(uint32_t, uint16_t, uint16_t, uint16_t, int, const char*)>(
+        api.module, "SteamInternal_GameServer_Init");
+    auto findServer = Export<void* (*)(int, const char*)>(api.module, "SteamInternal_FindOrCreateGameServerInterface");
+    auto matchmakingFn = Export<sfemu::ISteamMatchmaking* (*)()>(api.module, "SteamMatchmaking");
+    if (!serverInit || !findServer || !matchmakingFn || !serverInit(0, 0, 26900, 26900, 3, "1.0"))
+        return Fail("par: no se pudo iniciar el servidor de juego");
+    static_cast<sfemu::ISteamGameServer*>(findServer(2, "SteamGameServer015"))->LogOnAnonymous();
+    sfemu::ISteamMatchmaking* matchmaking = matchmakingFn();
+    matchmaking->CreateLobby(sfemu::k_ELobbyTypePublic, 8);
+    uint64_t lobby = 0;
+    for (int i = 0; i < 50 && lobby == 0 && api.ManualDispatchGetNext(1, &message); i++) {
+        if (message.m_iCallback == sfemu::k_iCallback_LobbyCreated)
+            lobby = reinterpret_cast<const sfemu::LobbyCreated_t*>(message.m_pubParam)->m_ulSteamIDLobby;
+        const bool enteredFirst = message.m_iCallback == sfemu::k_iCallback_LobbyEnter;
+        api.ManualDispatchFree(1);
+        if (enteredFirst)
+            return Fail("par: LobbyEnter_t llegó antes que LobbyCreated_t");
+    }
+    if (lobby == 0)
+        return Fail("par: CreateLobby no entregó LobbyCreated_t como callback");
+    matchmaking->SetLobbyData(lobby, "CompatibilityVersion", "V 1");
+    matchmaking->SetLobbyData(lobby, "GameHost", "SplitForgeTestB");
+
     const std::wstring ready = TempDir() + L"\\ready.txt";
     if (!WriteJson(ready, "listo"))
         return Fail("par: no se pudo escribir ready");
@@ -372,6 +397,99 @@ int RunPeer(const std::wstring& dir) {
     return 0;
 }
 
+// Lo que 7DTD necesita para que dos instancias se encuentren: la respuesta del ticket por el canal del
+// servidor de juego, los lobbies de la otra instancia en la búsqueda y la petición de unión automática.
+int CheckDiscovery(SteamEmuApi& api) {
+    auto runFrame = Export<void (*)(int)>(api.module, "SteamAPI_ManualDispatch_RunFrame");
+    auto serverPipe = Export<int (*)()>(api.module, "SteamGameServer_GetHSteamPipe");
+    auto findServer = Export<void* (*)(int, const char*)>(api.module, "SteamInternal_FindOrCreateGameServerInterface");
+    auto matchmakingFn = Export<sfemu::ISteamMatchmaking* (*)()>(api.module, "SteamMatchmaking");
+    if (!runFrame || !serverPipe || !findServer || !matchmakingFn)
+        return Fail("faltan exportaciones de descubrimiento");
+    const int gsPipe = serverPipe();
+    if (gsPipe == 1)
+        return Fail("el canal del servidor de juego debe ser distinto del canal del usuario");
+    auto* gameServer = static_cast<sfemu::ISteamGameServer*>(findServer(gsPipe, "SteamGameServer015"));
+    sfemu::ISteamMatchmaking* matchmaking = matchmakingFn();
+    sfemu::CallbackMsg_t message{};
+
+    // 1) Ticket: la respuesta llega por el canal del servidor, nunca por el del usuario.
+    const uint8_t ticket[16] = {};
+    if (gameServer->BeginAuthSession(ticket, sizeof(ticket), kSteamIdB) != sfemu::k_EBeginAuthSessionResultOK)
+        return Fail("BeginAuthSession del servidor falló");
+    while (api.ManualDispatchGetNext(1, &message)) {
+        const bool wrongPipe = message.m_iCallback == sfemu::k_iCallback_ValidateAuthTicketResponse;
+        api.ManualDispatchFree(1);
+        if (wrongPipe)
+            return Fail("ValidateAuthTicketResponse_t llegó por el canal del usuario");
+    }
+    bool validated = false;
+    while (api.ManualDispatchGetNext(gsPipe, &message)) {
+        if (message.m_iCallback == sfemu::k_iCallback_ValidateAuthTicketResponse) {
+            const auto* response = reinterpret_cast<const sfemu::ValidateAuthTicketResponse_t*>(message.m_pubParam);
+            // ABI del SDK: 20 bytes y el dueño en el desplazamiento 12 (CSteamID no se alinea a 8).
+            uint64_t ownerAt12 = 0;
+            std::memcpy(&ownerAt12, message.m_pubParam + 12, sizeof(ownerAt12));
+            validated = message.m_cubParam == 20 && ownerAt12 == kSteamIdB && response->m_SteamID == kSteamIdB &&
+                        response->m_eAuthSessionResponse == 0;
+        }
+        api.ManualDispatchFree(gsPipe);
+    }
+    if (!validated)
+        return Fail("BeginAuthSession del servidor no respondió con ValidateAuthTicketResponse_t");
+
+    // 2) El lobby público del par aparece en la búsqueda (con su filtro) y trae sus datos.
+    uint64_t lobby = 0;
+    for (int i = 0; i < 40 && lobby == 0; i++) {
+        matchmaking->AddRequestLobbyListStringFilter("CompatibilityVersion", "V 1", 0);
+        matchmaking->RequestLobbyList();
+        lobby = matchmaking->GetLobbyByIndex(0);
+        if (lobby == 0)
+            Sleep(250);
+    }
+    if (lobby == 0)
+        return Fail("el lobby del par no aparece en RequestLobbyList");
+    if (std::strcmp(matchmaking->GetLobbyData(lobby, "GameHost"), "SplitForgeTestB") != 0 ||
+        matchmaking->GetLobbyOwner(lobby) != kSteamIdB || matchmaking->GetLobbyDataCount(lobby) != 2)
+        return Fail("los datos del lobby del par no llegaron completos");
+    matchmaking->AddRequestLobbyListStringFilter("CompatibilityVersion", "otra", 0);
+    matchmaking->RequestLobbyList();
+    if (matchmaking->GetLobbyByIndex(0) != 0)
+        return Fail("el filtro de la búsqueda de lobbies no descarta");
+    while (api.ManualDispatchGetNext(1, &message))
+        api.ManualDispatchFree(1);
+    matchmaking->JoinLobby(lobby);
+    bool entered = false;
+    while (api.ManualDispatchGetNext(1, &message)) {
+        if (message.m_iCallback == sfemu::k_iCallback_LobbyEnter) {
+            const auto* enter = reinterpret_cast<const sfemu::LobbyEnter_t*>(message.m_pubParam);
+            entered = enter->m_ulSteamIDLobby == lobby &&
+                      enter->m_EChatRoomEnterResponse == sfemu::k_EChatRoomEnterResponseSuccess;
+        }
+        api.ManualDispatchFree(1);
+    }
+    if (!entered)
+        return Fail("JoinLobby no entregó LobbyEnter_t como callback");
+
+    // 3) Unión automática (auto_join): la partida del par llega como «únete a este servidor».
+    bool invited = false;
+    for (int i = 0; i < 100 && !invited; i++) {
+        runFrame(1);
+        while (api.ManualDispatchGetNext(1, &message)) {
+            if (message.m_iCallback == sfemu::k_iCallback_GameServerChangeRequested) {
+                const auto* request = reinterpret_cast<const sfemu::GameServerChangeRequested_t*>(message.m_pubParam);
+                invited = std::strcmp(request->m_rgchServer, "127.0.0.1:26900") == 0;
+            }
+            api.ManualDispatchFree(1);
+        }
+        if (!invited)
+            Sleep(100);
+    }
+    if (!invited)
+        return Fail("no llegó la petición de unión automática a 127.0.0.1:26900");
+    return 0;
+}
+
 int RunParent(const std::wstring& dir, const std::wstring& exePath) {
     const std::wstring root = TempDir();
     if (!CreateDirectoryW(root.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
@@ -395,7 +513,7 @@ int RunParent(const std::wstring& dir, const std::wstring& exePath) {
         if (c == '\\')
             c = '/';
     }
-    const std::string fullA = jsonA + storageA8 + "\",\"net_port\":27117,\"net_discovery_seconds\":1}";
+    const std::string fullA = jsonA + storageA8 + "\",\"net_port\":27117,\"net_discovery_seconds\":1,\"auto_join\":true}";
     const std::string fullB = "{\"app_id\":251570,\"steam_id\":\"76561198000000002\",\"persona_name\":"
                               "\"SplitForgeTestB\",\"storage_dir\":\"" +
                               storageB8 + "\",\"net_port\":27117,\"net_discovery_seconds\":1}";
@@ -482,6 +600,8 @@ int RunParent(const std::wstring& dir, const std::wstring& exePath) {
     SetConfigEnv(configA);
     if (!WaitForFile(ready, 10000))
         return Fail("el par no informó que estaba listo");
+    if (const int result = CheckDiscovery(api))
+        return result;
     bool pongOk = false;
     for (int i = 0; i < 100 && !pongOk; i++) {
         api.Networking()->SendP2PPacket(kSteamIdB, "PING", 4, sfemu::k_EP2PSendReliable, 0);
@@ -514,7 +634,8 @@ int RunParent(const std::wstring& dir, const std::wstring& exePath) {
     CloseHandle(child);
     if (exitCode != 0)
         return Fail("el proceso par terminó con error");
-    std::printf("OK: identidad, API plana de Steamworks.NET, stats, almacenamiento y P2P local entre dos procesos.\n");
+    std::printf("OK: identidad, API plana de Steamworks.NET, stats, almacenamiento, ticket por el canal del servidor, "
+                "lobby y partida del otro proceso descubiertos, unión automática y P2P local.\n");
     return 0;
 }
 

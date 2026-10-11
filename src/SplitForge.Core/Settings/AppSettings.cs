@@ -16,6 +16,12 @@ public sealed record SteamEmuOptions
     public string Persona2 { get; init; } = "SplitForgeJ2";
     public int AppId { get; init; } = 251570;
     public string EmulatorDll { get; init; } = "";
+
+    /// <summary>J2 entra sola en la partida de J1 en cuanto J1 la abre (el emulador se lo pide al juego).</summary>
+    public bool AutoJoin { get; init; } = true;
+
+    /// <summary>J1 arranca cargando su última partida (argumento <c>-quick-continue</c> de 7DTD).</summary>
+    public bool QuickContinue { get; init; }
 }
 
 public sealed record AppSettings

@@ -2,6 +2,7 @@
 #include "interfaces.h"
 #include "state.h"
 
+#include <algorithm>
 #include <cstring>
 
 namespace sfemu {
@@ -16,20 +17,51 @@ public:
     }
     int AddFavoriteGame(AppId_t, uint32_t, uint16_t, uint16_t, uint32_t, uint32_t) override { return 0; }
     bool RemoveFavoriteGame(AppId_t, uint32_t, uint16_t, uint16_t, uint32_t) override { return false; }
+    // Devuelve los lobbies que anuncian las demás instancias (el emulador no tiene servidor de Steam).
     SteamAPICall_t RequestLobbyList() override {
         EmuState& emu = Emu();
+        emu.RefreshRemoteLobbies();
+        emu.lobbySearch.clear();
+        for (const auto& [id, lobby] : emu.remoteLobbies) {
+            bool match = true;
+            for (const LobbyFilter& filter : emu.lobbyFilters) {
+                const auto data = lobby.data.find(filter.key);
+                const bool equal = data != lobby.data.end() && data->second == filter.value;
+                // k_ELobbyComparisonEqual (0) y NotEqual (3); las comparaciones de orden no descartan.
+                if ((filter.comparison == 0 && !equal) || (filter.comparison == 3 && equal)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match)
+                emu.lobbySearch.push_back(id);
+        }
+        emu.lobbyFilters.clear();
+        static size_t lastLogged = static_cast<size_t>(-1);
+        if (emu.lobbySearch.size() != lastLogged) { // Solo cuando cambia: el juego repite la búsqueda cada pocos segundos.
+            lastLogged = emu.lobbySearch.size();
+            emu.Log("Búsqueda de lobbies: %zu de %zu anunciados por otras instancias", emu.lobbySearch.size(),
+                    emu.remoteLobbies.size());
+        }
         LobbyMatchList_t result{};
-        result.m_nLobbiesMatching = 0;
+        result.m_nLobbiesMatching = static_cast<uint32_t>(emu.lobbySearch.size());
         return emu.QueueCallResult(k_iCallback_LobbyMatchList, &result, sizeof(result));
     }
-    void AddRequestLobbyListStringFilter(const char*, const char*, int) override {}
+    void AddRequestLobbyListStringFilter(const char* key, const char* value, int comparison) override {
+        if (key && value)
+            Emu().lobbyFilters.push_back({key, value, comparison});
+    }
     void AddRequestLobbyListNumericalFilter(const char*, int, int) override {}
     void AddRequestLobbyListNearValueFilter(const char*, int) override {}
     void AddRequestLobbyListFilterSlotsAvailable(int) override {}
     void AddRequestLobbyListDistanceFilter(int) override {}
     void AddRequestLobbyListResultCountFilter(int) override {}
     void AddRequestLobbyListCompatibleMembersFilter(CSteamID) override {}
-    CSteamID GetLobbyByIndex(int) override { return k_steamIDNil; }
+    CSteamID GetLobbyByIndex(int index) override {
+        EmuState& emu = Emu();
+        return index >= 0 && index < static_cast<int>(emu.lobbySearch.size())
+                   ? emu.lobbySearch[static_cast<size_t>(index)] : k_steamIDNil;
+    }
     SteamAPICall_t CreateLobby(int type, int maxMembers) override {
         EmuState& emu = Emu();
         Lobby& lobby = emu.GetOrCreateLobby(emu.NewLobbyId());
@@ -38,6 +70,9 @@ public:
         LobbyCreated_t created{};
         created.m_eResult = k_EResultOK;
         created.m_ulSteamIDLobby = lobby.id;
+        // Steam lo entrega como call result y también como callback (7DTD usa Callback<LobbyCreated_t>),
+        // y siempre antes que LobbyEnter: si no, el anfitrión toma su propio lobby por uno ajeno.
+        emu.QueueCallback(k_iCallback_LobbyCreated, &created, sizeof(created));
         const SteamAPICall_t call = emu.QueueCallResult(k_iCallback_LobbyCreated, &created, sizeof(created));
         LobbyEnter_t entered{};
         entered.m_ulSteamIDLobby = lobby.id;
@@ -45,42 +80,54 @@ public:
         entered.m_bLocked = false;
         entered.m_EChatRoomEnterResponse = k_EChatRoomEnterResponseSuccess;
         emu.QueueCallback(k_iCallback_LobbyEnter, &entered, sizeof(entered));
+        emu.AnnounceLobby(lobby);
         return call;
     }
     SteamAPICall_t JoinLobby(CSteamID lobbyId) override {
         EmuState& emu = Emu();
-        Lobby& lobby = emu.GetOrCreateLobby(lobbyId);
+        if (!emu.lobbies.count(lobbyId))
+            emu.RefreshRemoteLobbies();
+        Lobby* lobby = emu.FindLobby(lobbyId);
         LobbyEnter_t entered{};
-        entered.m_ulSteamIDLobby = lobby.id;
+        entered.m_ulSteamIDLobby = lobbyId;
         entered.m_rgfChatPermissions = 0xFFFFFFFF;
         entered.m_bLocked = false;
-        entered.m_EChatRoomEnterResponse = k_EChatRoomEnterResponseSuccess;
-        return emu.QueueCallResult(k_iCallback_LobbyEnter, &entered, sizeof(entered));
+        entered.m_EChatRoomEnterResponse = lobby ? k_EChatRoomEnterResponseSuccess : k_EChatRoomEnterResponseDoesntExist;
+        if (lobby && std::find(lobby->members.begin(), lobby->members.end(), emu.config.steamId) == lobby->members.end())
+            lobby->members.push_back(emu.config.steamId);
+        // Como Steam: callback y call result, y después los datos del lobby.
+        emu.QueueCallback(k_iCallback_LobbyEnter, &entered, sizeof(entered));
+        const SteamAPICall_t call = emu.QueueCallResult(k_iCallback_LobbyEnter, &entered, sizeof(entered));
+        if (lobby)
+            QueueDataUpdate(lobbyId);
+        return call;
     }
     void LeaveLobby(CSteamID lobbyId) override {
-        Emu().lobbies.erase(lobbyId);
+        EmuState& emu = Emu();
+        emu.net.RemoveLocalLobby(lobbyId);
+        emu.lobbies.erase(lobbyId);
+        if (const auto it = emu.remoteLobbies.find(lobbyId); it != emu.remoteLobbies.end()) {
+            auto& members = it->second.members;
+            members.erase(std::remove(members.begin(), members.end(), emu.config.steamId), members.end());
+        }
     }
     bool InviteUserToLobby(CSteamID, CSteamID) override { return false; }
     int GetNumLobbyMembers(CSteamID lobbyId) override {
-        EmuState& emu = Emu();
-        if (!emu.lobbies.count(lobbyId))
-            return 0;
-        return static_cast<int>(emu.lobbies[lobbyId].members.size());
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        return lobby ? static_cast<int>(lobby->members.size()) : 0;
     }
     CSteamID GetLobbyMemberByIndex(CSteamID lobbyId, int index) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        if (it == emu.lobbies.end() || index < 0 || index >= static_cast<int>(it->second.members.size()))
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        if (!lobby || index < 0 || index >= static_cast<int>(lobby->members.size()))
             return k_steamIDNil;
-        return it->second.members[static_cast<size_t>(index)];
+        return lobby->members[static_cast<size_t>(index)];
     }
     const char* GetLobbyData(CSteamID lobbyId, const char* key) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        if (it == emu.lobbies.end() || !key)
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        if (!lobby || !key)
             return "";
-        const auto data = it->second.data.find(key);
-        return data == it->second.data.end() ? "" : data->second.c_str();
+        const auto data = lobby->data.find(key);
+        return data == lobby->data.end() ? "" : data->second.c_str();
     }
     bool SetLobbyData(CSteamID lobbyId, const char* key, const char* value) override {
         if (!key)
@@ -90,26 +137,28 @@ public:
             return false;
         Lobby& lobby = emu.lobbies[lobbyId];
         lobby.data[key] = value ? value : "";
-        LobbyDataUpdate_t update{};
-        update.m_ulSteamIDLobby = lobbyId;
-        update.m_ulSteamIDMember = k_steamIDNil;
-        update.m_bSuccess = 1;
-        emu.QueueCallback(k_iCallback_LobbyDataUpdate, &update, sizeof(update));
+        QueueDataUpdate(lobbyId);
+        emu.AnnounceLobby(lobby);
         return true;
     }
+    static void QueueDataUpdate(CSteamID lobbyId) {
+        LobbyDataUpdate_t update{};
+        update.m_ulSteamIDLobby = lobbyId;
+        update.m_ulSteamIDMember = lobbyId; // Igual que el lobby: cambiaron los datos del lobby, no los de un miembro.
+        update.m_bSuccess = 1;
+        Emu().QueueCallback(k_iCallback_LobbyDataUpdate, &update, sizeof(update));
+    }
     int GetLobbyDataCount(CSteamID lobbyId) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        return it == emu.lobbies.end() ? 0 : static_cast<int>(it->second.data.size());
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        return lobby ? static_cast<int>(lobby->data.size()) : 0;
     }
     bool GetLobbyDataByIndex(CSteamID lobbyId, int index, char* key, int keySize, char* value,
                              int valueSize) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        if (it == emu.lobbies.end() || index < 0)
+        const Lobby* found = Emu().FindLobby(lobbyId);
+        if (!found || index < 0)
             return false;
         int i = 0;
-        for (const auto& [k, v] : it->second.data) {
+        for (const auto& [k, v] : found->data) {
             if (i++ != index)
                 continue;
             if (key && keySize > 0) {
@@ -129,7 +178,10 @@ public:
         const auto it = emu.lobbies.find(lobbyId);
         if (it == emu.lobbies.end() || !key)
             return false;
-        return it->second.data.erase(key) > 0;
+        const bool erased = it->second.data.erase(key) > 0;
+        if (erased)
+            emu.AnnounceLobby(it->second);
+        return erased;
     }
     const char* GetLobbyMemberData(CSteamID lobbyId, CSteamID member, const char* key) override {
         EmuState& emu = Emu();
@@ -192,7 +244,18 @@ public:
         }
         return 0;
     }
-    bool RequestLobbyData(CSteamID) override { return true; }
+    // Datos de un lobby ajeno: se toma lo último que anunció su dueño y se avisa con LobbyDataUpdate_t.
+    bool RequestLobbyData(CSteamID lobbyId) override {
+        EmuState& emu = Emu();
+        if (!emu.lobbies.count(lobbyId))
+            emu.RefreshRemoteLobbies();
+        LobbyDataUpdate_t update{};
+        update.m_ulSteamIDLobby = lobbyId;
+        update.m_ulSteamIDMember = lobbyId;
+        update.m_bSuccess = emu.FindLobby(lobbyId) ? 1 : 0;
+        emu.QueueCallback(k_iCallback_LobbyDataUpdate, &update, sizeof(update));
+        return true;
+    }
     void SetLobbyGameServer(CSteamID lobbyId, uint32_t ip, uint16_t port, CSteamID serverId) override {
         EmuState& emu = Emu();
         const auto it = emu.lobbies.find(lobbyId);
@@ -201,19 +264,19 @@ public:
         it->second.gameServerIp = ip;
         it->second.gameServerPort = port;
         it->second.gameServerSteamId = serverId;
+        emu.AnnounceLobby(it->second);
     }
     bool GetLobbyGameServer(CSteamID lobbyId, uint32_t* ip, uint16_t* port, CSteamID* serverId) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        if (it == emu.lobbies.end())
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        if (!lobby)
             return false;
         if (ip)
-            *ip = it->second.gameServerIp;
+            *ip = lobby->gameServerIp;
         if (port)
-            *port = it->second.gameServerPort;
+            *port = lobby->gameServerPort;
         if (serverId)
-            *serverId = it->second.gameServerSteamId;
-        return it->second.gameServerIp != 0 || it->second.gameServerSteamId != 0;
+            *serverId = lobby->gameServerSteamId;
+        return lobby->gameServerIp != 0 || lobby->gameServerSteamId != 0;
     }
     bool SetLobbyMemberLimit(CSteamID lobbyId, int limit) override {
         EmuState& emu = Emu();
@@ -221,12 +284,12 @@ public:
         if (it == emu.lobbies.end())
             return false;
         it->second.memberLimit = limit;
+        emu.AnnounceLobby(it->second);
         return true;
     }
     int GetLobbyMemberLimit(CSteamID lobbyId) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        return it == emu.lobbies.end() ? 0 : it->second.memberLimit;
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        return lobby ? lobby->memberLimit : 0;
     }
     bool SetLobbyType(CSteamID lobbyId, int type) override {
         EmuState& emu = Emu();
@@ -234,13 +297,13 @@ public:
         if (it == emu.lobbies.end())
             return false;
         it->second.type = type;
+        emu.AnnounceLobby(it->second);
         return true;
     }
     bool SetLobbyJoinable(CSteamID, bool) override { return true; }
     CSteamID GetLobbyOwner(CSteamID lobbyId) override {
-        EmuState& emu = Emu();
-        const auto it = emu.lobbies.find(lobbyId);
-        return it == emu.lobbies.end() ? k_steamIDNil : it->second.owner;
+        const Lobby* lobby = Emu().FindLobby(lobbyId);
+        return lobby ? lobby->owner : k_steamIDNil;
     }
     bool SetLobbyOwner(CSteamID lobbyId, CSteamID owner) override {
         EmuState& emu = Emu();

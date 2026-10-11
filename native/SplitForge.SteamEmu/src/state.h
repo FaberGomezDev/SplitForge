@@ -29,6 +29,8 @@ struct Config {
     uint32_t discoverySeconds = 2;
     std::string multicastAddress = "239.255.69.69";
     std::string configPath;
+    // Si otra instancia abre una partida, pedir al juego que se una a ella (como «Unirse» en Steam).
+    bool autoJoin = false;
 };
 
 struct CallbackEvent {
@@ -36,6 +38,14 @@ struct CallbackEvent {
     int iCallback = 0;
     std::vector<uint8_t> data;
     bool consumed = false;
+    int pipe = kUserPipe;
+};
+
+// Filtro de AddRequestLobbyListStringFilter para la siguiente búsqueda de lobbies.
+struct LobbyFilter {
+    std::string key;
+    std::string value;
+    int comparison = 0;
 };
 
 struct PendingResult {
@@ -112,9 +122,10 @@ public:
     SteamAPICall_t nextApiCall = 1;
     uint32_t ipcCallCount = 0;
     void* warningHook = nullptr;
-    CallbackMsg_t lastManual{};
-    SteamAPICallCompleted_t lastCompleted{};
-    bool lastManualValid = false;
+    // Despacho manual, por canal (índices kUserPipe y kGameServerPipe): el último mensaje entregado.
+    CallbackMsg_t lastManual[3]{};
+    SteamAPICallCompleted_t lastCompleted[3]{};
+    std::vector<uint8_t> lastManualData[3];
     UGCFileWriteStreamHandle_t streamCounter = 1;
 
     std::map<SteamAPICall_t, std::string> asyncReadBuffers;
@@ -122,23 +133,38 @@ public:
 
     std::map<CSteamID, Lobby> lobbies;
     uint64_t nextLobbyId = 1;
+    // Lobbies de otras instancias (copia de lo que anuncian) y resultado de la última búsqueda.
+    std::map<CSteamID, Lobby> remoteLobbies;
+    std::vector<CSteamID> lobbySearch;
+    std::vector<LobbyFilter> lobbyFilters;
 
     std::map<uint32_t, uint64_t> authTickets;
     uint32_t nextAuthTicket = 1;
     uint32_t gameServerLastPacketCounter = 0;
+
+    // Servidor de juego de este proceso (partida alojada) y uniones automáticas ya pedidas.
+    uint16_t gameServerPort = 0;
+    bool gameServerLoggedOn = false;
+    std::map<CSteamID, uint32_t> invitedSessions;
+    uint64_t nextNetworkPump = 0;
 
     NetPeer net;
 
     void Log(const char* format, ...);
     bool EnsureDirs();
     SteamAPICall_t NewApiCall();
-    void QueueCallback(int iCallback, const void* data, size_t size);
+    void QueueCallback(int iCallback, const void* data, size_t size, int pipe = kUserPipe);
     SteamAPICall_t QueueCallResult(int iCallback, const void* data, size_t size);
     void QueueCallResultAt(SteamAPICall_t call, int iCallback, const void* data, size_t size);
     void DispatchRunCallbacks();
     void PruneConsumedEvents();
-    bool PopManual(CallbackMsg_t* out);
-    void FreeLastManual();
+    bool PopManual(int pipe, CallbackMsg_t* out);
+    void FreeLastManual(int pipe);
+    void PumpNetwork();
+    void UpdateServerAnnouncement();
+    void AnnounceLobby(const Lobby& lobby);
+    Lobby* FindLobby(CSteamID id);
+    void RefreshRemoteLobbies();
     bool GetApiResult(SteamAPICall_t call, void* out, size_t size, int expected, bool* failed);
     bool FinishApiResult(SteamAPICall_t call, int iCallback, const void* data, size_t size, bool fail);
     Lobby& GetOrCreateLobby(CSteamID id);

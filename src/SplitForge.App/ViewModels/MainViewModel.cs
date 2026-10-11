@@ -291,6 +291,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
                 Persona2 = Persona2,
                 AppId = SteamEmuAppId,
                 EmulatorDll = SteamEmuDllPath,
+                AutoJoin = SteamEmuAutoJoin,
+                QuickContinue = SteamEmuQuickContinue,
             },
             FakeFocus = FakeFocusEnabled,
         };

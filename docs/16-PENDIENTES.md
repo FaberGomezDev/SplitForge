@@ -18,8 +18,11 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 ## Emulador de Steam (componente principal)
 
 - ~~Bloqueante: API plana sin `self` e incompleta~~ → resuelto (2026-10-10): API plana generada con las 944 entradas de Steamworks.NET; `steamemu.log` registra la primera llamada a cada entrada, con «[sin implementar]» en las neutras.
-- ¿Acepta el servidor dedicado oficial identidades emuladas, o debe alojar la partida uno de los clientes? (W14 por IP 127.0.0.1 con J1 de anfitrión).
-- ¿Usa 7DTD `SteamNetworkingSockets` (en el emulador, objeto con métodos neutros) para su multijugador? Lo dirá `steamemu.log` al unirse J2.
+- ¿Acepta el servidor dedicado oficial identidades emuladas? Sin probar (no está instalado). Ya no hace falta: J1 aloja la partida y J2 entra sola (W14, ADR-022).
+- ~~¿Usa 7DTD `SteamNetworkingSockets` para su multijugador?~~ → **No** en la conexión local: usa LiteNetLib por UDP (puerto 26900) y `ISteamNetworking` (P2P); la autenticación va por `ISteamGameServer`.
+- **Guardados compartidos (riesgo abierto):** J1 y J2 usan la misma carpeta `%APPDATA%\7DaysToDie`. Si en J2 se pulsa «Continuar» con la partida que aloja J1, las dos instancias la abren a la vez (ocurrió 45 s en la prueba de W14, sin daños visibles). Opción a decidir con el propietario: lanzar J2 con su propia `-UserDataFolder` (J2 tendría sus propias opciones y perfil, y no vería las partidas de J1).
+- ¿Muestra la pantalla «Unirse a partida» de J2 la partida de J1? El lobby de J1 se anuncia y J2 puede unirse por su ID, pero `ISteamMatchmakingServers` (lista LAN/Internet) sigue vacío. Falta mirarlo en la interfaz del juego.
+- El descubrimiento entre instancias usa multicast UDP: sin ninguna interfaz de red activa podría no funcionar. Sin probar.
 - Las vtables con `CSteamID` devuelto por valor siguen la convención de las funciones libres; MSVC devuelve las clases de los métodos virtuales por puntero oculto. Afecta a juegos C++ que usen las vtables directamente, no a Steamworks.NET.
 - «Verificar archivos» de Steam (o una actualización que traiga otra `steam_api64.dll`) sustituye la DLL emulada. En ese caso «Restaurar» se niega (SHA-256 distinto) y quedan la copia de seguridad, el JSON y el estado en la carpeta del juego. Falta decidir cómo limpiar ese caso desde la pestaña 07.
 
@@ -31,7 +34,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## Diseño técnico
 
-- Filtro XInput (experimental): 7DTD lo carga y, con la intercepción de ADR-021, cada cliente enumera un solo mando. W16 superado en el menú; falta verlo dentro de una partida común (W14).
+- Filtro XInput (experimental): 7DTD lo carga y, con la intercepción de ADR-021, cada cliente enumera un solo mando. W16 superado en el menú; falta que el propietario juegue una sesión con los dos mandos dentro de la partida común.
 - Clientes en Sandboxie: el estado del filtro queda dentro del sandbox (escritura virtualizada); SplitForge lo lee de la carpeta por defecto de `SplitForge_J2`. Si el sandbox usa otra ruta raíz, no se verá (la asignación sí se lee).
 - Identificador estable tras reconexión Bluetooth sin guardar seriales en reportes (hoy: reasignación explícita).
 - Fullscreen exclusivo, DPI mixto y varios monitores (hoy: área útil del monitor principal).

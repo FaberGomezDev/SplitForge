@@ -44,6 +44,22 @@ public sealed partial class MainViewModel
         set { if (Set(ref _steamEmuDllPath, value)) SaveSettings(); }
     }
 
+    private bool _steamEmuAutoJoin = true;
+    /// <summary>J2 entra sola en la partida de J1 (el emulador se lo pide al juego como una invitación de Steam).</summary>
+    public bool SteamEmuAutoJoin
+    {
+        get => _steamEmuAutoJoin;
+        set { if (Set(ref _steamEmuAutoJoin, value)) SaveSettings(); }
+    }
+
+    private bool _steamEmuQuickContinue;
+    /// <summary>J1 arranca cargando su última partida, sin pasar por el menú.</summary>
+    public bool SteamEmuQuickContinue
+    {
+        get => _steamEmuQuickContinue;
+        set { if (Set(ref _steamEmuQuickContinue, value)) SaveSettings(); }
+    }
+
     private void InitSteamEmu()
     {
         InstallSteamEmuCommand = new RelayCommand(InstallSteamEmu);
@@ -59,6 +75,8 @@ public sealed partial class MainViewModel
         _persona2 = _settings.SteamEmu.Persona2;
         _steamEmuAppId = _settings.SteamEmu.AppId;
         _steamEmuDllPath = _settings.SteamEmu.EmulatorDll;
+        _steamEmuAutoJoin = _settings.SteamEmu.AutoJoin;
+        _steamEmuQuickContinue = _settings.SteamEmu.QuickContinue;
     }
 
     private string SteamEmuDll()
@@ -89,8 +107,9 @@ public sealed partial class MainViewModel
     private void WriteSteamEmuConfig(int player)
     {
         var (steamId, persona) = player == 1 ? (SteamId1, Persona1) : (SteamId2, Persona2);
+        // Solo J2 se une sola: J1 es quien abre la partida.
         var config = SteamEmulator.BuildConfig(SteamEmuAppId, steamId, persona,
-            SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, player));
+            SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, player), autoJoin: player == 2 && SteamEmuAutoJoin);
         File.WriteAllText(SteamEmuConfigFile(player), config, new System.Text.UTF8Encoding(false));
     }
 
@@ -154,10 +173,12 @@ public sealed partial class MainViewModel
     {
         WriteSteamEmuConfig(player);
         var panel = plan.Panels[player - 1];
+        var quickContinue = player == 1 && SteamEmuQuickContinue;
         var spec = SteamEmulator.InstanceLaunch(plan.Exe, SteamEmuConfigFile(player),
-            SevenDaysToDieAdapter.EmulatedClientArguments(panel.Width, panel.Height));
+            SevenDaysToDieAdapter.EmulatedClientArguments(panel.Width, panel.Height, quickContinue));
         using var process = _steamEmuLauncher.Start(spec);
-        _log.Write($"J{player} de 7DTD lanzado con identidad emulada ({SpecPersona(player)}), ventana {panel.Width}×{panel.Height}, sin juego cruzado (EOS).");
+        _log.Write($"J{player} de 7DTD lanzado con identidad emulada ({SpecPersona(player)}), ventana {panel.Width}×{panel.Height}, sin juego cruzado (EOS)"
+                   + (quickContinue ? ", cargando su última partida." : player == 2 && SteamEmuAutoJoin ? ", se unirá sola a la partida de J1." : "."));
         return process.Id;
     }
 
@@ -175,6 +196,7 @@ public sealed partial class MainViewModel
         {
             plan = PlanEmulatedLaunch();
             UpdateInstalledFilter();
+            UpdateInstalledEmulator();
             first = StartEmulatedInstance(plan, 1);
             AssignEmulatedPads(first);
         });
@@ -214,6 +236,28 @@ public sealed partial class MainViewModel
             return;
         _log.Write($"Mandos asignados: J1 (PID {pid1}) → mando XInput {SlotPlayer1} · J2 (PID {pid2}) → mando XInput {SlotPlayer2}.");
         RefreshFilterStatus();
+    }
+
+    /// <summary>
+    /// Antes de lanzar: si la DLL emulada instalada en el juego es de una compilación anterior, se pone al día
+    /// (solo si sigue siendo la que registró SplitForge, como al instalar).
+    /// </summary>
+    private void UpdateInstalledEmulator()
+    {
+        var dll = File.Exists(_steamEmuDllPath) ? _steamEmuDllPath : SteamEmulator.FindEmulatorDll(AppContext.BaseDirectory);
+        if (dll is null)
+            return;
+        try
+        {
+            var config = SteamEmulator.BuildConfig(SteamEmuAppId, SteamId1, Persona1,
+                SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, 1));
+            if (SteamEmulator.Install(SevenDaysFolder(), dll, config) == SteamEmuInstallResult.Updated)
+                _log.Write("Emulador de Steam puesto al día en 7DTD.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Write($"No se pudo poner al día el emulador de Steam ({ex.Message}); se lanza con el instalado.");
+        }
     }
 
     /// <summary>

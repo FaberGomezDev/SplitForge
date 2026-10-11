@@ -34,13 +34,17 @@ public static class SteamEmulator
         + "Restaura antes de verificar archivos en Steam.";
 
     private sealed record ConfigModel(int app_id, string steam_id, string persona_name, string language,
-        string ip_country, string storage_dir, int net_port, int net_discovery_seconds, string net_multicast_address);
+        string ip_country, string storage_dir, int net_port, int net_discovery_seconds, string net_multicast_address,
+        bool auto_join);
 
-    /// <summary>JSON de configuración de una identidad. Los números de puerto compartidos permiten el P2P local.</summary>
-    public static string BuildConfig(int appId, string steamId, string persona, string storageDir)
+    /// <summary>
+    /// JSON de configuración de una identidad. Los números de puerto compartidos permiten el P2P local y que las
+    /// instancias se descubran. Con <paramref name="autoJoin"/>, esta instancia entra sola en la partida que abra otra.
+    /// </summary>
+    public static string BuildConfig(int appId, string steamId, string persona, string storageDir, bool autoJoin = false)
     {
         ValidateIdentity(steamId, persona, storageDir);
-        var model = new ConfigModel(appId, steamId, persona, "spanish", "ES", storageDir, 27117, 2, "239.255.69.69");
+        var model = new ConfigModel(appId, steamId, persona, "spanish", "ES", storageDir, 27117, 2, "239.255.69.69", autoJoin);
         return JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true });
     }
 

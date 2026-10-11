@@ -27,6 +27,29 @@ struct Packet {
     int channel = 0;
 };
 
+// Partida alojada por otra instancia (su servidor de juego está abierto).
+struct RemoteServer {
+    CSteamID owner = 0;
+    uint32_t session = 0;   // Cambia cada vez que el anfitrión abre su servidor.
+    uint16_t port = 0;
+    std::string address;    // "127.0.0.1" si el anfitrión está en este mismo PC.
+    uint64_t firstSeen = 0;
+    uint64_t lastSeen = 0;
+};
+
+// Lobby anunciado por su dueño: lo que otra instancia necesita para listarlo y entrar.
+struct RemoteLobby {
+    CSteamID id = 0;
+    CSteamID owner = 0;
+    int type = 0;
+    int memberLimit = 0;
+    uint32_t gameServerIp = 0;
+    uint16_t gameServerPort = 0;
+    CSteamID gameServerSteamId = 0;
+    std::map<std::string, std::string> data;
+    uint64_t lastSeen = 0;
+};
+
 class NetPeer {
 public:
     ~NetPeer();
@@ -40,9 +63,18 @@ public:
     bool IsConnected(CSteamID peer) const;
     void AnnounceNow();
 
+    // Descubrimiento: la partida y los lobbies de este proceso se anuncian junto con la presencia.
+    void SetLocalServer(uint16_t port, bool active);
+    std::vector<RemoteServer> Servers() const;
+    void SetLocalLobby(const RemoteLobby& lobby);
+    void RemoveLocalLobby(CSteamID id);
+    std::vector<RemoteLobby> Lobbies() const;
+
 private:
     void ReceiveLoop();
     void AnnounceLoop();
+    void AnnounceDiscovery();
+    void SendLobby(const RemoteLobby& lobby, bool active);
 
     SOCKET socket_ = INVALID_SOCKET;
     sockaddr_in group_{};
@@ -57,6 +89,15 @@ private:
     mutable std::mutex mutex_;
     std::vector<Packet> packets_;
     std::map<CSteamID, uint64_t> peers_;
+
+    uint64_t machine_ = 0;            // Para saber si quien anuncia está en este mismo PC.
+    std::atomic<bool> dirty_{false};  // Hay cambios que anunciar sin esperar al siguiente intervalo.
+    uint16_t serverPort_ = 0;
+    bool serverActive_ = false;
+    uint32_t serverSession_ = 0;
+    std::map<CSteamID, RemoteLobby> localLobbies_;
+    std::map<CSteamID, RemoteServer> servers_;
+    std::map<CSteamID, RemoteLobby> lobbies_;
 };
 
 } // namespace sfemu

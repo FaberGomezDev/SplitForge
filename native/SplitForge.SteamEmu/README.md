@@ -28,16 +28,20 @@ Nada de esto toca Steam: no hay autenticación real, no hay tienda, no hay servi
 | `ISteamUtils` 010 | AppID, país, idioma, hora, `GetAPICallResult` para las llamadas simuladas |
 | `ISteamApps` 008 | app y DLC del JSON como "suscritos" |
 | `ISteamUserStats` 012 | stats y logros en memoria + `stats.json`; callbacks `UserStatsReceived` etc. |
-| `ISteamMatchmaking` 009 | lobbies en memoria (datos, chat, dueño, game server) |
+| `ISteamMatchmaking` 009 | lobbies en memoria (datos, chat, dueño, game server); los no privados se anuncian a las demás instancias, que los ven en `RequestLobbyList` y pueden unirse |
+| `ISteamGameServer` | sesión y puerto de la partida alojada (se anuncia a las demás instancias); `BeginAuthSession` responde `ValidateAuthTicketResponse_t` por el canal del servidor de juego |
+| Unión automática | con `"auto_join": true`, cuando otra instancia abre una partida el juego recibe `GameServerChangeRequested_t` con `127.0.0.1:puerto` (como «Unirse a la partida» de Steam) |
 | `ISteamNetworking` 006 | **P2P real entre procesos del mismo PC/LAN** por UDP multicast: presencia, canales, colas |
 | `ISteamRemoteStorage` 016 | archivos de nube en `%LOCALAPPDATA%\SplitForge\steamemu\<appid>\remote\`, streams y async |
-| Control, música, vídeo, parental, app list, game server | stubs seguros (0 mandos, todo desactivado) |
+| Control, música, vídeo, parental, app list | stubs seguros (0 mandos, todo desactivado) |
 | UGC, inventario, HTTP, screenshots | stubs vacíos seguros |
 
 **Interfaces sin lógica propia** (objetos con métodos neutros): `SteamNetworkingSockets`, `SteamNetworkingMessages`,
 HTMLSurface, Parties, RemotePlay, Timeline, GameSearch. Los juegos que dependan de
-NetworkingSockets para su multiplayer no conectarán con este emulador (7DTD usa su propio
-transporte con Steam P2P o sockets según la versión: pendiente de comprobar con 7DTD real).
+NetworkingSockets para su multiplayer no conectarán con este emulador. 7DTD no depende de ella:
+conecta por LiteNetLib (UDP 26900) y con este emulador dos instancias entran en la misma partida
+(comprobado el 2026-10-10, ver `docs/05-INTEGRACION-STEAM.md`). `ISteamMatchmakingServers` (lista de
+servidores LAN/Internet) sigue sin lógica: devuelve listas vacías.
 
 ## API plana (generada)
 
@@ -73,7 +77,8 @@ y regenerar con `python tools/generar_api_plana.py`. La CI comprueba que las sal
   "storage_dir": "%LOCALAPPDATA%\\SplitForge\\steamemu\\251570-J1",
   "net_port": 27117,
   "net_discovery_seconds": 2,
-  "net_multicast_address": "239.255.69.69"
+  "net_multicast_address": "239.255.69.69",
+  "auto_join": false
 }
 ```
 

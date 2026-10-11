@@ -55,18 +55,23 @@ public sealed class SevenDaysToDieAdapter : IGameAdapter
     /// sin juego cruzado (EOS rechaza los tickets locales y bloquea el menú), servidores por Steam,
     /// ventana sin marco y con el tamaño de su panel desde el arranque. El juego lee
     /// -crossplatform / -serverplatforms como «-clave=valor» (PlatformManager.GetCommandLineOverrides).
+    /// Con <paramref name="quickContinue"/>, el juego carga su última partida al abrir el menú principal
+    /// (<c>-quick-continue</c>, que el propio juego consulta en XUiC_MainMenu.OnOpen).
     /// </summary>
-    public static IReadOnlyList<string> EmulatedClientArguments(int width, int height)
+    public static IReadOnlyList<string> EmulatedClientArguments(int width, int height, bool quickContinue = false)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentOutOfRangeException(nameof(width), "El tamaño de la ventana debe ser positivo.");
         var inv = System.Globalization.CultureInfo.InvariantCulture;
-        return
+        List<string> arguments =
         [
             "-crossplatform=None", "-serverplatforms=Steam", "-noeac",
             "-screen-fullscreen", "0", "-popupwindow",
             "-screen-width", width.ToString(inv), "-screen-height", height.ToString(inv),
         ];
+        if (quickContinue)
+            arguments.Add("-quick-continue");
+        return arguments;
     }
 
     public AdapterManifest Manifest { get; } = new(

@@ -328,6 +328,39 @@ LIMITACIONES EXPLÍCITAS: comprobado en el menú del juego; aún no dentro de un
 PRÓXIMO PASO: W14, que J1 y J2 se encuentren en la misma partida en este PC.
 ```
 
+## 2026-10-10 · W14 superado: J2 entra sola en la partida de J1
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit
+OBJETIVO: que J1 y J2 se encuentren en la misma partida en este PC (el propietario: «la conexión local»;
+  después: «averigua cómo lo hace Nucleus y lo mejoramos»).
+CAUSA DEL INTENTO FALLIDO DEL PROPIETARIO (registros de 20:14–20:20, «Conectar a IP» a mano):
+  - Dos intentos: «Server is still initializing» (el anfitrión aún cargaba).
+  - Tercero: todos los autorizadores correctos y BeginAuthSession = OK, pero nunca llegó
+    ValidateAuthTicketResponse_t (7DTD lo registra con CreateGameServer): «authstate_nativeplatform».
+  - El anfitrión no recibía LobbyCreated_t (lo registra como callback) y su IP pública salía 1.0.0.127.
+CÓMO LO HACE NUCLEUS: emulador Goldberg y, según su handler de 7DTD, conexión manual por IP 127.0.0.1.
+CAMBIOS EFECTIVOS (ADR-022): emulador con dos canales de callbacks; ValidateAuthTicketResponse_t por el
+  canal correcto y con el ABI del SDK (20 bytes; también UserStatsReceived_t); LobbyCreated_t/LobbyEnter_t
+  como callbacks en el orden de Steam; GetPublicIP = 127.0.0.1; partida y lobbies anunciados por multicast;
+  RequestLobbyList con los lobbies de otras instancias; auto_join → GameServerChangeRequested_t.
+  Aplicación: casillas «J2 entra sola en la partida de J1» (activada) y «J1 arranca cargando su última
+  partida» (-quick-continue); el emulador instalado se pone al día al lanzar; ajustes en settings.v2.json.
+EVIDENCIA AUTOMÁTICA: 176 xUnit (3 nuevas); prueba de humo del emulador ampliada (canales, ABI, lobby del
+  otro proceso, unión automática a 127.0.0.1:26900); API plana al día.
+EVIDENCIA EN WINDOWS REAL: «Lanzar J1 y J2» pulsado en el paquete nuevo con las dos casillas. J1 carga su
+  partida (31 s), crea servidor y lobby (68 s); J2 recibe la petición y conecta (70–76 s); autenticación
+  k_EAuthSessionResponseOK (77 s); «Player 'SplitForgeJ2' joined the game» y PlayerSpawnedInWorld
+  (JoinMultiplayer) a los 107 s. Las dos sesiones siguen abiertas y estables.
+NUEVOS RIESGOS: J1 y J2 comparten guardados: en la prueba, en J2 se pulsó «Continuar» y tuvo abierta 45 s
+  la misma partida que alojaba J1 antes de unirse. Pendiente decidir si J2 usa su propia -UserDataFolder.
+LIMITACIONES EXPLÍCITAS: sin sesión de juego real de los dos; la lista «Unirse a partida» sin comprobar
+  (ISteamMatchmakingServers sigue vacío); el descubrimiento necesita una interfaz de red (multicast). Al
+  enlazar la prueba de humo, dos veces LNK1104 (ejecutable bloqueado); al repetir, enlazó.
+PRÓXIMO PASO: sesión real con los dos mandos; decidir el aislamiento de guardados de J2.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

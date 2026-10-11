@@ -89,7 +89,9 @@ Estado real (2026-10-10, PC del propietario, 7DTD build `25661859` = V 3.3.0 b18
 
 W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (desde fuera, ADR-020, y dentro del filtro), **cada stick mueve las dos ventanas**. Causa comprobada (desensamblado y `Player.log`): Unity usa la copia `xinput1_3` del filtro, pero InControlNative, que es quien mueve al jugador, pide `XInput1_4.dll` por nombre y recibía la real de System32; la había cargado el propio filtro a través de la `XInput1_3.dll` del sistema, que en este Windows reenvía a la 1.4 en ejecución. **Corregido (ADR-021):** la DLL real del filtro es siempre la 1.4 y el filtro redirige su tabla de exportación hacia sí mismo. Comprobado con dos clientes reales y los dos mandos conectados: InControl lista un solo mando en cada uno (antes, dos). **W16 superado:** el propietario lo probó con los mandos y cada uno controla solo su ventana.
 
-Siguiente (W14): que J1 y J2 se encuentren en la misma partida en este PC (J2 se une a la de J1 por IP 127.0.0.1 o la ve en la lista de servidores).
+**W14 superado (2026-10-10, ADR-022):** J2 entra sola en la partida de J1. El emulador responde al ticket por el canal del servidor de juego, anuncia la partida y el lobby de J1 a las demás instancias y le entrega a J2 la misma petición que Steam al pulsar «Unirse» (`GameServerChangeRequested_t` → `127.0.0.1:26900`). Con las casillas «J2 entra sola en la partida de J1» y «J1 arranca cargando su última partida» (pestaña 07), «Lanzar J1 y J2» deja a los dos en el mismo mundo sin tocar los menús (comprobado con el juego real: 111 s).
+
+Siguiente: sesión de juego real de los dos jugadores con sus mandos; decidir si J2 usa su propia carpeta de datos (hoy comparte guardados con J1: riesgo en `docs/16-PENDIENTES.md`); comprobar si «Unirse a partida» lista la de J1.
 
 Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 

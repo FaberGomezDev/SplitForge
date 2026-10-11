@@ -104,7 +104,23 @@ Resultado con 7DTD real, paso a paso:
 **W16 superado (propietario, 2026-10-10, noche):** con «Lanzar J1 y J2» del paquete nuevo, el propietario confirma con los mandos que cada uno controla solo su ventana.
 
 **Siguiente evidencia necesaria:**
-- **W14:** J2 se une a la partida de J1 en 127.0.0.1.
+- ~~**W14:** J2 se une a la partida de J1 en 127.0.0.1.~~ → superado, ver abajo.
+
+### Misma partida: J2 entra sola en la de J1 (W14, 2026-10-10, noche)
+
+**Primer intento del propietario (a mano, «Conectar a IP»):** la conexión llegó al anfitrión y pasó todos los autorizadores, pero el jugador se quedó en «autenticando». Causas en el emulador (corregidas, ADR-022): no respondía al ticket por el canal del servidor de juego, no entregaba `LobbyCreated_t` como callback y daba la IP pública al revés (`1.0.0.127`). Dos de los tres intentos fueron, además, demasiado pronto: «Server is still initializing».
+
+**Cómo se encuentran ahora:** el emulador de J1 anuncia su partida y su lobby a las demás instancias; el de J2 le entrega al juego la misma petición que Steam al pulsar «Unirse a la partida» de un amigo, y 7DTD se conecta a `127.0.0.1:26900`. Opcionalmente J1 arranca con `-quick-continue` y carga su última partida.
+
+| Paso (registros reales, lanzado con «Lanzar J1 y J2» y las dos casillas) | Momento |
+| --- | --- |
+| J1: «QuickContinue mode, loading last savegame» | 31 s |
+| J1: servidor de juego y lobby creados («Lobby creation succeeded», puerto 26900) | 68 s |
+| J2: `Friends_GameServerChangeRequested` → «Connecting to server 127.0.0.1:26900» | 70–76 s |
+| J1: «Authentication callback … result: k_EAuthSessionResponseOK» | 77 s |
+| J1 y J2: «Player 'SplitForgeJ2' joined the game» | 107 s |
+
+**Sin comprobar:** una sesión de juego real de los dos; que la pantalla «Unirse a partida» de J2 liste la de J1 (el lobby es visible y unible desde el emulador, pero la lista de servidores sigue vacía). **Riesgo:** J1 y J2 comparten guardados; en esta prueba J2 tuvo abierta 45 s la misma partida que alojaba J1 (alguien pulsó «Continuar» en J2 antes de la unión).
 
 ### Alternativas descartadas para 7DTD
 
@@ -120,7 +136,7 @@ En cualquier punto: `BLOQUEADO` con motivo verificable. **Nunca** inferir `COMPA
 
 | Juego | ID Steam | Estado | Restricción por validar |
 | --- | --- | --- | --- |
-| 7 Days to Die | 251570 | `DOS_CLIENTES_VALIDOS` (2026-10-10, build `25661859`, V 3.3.0 b18): dos clientes con el emulador en el menú a la vez; cada uno enumera un solo mando (filtro XInput con la DLL real interceptada, ADR-021) | Confirmación física de los mandos y de la ventana sin foco (W16); misma partida (W14); guardados |
+| 7 Days to Die | 251570 | `SESION_COMUN_VALIDADA` e `INPUT_AISLADO_VALIDADO` (2026-10-10, build `25661859`, V 3.3.0 b18): dos clientes con el emulador; cada mando controla solo su ventana (W16, ADR-021) y J2 entra sola en la partida de J1 (W14, ADR-022) | Una sesión de juego real de los dos; aislar los guardados de J2; lista de servidores |
 | No Man's Sky | 275850 | Investigación posterior · instalado (build `25732212`) | Autenticación, sesiones multijugador, offline |
 | State of Decay 2 | 495420 | Investigación posterior · no instalado en el PC de pruebas | Servicios online |
 | GTA V Legacy | 271590 | Investigación posterior · no instalado (sí GTA V Enhanced, 3240220) | Sin cooperativo en campaña, protecciones de GTA Online |

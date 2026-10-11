@@ -5,6 +5,33 @@ namespace SplitForge.Tests;
 
 public class SteamEmulatorTests
 {
+    [Fact]
+    public void ConfigEnablesAutoJoinOnlyWhenAsked()
+    {
+        // J2 entra sola en la partida de J1; J1 (y cualquier configuración anterior) no.
+        static bool AutoJoin(string json) =>
+            System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("auto_join").GetBoolean();
+        Assert.False(AutoJoin(SteamEmulator.BuildConfig(251570, "76561198000000001", "SplitForgeJ1", @"C:\temp\j1")));
+        Assert.True(AutoJoin(SteamEmulator.BuildConfig(251570, "76561198000000002", "SplitForgeJ2", @"C:\temp\j2", autoJoin: true)));
+    }
+
+    [Fact]
+    public void QuickContinueAddsTheGameSwitchOnlyWhenAsked()
+    {
+        Assert.DoesNotContain("-quick-continue", SevenDaysToDieAdapter.EmulatedClientArguments(1920, 540));
+        var arguments = SevenDaysToDieAdapter.EmulatedClientArguments(1920, 540, quickContinue: true);
+        Assert.Equal("-quick-continue", arguments[^1]);
+        Assert.Contains("-noeac", arguments);
+    }
+
+    [Fact]
+    public void AutoJoinIsOnAndQuickContinueOffByDefault()
+    {
+        var options = new SplitForge.Core.Settings.SteamEmuOptions();
+        Assert.True(options.AutoJoin);
+        Assert.False(options.QuickContinue);
+    }
+
     private static string GameFolder(TempDir tmp, bool unityLayout = false)
     {
         var game = tmp.Combine("game");

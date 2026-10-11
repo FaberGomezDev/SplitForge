@@ -154,17 +154,30 @@ public:
 
 class SteamGameServerImpl final : public ISteamGameServer {
 public:
-    bool InitGameServer(uint32_t, uint16_t, uint16_t, uint16_t, int, const char*) override {
-        Emu().gameServerInitialized = true;
+    bool InitGameServer(uint32_t, uint16_t gamePort, uint16_t, uint16_t, int, const char*) override {
+        EmuState& emu = Emu();
+        emu.gameServerInitialized = true;
+        if (gamePort != 0)
+            emu.gameServerPort = gamePort;
+        emu.UpdateServerAnnouncement();
         return true;
     }
     void SetProduct(const char*) override {}
     void SetGameDescription(const char*) override {}
     void SetModDir(const char*) override {}
     void SetDedicatedServer(bool) override {}
-    void LogOn(const char*) override {}
-    void LogOnAnonymous() override {}
-    void LogOff() override { Emu().gameServerInitialized = false; }
+    void LogOn(const char*) override { SetLoggedOn(true); }
+    void LogOnAnonymous() override { SetLoggedOn(true); }
+    void LogOff() override {
+        Emu().gameServerInitialized = false;
+        SetLoggedOn(false);
+    }
+    // Con la sesión iniciada, la partida de este proceso se anuncia a las demás instancias.
+    static void SetLoggedOn(bool loggedOn) {
+        EmuState& emu = Emu();
+        emu.gameServerLoggedOn = loggedOn;
+        emu.UpdateServerAnnouncement();
+    }
     bool BLoggedOn() override { return Emu().gameServerInitialized; }
     bool BSecure() override { return false; }
     CSteamID GetSteamID() override { return MakeSteamID(0, 1, k_EAccountTypeGameServer); }
@@ -183,7 +196,14 @@ public:
     void SetRegion(const char*) override {}
     void SetAdvertiseServerActive(bool) override {}
     HAuthTicket GetAuthSessionTicket(void*, int, uint32_t*) override { return 1; }
-    EBeginAuthSessionResult BeginAuthSession(const void*, int, CSteamID) override {
+    // Steam valida el ticket y responde con ValidateAuthTicketResponse_t por el canal del servidor. Sin
+    // esa respuesta el anfitrión deja al jugador esperando en «autenticando» (visto con 7DTD).
+    EBeginAuthSessionResult BeginAuthSession(const void*, int, CSteamID steamId) override {
+        ValidateAuthTicketResponse_t response{};
+        response.m_SteamID = steamId;
+        response.m_eAuthSessionResponse = 0;
+        response.m_OwnerSteamID = steamId;
+        Emu().QueueCallback(k_iCallback_ValidateAuthTicketResponse, &response, sizeof(response), kGameServerPipe);
         return k_EBeginAuthSessionResultOK;
     }
     void EndAuthSession(CSteamID) override {}
@@ -197,7 +217,7 @@ public:
     SteamAPICall_t GetServerReputation() override { return 0; }
     SteamIPAddress_t GetPublicIP() override {
         SteamIPAddress_t ip{};
-        ip.m_ipv4 = 0x0100007F;
+        ip.m_ipv4 = 0x7F000001; // 127.0.0.1 en orden de host, como lo entrega Steam.
         return ip;
     }
     bool HandleIncomingPacket(const void*, int, uint32_t, uint16_t) override { return false; }

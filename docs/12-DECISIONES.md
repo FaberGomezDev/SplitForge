@@ -159,3 +159,22 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Evidencia (2026-10-10, dos clientes reales con los dos mandos conectados):** `intercepcion=activa`, `previa=no`, cientos de lecturas por la DLL real en cada cliente, e InControl lista **un** solo mando por cliente (`XInput::1`). Prueba de humo ampliada. **W16 superado:** el propietario confirma con los mandos que cada uno controla solo su ventana.
 
+## ADR-022 · Aceptada (experimental) · Las instancias se encuentran solas: descubrimiento y unión automática en el emulador
+
+**Contexto (2026-10-10, registros del intento real del propietario):** J1 llegó a conectar por IP a la partida de J2 y pasó todos los autorizadores, pero se quedó en «autenticando»: tras `SteamGameServer.BeginAuthSession` el anfitrión espera `ValidateAuthTicketResponse_t` por el canal del servidor de juego, y el emulador no lo enviaba. Además el anfitrión nunca recibía `LobbyCreated_t` (7DTD lo registra como callback, no como call result) y su «IP pública» salía como `1.0.0.127`. Referencia: con Nucleus Co-op (Goldberg) la conexión se hace a mano, «Conectar a IP» con 127.0.0.1.
+
+**Decisión:**
+
+1. **Dos canales de callbacks**, como Steam: el del usuario y el del servidor de juego (`SteamGameServer_GetHSteamPipe` = 2). Cada callback se entrega solo por el suyo. `BeginAuthSession` responde con `ValidateAuthTicketResponse_t` (correcto) por el canal que corresponde.
+2. **ABI de `CSteamID`:** en el SDK no se alinea a 8 bytes. `ValidateAuthTicketResponse_t` mide 20 bytes con el dueño en el desplazamiento 12, y `UserStatsReceived_t` lleva el usuario en el 12.
+3. **Lobbies como en Steam:** `LobbyCreated_t` llega también como callback y siempre antes que `LobbyEnter_t`; `JoinLobby` entrega `LobbyEnter_t` como callback y después `LobbyDataUpdate_t`.
+4. **Descubrimiento por la red multicast que ya existía:** cada instancia anuncia su partida abierta (puerto del servidor de juego) y sus lobbies no privados con todos sus datos. `RequestLobbyList` devuelve los lobbies de las demás instancias (con los filtros de igualdad), y sus datos se pueden leer y unirse a ellos.
+5. **Unión automática (`auto_join` en el JSON de la identidad):** cuando otra instancia abre una partida, el emulador entrega al juego `GameServerChangeRequested_t` con `127.0.0.1:puerto`, lo mismo que Steam al pulsar «Unirse a la partida» de un amigo. 7DTD lo atiende en `InviteManager` y se conecta. Una sola petición por partida abierta, con 3 s de margen.
+6. **Aplicación:** casillas «J2 entra sola en la partida de J1» (activada) y «J1 arranca cargando su última partida» (`-quick-continue` del propio juego, desactivada por defecto). «Lanzar J1 y J2» pone al día la DLL emulada instalada.
+
+**Por qué mejora a Nucleus:** nadie tiene que escribir una IP. Con las dos casillas, «Lanzar J1 y J2» termina con los dos jugadores en el mismo mundo sin tocar los menús.
+
+**Evidencia (2026-10-10, 7DTD real):** lanzados con las dos casillas, J1 carga su partida y a los 111 s el anfitrión registra «Player 'SplitForgeJ2' joined the game» y `PlayerSpawnedInWorld (reason: JoinMultiplayer)`. Autenticación `k_EAuthSessionResponseOK`; J2 entra además en el lobby de J1 por su ID.
+
+**Límites:** la lista de servidores del juego (`ISteamMatchmakingServers`) sigue vacía: comprobado solo que el lobby de J1 es visible y unible desde el emulador, no que la pantalla «Unirse a partida» lo muestre. El descubrimiento usa multicast: hace falta una interfaz de red activa. **Riesgo abierto:** J1 y J2 comparten la carpeta de guardados; si en J2 se carga la misma partida que aloja J1, las dos instancias la tienen abierta a la vez (ocurrió 45 s en la prueba; ver `16-PENDIENTES.md`).
+

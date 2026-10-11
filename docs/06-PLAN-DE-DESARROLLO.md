@@ -71,4 +71,5 @@
 2. ~~Desarrollo: corregir la API plana del emulador~~ → hecho (2026-10-10): dos clientes en el menú con el filtro cargado.
 3. Propietario: con «Lanzar J1 y J2» (pestaña 07), comprobar que cada mando mueve solo su ventana y que la ventana sin foco reacciona (W16).
 4. ~~Simulación de foco~~ → primer paso hecho (2026-10-10): foco simulado desde fuera (ADR-020). Repetir W16 con la casilla activada y desactivada.
-5. J2 se une a la partida de J1 en 127.0.0.1 (W14); con esa evidencia, registrar `SESION_COMUN_VALIDADA` / `INPUT_AISLADO_VALIDADO` en `05-INTEGRACION-STEAM.md`.
+5. ~~J2 se une a la partida de J1 en 127.0.0.1 (W14)~~ → hecho (2026-10-10): J2 entra sola (ADR-022); `SESION_COMUN_VALIDADA` / `INPUT_AISLADO_VALIDADO` registrados en `05-INTEGRACION-STEAM.md`.
+6. Sesión de juego real de los dos jugadores; decidir si J2 usa su propia carpeta de datos (guardados compartidos, ver `16-PENDIENTES.md`).

@@ -59,7 +59,8 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 `steamemu_humo` (CTest en la CI) lanza dos procesos que cargan la DLL con identidades distintas y verifica:
 - `SteamAPI_InitSafe`, SteamID, persona, AppID y propiedad de apps;
 - que `SteamInternal_ContextInit` resuelve la cadena de versiones;
-- el callback de stats y su persistencia, la nube y un intercambio P2P local.
+- el callback de stats y su persistencia, la nube y un intercambio P2P local;
+- lo que usa 7DTD para encontrarse (ADR-022): la respuesta del ticket llega solo por el canal del servidor de juego y con el ABI del SDK (20 bytes, dueño en el desplazamiento 12); `LobbyCreated_t` llega como callback antes que `LobbyEnter_t`; el lobby público del otro proceso aparece en `RequestLobbyList` con sus datos y su filtro; `JoinLobby` entrega `LobbyEnter_t`; y con `auto_join` llega `GameServerChangeRequested_t` con `127.0.0.1:26900`.
 
 Superada en el PC del propietario (2026-10-10) y en la CI de Windows (runs #14 y #16). **No cubre** los métodos planos `SteamAPI_ISteam*` que usa Steamworks.NET. Por eso no detectó el fallo con 7DTD real (ver `05-INTEGRACION-STEAM.md`).
 
@@ -121,7 +122,8 @@ Historial:
   - **W16 superado (propietario, noche):** con el paquete nuevo y «Lanzar J1 y J2», cada mando controla solo su ventana.
   - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
   - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
-- El resto, sin confirmar. W11, W12 y W14 requieren instalar antes el servidor dedicado (no instalado).
+  - **W14 superado (noche, sin servidor dedicado):** J1 aloja su partida y J2 entra sola en ella (ADR-022). En el registro del anfitrión: autenticación `k_EAuthSessionResponseOK`, «Player 'SplitForgeJ2' joined the game» y `PlayerSpawnedInWorld (reason: JoinMultiplayer)`. Falta una sesión de juego real de los dos jugadores.
+- El resto, sin confirmar. W11 y W12 requieren instalar antes el servidor dedicado (no instalado).
 
 ## Benchmark cuando exista el primer adaptador validado
 

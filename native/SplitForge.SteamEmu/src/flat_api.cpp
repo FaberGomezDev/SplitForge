@@ -242,6 +242,7 @@ S_API void SteamAPI_UnregisterGlobalCallResult(void* object, uint64_t apiCall) {
 }
 
 S_API void SteamAPI_RunCallbacks() {
+    Emu().PumpNetwork();
     DispatchBoth();
 }
 
@@ -259,14 +260,19 @@ S_API int SteamAPI_GetHSteamPipe() {
 
 S_API void SteamAPI_ManualDispatch_Init() {}
 
-S_API void SteamAPI_ManualDispatch_RunFrame(int) {}
-
-S_API bool SteamAPI_ManualDispatch_GetNextCallback(int, CallbackMsg_t* message) {
-    return Emu().PopManual(message);
+// Steamworks.NET usa estas mismas funciones para los dos canales: el del usuario y el del servidor de
+// juego (SteamGameServer_GetHSteamPipe). Cada callback se entrega solo por su canal.
+S_API void SteamAPI_ManualDispatch_RunFrame(int pipe) {
+    if (pipe != kGameServerPipe)
+        Emu().PumpNetwork();
 }
 
-S_API void SteamAPI_ManualDispatch_FreeLastCallback(int) {
-    Emu().FreeLastManual();
+S_API bool SteamAPI_ManualDispatch_GetNextCallback(int pipe, CallbackMsg_t* message) {
+    return Emu().PopManual(pipe, message);
+}
+
+S_API void SteamAPI_ManualDispatch_FreeLastCallback(int pipe) {
+    Emu().FreeLastManual(pipe);
 }
 
 S_API bool SteamAPI_ManualDispatch_GetAPICallResult(int, uint64_t apiCall, void* out, int size,
@@ -317,13 +323,19 @@ S_API void* SteamInternal_FindOrCreateGlobalInterface(int, const char* version) 
     return ResolveGeneric(version);
 }
 
-S_API bool SteamGameServer_Init(uint32_t, uint16_t, uint16_t, uint16_t, int, const char*) {
-    Emu().gameServerInitialized = true;
+S_API bool SteamGameServer_Init(uint32_t, uint16_t, uint16_t gamePort, uint16_t queryPort, int, const char*) {
+    EmuState& emu = Emu();
+    emu.gameServerInitialized = true;
+    emu.gameServerPort = gamePort;
+    emu.Log("Servidor de juego iniciado: puerto de juego %u, de consulta %u", static_cast<unsigned>(gamePort),
+            static_cast<unsigned>(queryPort));
+    emu.UpdateServerAnnouncement();
     return true;
 }
 
-S_API bool SteamGameServer_InitSafe(uint32_t, uint16_t, uint16_t, uint16_t, int, const char*) {
-    return SteamGameServer_Init(0, 0, 0, 0, 0, nullptr);
+S_API bool SteamGameServer_InitSafe(uint32_t ip, uint16_t steamPort, uint16_t gamePort, uint16_t queryPort, int mode,
+                                    const char* version) {
+    return SteamGameServer_Init(ip, steamPort, gamePort, queryPort, mode, version);
 }
 
 // Lo que llaman SteamGameServer_Init de los encabezados modernos y Steamworks.NET.
@@ -335,7 +347,10 @@ S_API bool SteamInternal_GameServer_Init(uint32_t ip, uint16_t legacyPort, uint1
 S_API void SteamGameServer_ReleaseCurrentThreadMemory() {}
 
 S_API void SteamGameServer_Shutdown() {
-    Emu().gameServerInitialized = false;
+    EmuState& emu = Emu();
+    emu.gameServerInitialized = false;
+    emu.gameServerLoggedOn = false;
+    emu.UpdateServerAnnouncement();
 }
 
 S_API void SteamGameServer_RunCallbacks() {
@@ -347,11 +362,11 @@ S_API bool SteamGameServer_BSecure() {
 }
 
 S_API int SteamGameServer_GetHSteamUser() {
-    return 1;
+    return kGameServerPipe;
 }
 
 S_API int SteamGameServer_GetHSteamPipe() {
-    return 1;
+    return kGameServerPipe;
 }
 
 S_API uint64_t SteamGameServer_GetSteamID() {
@@ -379,11 +394,11 @@ S_API void SteamGameServer_ManualDispatch_Init() {}
 S_API void SteamGameServer_ManualDispatch_RunFrame(int) {}
 
 S_API bool SteamGameServer_ManualDispatch_GetNextCallback(int, CallbackMsg_t* message) {
-    return Emu().PopManual(message);
+    return Emu().PopManual(kGameServerPipe, message);
 }
 
 S_API void SteamGameServer_ManualDispatch_FreeLastCallback(int) {
-    Emu().FreeLastManual();
+    Emu().FreeLastManual(kGameServerPipe);
 }
 
 S_API bool SteamGameServer_ManualDispatch_GetAPICallResult(int, uint64_t apiCall, void* out, int size,

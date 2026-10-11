@@ -500,11 +500,17 @@ constexpr int k_iCallback_RemoteStorageFileWriteAsyncComplete = 1303;
 constexpr int k_iCallback_RemoteStorageFileReadAsyncComplete = 1304;
 constexpr int k_iCallback_RemoteStorageFileShareResult = 1307;
 
+// Mismo caso que ValidateAuthTicketResponse_t: el CSteamID va en el desplazamiento 12. El SDK redondea
+// el tamaño a 24 por el uint64 inicial.
+#pragma pack(push, 4)
 struct UserStatsReceived_t {
     CGameID m_nGameID;
     EResult m_eResult;
     CSteamID m_steamIDUser;
+    uint32_t m_relleno;
 };
+#pragma pack(pop)
+static_assert(sizeof(UserStatsReceived_t) == 24, "ABI de UserStatsReceived_t");
 struct UserStatsStored_t {
     CGameID m_nGameID;
     EResult m_eResult;
@@ -613,6 +619,31 @@ struct GetAuthSessionTicketResponse_t {
     HAuthTicket m_hAuthTicket;
     EResult m_eResult;
 };
+// Respuesta a BeginAuthSession. El anfitrión de 7DTD la espera por el canal del servidor de juego.
+constexpr int k_iCallback_ValidateAuthTicketResponse = 143;
+// En el SDK, CSteamID no se alinea a 8 bytes: tras un campo de 4, el siguiente CSteamID va pegado (aquí,
+// el dueño en el desplazamiento 12 y 20 bytes en total). Con 7DTD real, el dueño llegaba corrido 4 bytes.
+#pragma pack(push, 4)
+struct ValidateAuthTicketResponse_t {
+    CSteamID m_SteamID;
+    int m_eAuthSessionResponse; // 0 = k_EAuthSessionResponseOK
+    CSteamID m_OwnerSteamID;
+};
+#pragma pack(pop)
+static_assert(sizeof(ValidateAuthTicketResponse_t) == 20, "ABI de ValidateAuthTicketResponse_t");
+
+// «Únete a este servidor»: lo que Steam envía al pulsar «Unirse a la partida» de un amigo.
+constexpr int k_iCallback_GameServerChangeRequested = 332;
+struct GameServerChangeRequested_t {
+    char m_rgchServer[64];   // "ip:puerto"
+    char m_rgchPassword[64];
+};
+static_assert(sizeof(GameServerChangeRequested_t) == 128, "ABI de GameServerChangeRequested_t");
+
+// Canales de callbacks: el del usuario y el del servidor de juego (SteamGameServer_GetHSteamPipe).
+constexpr int kUserPipe = 1;
+constexpr int kGameServerPipe = 2;
+
 constexpr int k_iCallback_GetTicketForWebApiResponse = 168;
 constexpr int k_cubTicketForWebApiMax = 2560;
 struct GetTicketForWebApiResponse_t {

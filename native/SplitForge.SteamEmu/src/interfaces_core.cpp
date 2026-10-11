@@ -170,7 +170,12 @@ public:
         emu.QueueCallback(k_iCallback_GetAuthSessionTicketResponse, &response, sizeof(response));
         return handle;
     }
-    EBeginAuthSessionResult BeginAuthSession(const void*, int, CSteamID) override {
+    EBeginAuthSessionResult BeginAuthSession(const void*, int, CSteamID steamId) override {
+        ValidateAuthTicketResponse_t response{};
+        response.m_SteamID = steamId;
+        response.m_eAuthSessionResponse = 0;
+        response.m_OwnerSteamID = steamId;
+        Emu().QueueCallback(k_iCallback_ValidateAuthTicketResponse, &response, sizeof(response));
         return k_EBeginAuthSessionResultOK;
     }
     void EndAuthSession(CSteamID) override {}
