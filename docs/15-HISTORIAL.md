@@ -391,7 +391,7 @@ PRÓXIMO PASO: que el propietario juegue una sesión; con sus registros, cerrar 
 
 ```text
 FECHA: 2026-10-10 (noche)
-RELEASE/COMMIT: este commit
+RELEASE/COMMIT: ba5d95e en main
 FALLO (propietario): al salir de los dos juegos desde su menú, la pantalla negra seguía y tapaba el
   escritorio; había que cerrar SplitForge.
 CAUSA: una sesión de ventanas existentes seguía «activa» con sus ventanas ya destruidas; el fondo,
