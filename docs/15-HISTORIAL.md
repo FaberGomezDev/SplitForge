@@ -469,7 +469,7 @@ PRÓXIMO PASO: el propietario prueba con los dos mandos (W23 y W24). Si la venta
 
 ```text
 FECHA: 2026-10-11 (tarde)
-RELEASE/COMMIT: (ver el registro de git de esta fecha)
+RELEASE/COMMIT: 64c33ac en main
 OBJETIVO: el propietario probó el paquete de la mañana. Dentro de la partida los dos se mueven bien, pero
   LB/RB (cambiar de objeto) solo funcionan en la ventana con foco; en el inventario funcionan en las dos.
   Además la barra de tareas se quedó visible hasta que eligió la ventana con Alt+Tab. Pide ensayarlo.
