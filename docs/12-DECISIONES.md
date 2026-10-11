@@ -71,7 +71,7 @@ Las etiquetas `v*` crean una release con ZIP y SHA-256 (prerelease para `v0.*`).
 
 **Foco simulado (2026-10-10, técnica `ForceFocus` / `FocusHooks` de Nucleus):** 7DTD solo atiende la entrada si Unity le notifica el foco (`GameManager.OnApplicationFocus` → `GameIsFocused`), así que en pantalla dividida solo respondía la ventana activa. Con mando asignado, el filtro (una vez por proceso) subclasifica la ventana de Unity: bloquea `WM_KILLFOCUS` y convierte `WM_ACTIVATE`/`WM_ACTIVATEAPP`/`WM_NCACTIVATE` inactivos en activos. Además redirige `GetForegroundWindow`/`GetActiveWindow`/`GetFocus` en la tabla de importaciones de `UnityPlayer.dll` y del ejecutable a su ventana, y le envía una activación inicial. Todo dentro del propio proceso del juego, sin parchear código. Tras dividir la pantalla, SplitForge recupera el foco real (`SetForegroundWindowElsewhere` de Nucleus). El puntero no necesita nada: 7DTD dibuja el suyo por instancia (`SoftCursor`).
 
-**Ampliada por ADR-021** (2026-10-10): la DLL real pasa a ser siempre `xinput1_4.dll` y el filtro intercepta sus exportaciones. **Pendiente:** confirmación física de W16 (cada mando mueve solo su ventana).
+**Ampliada por ADR-021** (2026-10-10): la DLL real pasa a ser siempre `xinput1_4.dll` y el filtro intercepta sus exportaciones. Con eso, W16 quedó superado (cada mando mueve solo su ventana).
 
 ## ADR-016 · Aceptada (experimental) · Emulador de Steam como componente principal (técnica de Goldberg)
 
@@ -157,5 +157,5 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Límites:** quien resolviera las funciones antes de que el filtro cargara la DLL real conserva las direcciones originales (el estado lo avisa con `previa=si`); para ese caso haría falta enganchar el código. Solo x64. El ordinal 109 no está documentado: por su código se **supone** que recibe (índice de mando, puntero). `XInputGetDSoundAudioDeviceGuids` no existe en la 1.4: el filtro responde «sin dispositivo de audio» para el mando asignado.
 
-**Evidencia (2026-10-10, dos clientes reales con los dos mandos conectados):** `intercepcion=activa`, `previa=no`, cientos de lecturas por la DLL real en cada cliente, e InControl lista **un** solo mando por cliente (`XInput::1`). Prueba de humo ampliada. **Pendiente:** confirmación física de W16.
+**Evidencia (2026-10-10, dos clientes reales con los dos mandos conectados):** `intercepcion=activa`, `previa=no`, cientos de lecturas por la DLL real en cada cliente, e InControl lista **un** solo mando por cliente (`XInput::1`). Prueba de humo ampliada. **W16 superado:** el propietario confirma con los mandos que cada uno controla solo su ventana.
 

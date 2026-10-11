@@ -10,7 +10,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 - ¿La ventana **sin foco** sigue simulando el juego y leyendo mandos? (Unity puede pausar o ignorar la entrada en segundo plano).
 - ~~¿Abre 7DTD una segunda instancia en la misma sesión de Windows?~~ → **Sí** con el emulador (2026-10-10): dos clientes en el menú a la vez desde la misma carpeta. Con Sandboxie-Plus u otro usuario, sin probar.
 - ~~¿Procesa la ventana sin foco la entrada del mando?~~ → **No** (el propietario, 2026-10-10): 7DTD ignora la entrada sin foco (`GameIsFocused`). Hecho: foco simulado desde fuera (ADR-020) y dentro del filtro.
-- ~~Bloqueante (W16): cada stick mueve las dos ventanas~~ → **causa encontrada y corregida (ADR-021, 2026-10-10):** la 1.4 real la cargaba el propio filtro a través de la `XInput1_3.dll` de System32 (un reenviador), e InControlNative la recibía por nombre. Ahora el filtro la intercepta y cada cliente enumera un solo mando. **Falta la confirmación física del propietario.**
+- ~~Bloqueante (W16): cada stick mueve las dos ventanas~~ → **causa encontrada y corregida (ADR-021, 2026-10-10):** la 1.4 real la cargaba el propio filtro a través de la `XInput1_3.dll` de System32 (un reenviador), e InControlNative la recibía por nombre. Ahora el filtro la intercepta y cada cliente enumera un solo mando. **Confirmado por el propietario con los mandos.**
 - Si en otro juego (o tras una actualización) el estado del filtro dice «ya estaba cargada antes del filtro» (`previa=si`), alguien resolvió la XInput real antes: habría que enganchar el código de sus funciones, como `Game.Hook.XInputEnabled` de Nucleus.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam? Cliente: build `25661859` (V 3.3.0 b18); el servidor dedicado aún no está instalado.
@@ -31,7 +31,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## Diseño técnico
 
-- Filtro XInput (experimental): 7DTD lo carga y, con la intercepción de ADR-021, cada cliente enumera un solo mando. ¿Basta para jugar con mandos independientes? → W16 físico.
+- Filtro XInput (experimental): 7DTD lo carga y, con la intercepción de ADR-021, cada cliente enumera un solo mando. W16 superado en el menú; falta verlo dentro de una partida común (W14).
 - Clientes en Sandboxie: el estado del filtro queda dentro del sandbox (escritura virtualizada); SplitForge lo lee de la carpeta por defecto de `SplitForge_J2`. Si el sandbox usa otra ruta raíz, no se verá (la asignación sí se lee).
 - Identificador estable tras reconexión Bluetooth sin guardar seriales en reportes (hoy: reasignación explícita).
 - Fullscreen exclusivo, DPI mixto y varios monitores (hoy: área útil del monitor principal).

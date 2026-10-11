@@ -101,10 +101,9 @@ Resultado con 7DTD real, paso a paso:
 | Estado del filtro | solo lecturas por `xinput1_3` | `intercepcion=activa`, `previa=no`, 702 y 603 lecturas por la DLL real |
 | Orden de carga | — | `xinput1_3.dll` (juego) → `xinput1_4.dll` (System32) → `InControlNative.dll` |
 
-Nadie movió los sticks en esta comprobación: **la confirmación física sigue pendiente**.
+**W16 superado (propietario, 2026-10-10, noche):** con «Lanzar J1 y J2» del paquete nuevo, el propietario confirma con los mandos que cada uno controla solo su ventana.
 
 **Siguiente evidencia necesaria:**
-- **W16 (propietario):** con «Lanzar J1 y J2», cada stick debe mover solo su ventana, también la que no tiene el foco. El estado de la pestaña 06 debe decir «XInput real interceptada».
 - **W14:** J2 se une a la partida de J1 en 127.0.0.1.
 
 ### Alternativas descartadas para 7DTD

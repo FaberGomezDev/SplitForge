@@ -39,7 +39,7 @@
 - [x] Instrumentación para la prueba real: estado por DLL con contador de lecturas, DLL real comprobada en System32, detección de la ranura XInput de cada mando, actualización segura del filtro, informe v3 y comando `xinput`.
 - [x] Comprobado con dos clientes (W16, 2026-10-10): las lecturas subían en ambos, pero cada stick movía las dos ventanas; InControlNative leía por la `xinput1_4.dll` real.
 - [x] XInput real interceptada dentro del proceso (ADR-021): cada cliente enumera un solo mando.
-- [ ] Confirmación física de W16 por el propietario.
+- [x] Confirmación física de W16 por el propietario (2026-10-10): cada mando controla solo su ventana.
 - [ ] Verificar en Windows 11 con dos PS4 reales: cada mando controla solo su cliente.
 
 **Criterio de salida:** una partida de 7DTD con J1 y J2 visibles entre sí, entrada aislada y cierre seguro → estado `INPUT_AISLADO_VALIDADO`.

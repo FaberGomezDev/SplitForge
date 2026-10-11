@@ -51,7 +51,7 @@ flowchart TB
 
 ## 2. Límites actuales
 
-- La redirección de un mando por instancia **dentro** de juegos de terceros existe solo como filtro XInput experimental (con la XInput real interceptada, ADR-021, y foco simulado). Con dos clientes de 7DTD cada uno enumera un solo mando; falta la confirmación física (W16).
+- La redirección de un mando por instancia **dentro** de juegos de terceros existe solo como filtro XInput experimental (con la XInput real interceptada, ADR-021, y foco simulado). Con dos clientes de 7DTD cada mando controla solo su ventana (W16, confirmado por el propietario).
 - No hay compositor DirectX ni telemetría de frametimes/VRAM.
 - La segunda instancia necesita una identidad propia: el emulador de Steam (comprobado con 7DTD el 2026-10-10), otro usuario de Windows o Sandboxie-Plus. SplitForge no gestiona credenciales.
 - El protocolo de laboratorio no es una API de plugins.

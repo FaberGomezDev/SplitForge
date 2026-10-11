@@ -315,6 +315,19 @@ LIMITACIONES EXPLÍCITAS: nadie movió los sticks: falta la confirmación físic
 PRÓXIMO PASO: W16 con el propietario; después W14 (J2 se une a J1 en 127.0.0.1).
 ```
 
+## 2026-10-10 · W16 superado: cada mando controla solo su ventana
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit (solo documentación); código en 56fe872
+EVIDENCIA EN WINDOWS REAL: paquete generado con Compilar_SplitForge.bat (173 xUnit) y «Lanzar J1 y J2»
+  pulsado en la aplicación real. J1 → mando XInput 1, J2 → mando XInput 2; en ambos: intercepcion=activa,
+  previa=no, foco forzado, un solo mando listado por InControl. El propietario prueba con los dos mandos
+  y confirma que funciona: cada mando controla solo su ventana.
+LIMITACIONES EXPLÍCITAS: comprobado en el menú del juego; aún no dentro de una partida común.
+PRÓXIMO PASO: W14, que J1 y J2 se encuentren en la misma partida en este PC.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

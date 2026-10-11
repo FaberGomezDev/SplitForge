@@ -53,7 +53,7 @@
 - Filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
 - Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L, ADR-017) para pantalla dividida.
 - Bloqueo de entrada «solo mandos» (Ctrl+Alt+B, ADR-019) y pantalla dividida que tapa la barra de tareas (comprobado con 7DTD).
-- Aislamiento de mandos dentro de 7DTD: el filtro intercepta también la `xinput1_4.dll` real (ADR-021) y cada cliente enumera un solo mando (J1 → mando 1, J2 → mando 2); falta la confirmación física (W16).
+- Aislamiento de mandos dentro de 7DTD: el filtro intercepta también la `xinput1_4.dll` real (ADR-021) y cada cliente enumera un solo mando (J1 → mando 1, J2 → mando 2). **Validado por el propietario con los mandos (W16).**
 
 **No implementado / no verificado:**
 - La 0.7 con mandos en el hardware del propietario.

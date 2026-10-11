@@ -117,7 +117,8 @@ Historial:
   - Parte de W02: hilo SDL3 a 1000 Hz, sin mandos.
   - **W20 superado (tarde):** tras generar la API plana y lanzar sin juego cruzado, J1 y J2 llegan al menú a la vez con perfiles distintos, colocados arriba/abajo, con el filtro cargado en ambos (J1 → mando 1, J2 → mando 2, lecturas subiendo). Por la mañana fallaba: 7DTD se cerraba al iniciar Steam.
   - **W16, primer intento fallido (propietario):** cada stick movía las dos ventanas. Corregido con ADR-021.
-  - **W16 parcial (noche):** con dos clientes reales y los dos mandos conectados, cada cliente enumera un solo mando (InControl) y el filtro intercepta la XInput real. Falta que el propietario confirme con los mandos que cada uno mueve solo su ventana.
+  - **W16 parcial (noche):** con dos clientes reales y los dos mandos conectados, cada cliente enumera un solo mando (InControl) y el filtro intercepta la XInput real. 
+  - **W16 superado (propietario, noche):** con el paquete nuevo y «Lanzar J1 y J2», cada mando controla solo su ventana.
   - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
   - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
 - El resto, sin confirmar. W11, W12 y W14 requieren instalar antes el servidor dedicado (no instalado).
