@@ -92,16 +92,27 @@ jobs:
           $p.Refresh()
           $root = [System.Windows.Automation.AutomationElement]::FromHandle($p.MainWindowHandle)
           $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::TabItem)
-          $tabs = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)
-          Write-Host "Pestañas encontradas: $($tabs.Count)"
+          # Navegación principal: JUGAR, MANDOS y AVANZADO. Las pestañas de AVANZADO solo existen al abrirla.
+          $main = @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond))
+          Write-Host "Secciones principales: $(($main | ForEach-Object { $_.Current.Name }) -join ', ')"
           $i = 0
-          foreach ($t in $tabs) {
+          foreach ($t in $main) {
             $i++
             $t.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
             Start-Sleep -Milliseconds 1500
-            Capture ("pestana-{0}" -f $i)
+            Capture ("seccion-{0}" -f $i)
           }
-          if ($tabs.Count -ne 7) { Write-Error "Se esperaban 7 pestañas"; exit 1 }
+          $inner = @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond) | Where-Object { $main.Current.Name -notcontains $_.Current.Name })
+          Write-Host "Pestañas de AVANZADO: $(($inner | ForEach-Object { $_.Current.Name }) -join ', ')"
+          $i = 0
+          foreach ($t in $inner) {
+            $i++
+            $t.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+            Start-Sleep -Milliseconds 1200
+            Capture ("avanzado-{0}" -f $i)
+          }
+          if ($main.Count -ne 3) { Write-Error "Se esperaban 3 secciones principales"; exit 1 }
+          if ($inner.Count -ne 6) { Write-Error "Se esperaban 6 pestañas en AVANZADO"; exit 1 }
           $p.CloseMainWindow() | Out-Null
           if (-not $p.WaitForExit(20000)) { Capture "cierre-bloqueado"; Write-Error "SplitForge.exe no se cerró de forma ordenada"; $p.Kill(); exit 1 }
           Get-Content "$env:LOCALAPPDATA/SplitForge/splitforge-net.log" -Tail 20

@@ -37,6 +37,9 @@ public partial class MainWindow : Window
     {
         base.OnSourceInitialized(e);
         _hotkeyWindow = new WindowInteropHelper(this).Handle;
+        // Barra de título oscura, a juego con el lanzador (Windows 10 2004 o posterior; si no, se ignora).
+        var dark = 1;
+        _ = DwmSetWindowAttribute(_hotkeyWindow, 20, ref dark, sizeof(int));
         HwndSource.FromHwnd(_hotkeyWindow)?.AddHook(HotkeyHook);
         var spec = MainViewModel.MouseLockHotkeySpec;
         if (!GlobalHotkey.Register(_hotkeyWindow, MouseLockHotkeyId, (uint)spec.Modifiers, spec.VirtualKey))
@@ -46,6 +49,9 @@ public partial class MainWindow : Window
         if (!GlobalHotkey.Register(_hotkeyWindow, InputLockHotkeyId, (uint)input.Modifiers, input.VirtualKey))
             _vm.NoteInputLockHotkeyUnavailable();
     }
+
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
 
     private nint HotkeyHook(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
     {

@@ -192,3 +192,22 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Evidencia (2026-10-10):** con los dos visores del laboratorio y con dos clientes reales de 7DTD, el fondo queda inmediatamente debajo de las dos ventanas y los dos píxeles de la unión pasan del color del escritorio a negro (`000000`); al detener la sesión, desaparece.
 
+## ADR-024 · Aceptada · La interfaz es un lanzador de juegos, no un panel técnico
+
+**Contexto:** el propietario pide un diseño propio de juegos, sin lo innecesario: 7 Days to Die es el primero de varios. La interfaz anterior eran siete pestañas numeradas de herramientas, con una barra de opciones y el registro siempre visibles.
+
+**Decisión:**
+
+- **Tres secciones** en una barra lateral: **JUGAR**, **MANDOS** y **AVANZADO**.
+- **JUGAR** es todo lo que hace falta para una partida: biblioteca (hoy un juego y un hueco «próximamente»), portada con el botón JUGAR, una tarjeta por jugador (nombre, mando, «Detectar»), la lista «Preparación» (juego, identidad, un mando por ventana, mandos) con «Preparar ahora» si falta algo instalable, las opciones de pantalla y de partida, y tres pasos de cómo se juega.
+- **AVANZADO** recoge lo técnico sin quitar nada: distribución y bloqueos, emulador y filtro de 7DTD con su diagnóstico y el servidor dedicado, laboratorio, ventanas, Steam y registro.
+- **Tema** (`Theme.xaml`): oscuro, un solo color de acento, un color por jugador (J1 azul, J2 rojo), interruptores, botones segmentados y desplegables oscuros. Barra de título oscura.
+- **Carátulas:** se leen de la caché local de Steam del usuario (`appcache\librarycache\<AppID>`); SplitForge no incluye ni distribuye imágenes de juegos. Si no están, se muestra el título en texto.
+- **Lógica nueva, pura y probada:** `PlayReadiness` (qué falta para jugar) y `SteamArt` (dónde están las carátulas).
+
+**Reglas que se mantienen:** la interfaz solo refleja estado (la lista «Preparación» se recalcula cada ≈2 s y solo cambia si cambió algo); nada se declara compatible por estar instalado; «próximamente» no promete ningún juego concreto.
+
+**Detalle a recordar:** en una plantilla propia de `TabControl`, el presentador del contenido debe llamarse `PART_SelectedContentHost`; sin ese nombre la automatización (lectores de pantalla y la prueba de la CI) no ve el contenido de las pestañas.
+
+**Evidencia (2026-10-10):** 187 xUnit; los 130 enlaces de la ventana tienen su propiedad en el modelo; el paquete publicado arranca, muestra las 3 secciones y las 6 pestañas de AVANZADO y se cierra de forma ordenada. **Sin comprobar:** una partida completa lanzada desde el botón JUGAR nuevo (usa la misma orden que antes) y la opinión del propietario sobre el diseño.
+

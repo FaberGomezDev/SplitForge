@@ -408,6 +408,30 @@ LIMITACIONES EXPLÍCITAS: el arreglo no se ha visto aún con los juegos reales (
 PRÓXIMO PASO: sesión de juego normal; lista «Unirse a partida»; unión J2 → J1; «Cerrar J1 y J2».
 ```
 
+## 2026-10-10 · Rediseño de la interfaz como lanzador de juegos
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit
+OBJETIVO: el propietario pide un diseño propio de juegos, quitando lo innecesario (7DTD es el primero
+  de varios).
+CAMBIOS EFECTIVOS (ADR-024): navegación JUGAR / MANDOS / AVANZADO; pantalla JUGAR con biblioteca,
+  portada, jugadores, preparación, opciones y pasos; tema nuevo (Theme.xaml); carátulas desde la caché
+  local de Steam; PlayReadiness y SteamArt en Core; mensajes que citaban «pestaña 06/07» actualizados;
+  prueba de arranque de la CI adaptada (3 secciones + 6 pestañas).
+EVIDENCIA AUTOMÁTICA: 187 xUnit (4 nuevas); los 130 enlaces de la ventana tienen propiedad en el modelo.
+EVIDENCIA EN WINDOWS REAL: el paquete publicado arranca, enumera las 3 secciones y las 6 pestañas de
+  AVANZADO por UI Automation y se cierra de forma ordenada. La pantalla JUGAR se vio con la portada, los
+  dos mandos conectados y «Todo listo para jugar».
+ERRORES PROPIOS CORREGIDOS: (1) el paquete se cerraba al arrancar porque el estado del filtro se
+  refrescaba en el constructor, sin contexto de sincronización; lo detectó la comprobación del paquete
+  publicado, no la compilación de desarrollo. (2) Una captura de comprobación recogió otra ventana del
+  propietario en vez de SplitForge: se borraron todas las capturas y no se guarda ninguna en el repositorio.
+LIMITACIONES EXPLÍCITAS: sin partida completa lanzada con el botón JUGAR nuevo; la nueva prueba de la CI
+  aún no se ha ejecutado en GitHub.
+PRÓXIMO PASO: opinión del propietario sobre el diseño; partida real desde JUGAR.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

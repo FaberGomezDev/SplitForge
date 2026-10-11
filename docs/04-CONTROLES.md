@@ -54,7 +54,7 @@ sequenceDiagram
 
 Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input), mientras que XInput funciona en segundo plano. Antes de escribir el módulo nativo hay que saber qué API usa cada juego: `SplitForge.Diagnostico.exe 7dtd` lista los módulos de entrada cargados (XInput, DirectInput, HID, Windows.Gaming.Input, SDL, overlay de Steam, EAC). Opciones según la evidencia:
 
-- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se gestiona desde la pestaña 06 con «Instalar filtro», «Detectar», «Asignar mandos a los clientes» y «Quitar filtro».
+- **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se instala con «Preparar ahora» en la pantalla JUGAR (donde también está «Detectar» por jugador) y se gestiona en AVANZADO › 7 Days to Die: «Instalar filtro», «Asignar mandos a los clientes» y «Quitar filtro».
   - Cada cliente ve solo su ranura, y los mandos deben llegar como XInput sin duplicados.
   - Cada copia cargada escribe `estado-PID-<dll>.txt` con la DLL, si cargó la real, la ranura, las lecturas, cuántas llegaron por la XInput real interceptada y si la intercepción está activa.
   - La DLL real es siempre `xinput1_4.dll` de System32 y el filtro redirige sus exportaciones hacia sí mismo (ADR-021): un módulo del juego que la pida por su cuenta también ve un solo mando. En 7DTD, Unity usa la copia `xinput1_3` e InControlNative la 1.4 real interceptada.

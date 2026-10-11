@@ -70,6 +70,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
         InitSteamEmu();
         InitLock();
         InitFakeFocus();
+        InitPlay();
         RefreshPaneHint();
 
         _timer = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(33) };
@@ -80,6 +81,7 @@ public sealed partial class MainViewModel : Observable, IDisposable
     }
 
     public string Title => $"SplitForge {Version} · Pantalla dividida local";
+    public string VersionLine => $"Versión {Version} · experimental";
     public ObservableCollection<string> LogLines { get; } = [];
     public IReadOnlyList<int> Gutters { get; } = [0, 2, 4, 8, 12, 16];
 
@@ -308,6 +310,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Guard(CloseEmulatedClientsStep, quiet: true);
             Guard(EndSessionWhenWindowsAreGone, quiet: true);
             Guard(SyncBackdrop, quiet: true);
+            if (_tickCount == 15 || _tickCount % 60 == 0) // al arrancar y después ≈ cada 2 s
+                Guard(RefreshPlay, quiet: true);
             Guard(SyncFakeFocus, quiet: true);
             RefreshServer();
             var active = _sessions.Active;

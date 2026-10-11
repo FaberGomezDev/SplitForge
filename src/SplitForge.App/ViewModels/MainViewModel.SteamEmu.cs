@@ -139,7 +139,7 @@ public sealed partial class MainViewModel
         if (!Confirm("Emulador de Steam (experimental)",
                 "Se sustituirá steam_api64.dll del juego por la versión emulada de SplitForge "
                 + "(la original queda como copia de seguridad). El juego NO hablará con Steam y usará las identidades "
-                + "locales de esta pestaña.\n\nRequiere el juego sin EAC (opción oficial). ¿Instalar?"))
+                + "locales de la pantalla JUGAR.\n\nRequiere el juego sin EAC (opción oficial). ¿Instalar?"))
             return;
         var config = SteamEmulator.BuildConfig(SteamEmuAppId, SteamId1, Persona1,
             SteamEmulator.DefaultStorageDir(_dataFolder, SteamEmuAppId, 1));
@@ -149,7 +149,7 @@ public sealed partial class MainViewModel
         {
             SteamEmuInstallResult.Updated => "Emulador de Steam actualizado en 7DTD (la original sigue respaldada).",
             SteamEmuInstallResult.UpToDate => "El emulador de Steam de 7DTD ya estaba al día.",
-            _ => "Emulador de Steam instalado en 7DTD (original respaldado). Solo abrir con «Lanzar instancia» de esta pestaña.",
+            _ => "Emulador de Steam instalado en 7DTD (original respaldado). Ábrelo siempre con el botón JUGAR.",
         });
         RefreshSteamEmuStatus();
     });
@@ -248,7 +248,7 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>
-    /// Cada cliente ve solo el mando de su jugador (ranuras de la pestaña 06), por PID. Se llama nada más
+    /// Cada cliente ve solo el mando de su jugador (mando elegido en la pantalla JUGAR), por PID. Se llama nada más
     /// crear cada proceso, antes de su primera lectura de mandos: así ningún cliente llega a ver el del otro
     /// (con J1 aún sin asignar, InControl enumeraba los dos mandos al arrancar).
     /// </summary>
@@ -257,7 +257,7 @@ public sealed partial class MainViewModel
         if (XInputFilter.InstalledNames(SevenDaysFolder()).Count == 0)
         {
             if (pid2 == 0)
-                _log.Write("Filtro XInput no instalado: los dos mandos controlarán ambas ventanas. Instálalo en la pestaña 06 (con los clientes cerrados).");
+                _log.Write("Filtro XInput no instalado: los dos mandos controlarán ambas ventanas. Instálalo con «Preparar ahora» en JUGAR (con los juegos cerrados).");
             return;
         }
         List<(int Pid, int Slot)> assignments = [(pid1, SlotPlayer1 - 1)];
@@ -324,7 +324,7 @@ public sealed partial class MainViewModel
         if (DateTime.UtcNow > pending.Deadline)
         {
             _emuPending = null;
-            Status = "Las ventanas de 7DTD no aparecieron a tiempo: usa «Dividir pantalla» en la pestaña 06.";
+            Status = "Las ventanas de 7DTD no aparecieron a tiempo: usa «Dividir pantalla con los clientes» en AVANZADO › 7 Days to Die.";
             return;
         }
         var windows = _windows.EnumerateWindows();
@@ -348,7 +348,7 @@ public sealed partial class MainViewModel
 
     private string SpecPersona(int player) => player == 1 ? Persona1 : Persona2;
 
-    /// <summary>Clientes lanzados desde esta pestaña (el anfitrión primero) y cierre ordenado en curso.</summary>
+    /// <summary>Clientes lanzados con JUGAR (el anfitrión primero) y cierre ordenado en curso.</summary>
     private readonly List<int> _emuClients = [];
     private readonly HashSet<int> _emuCloseRequested = [];
     private DateTime? _emuCloseDeadline;

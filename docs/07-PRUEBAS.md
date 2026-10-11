@@ -71,7 +71,7 @@ Se ejecuta en cada push a `main`, en cada PR y a mano. Pasos:
 - Pruebas .NET y Python, y documentación.
 - Publicación autónoma win-x64 con las dos DLL nativas.
 - **Prueba de humo** del ejecutable de diagnóstico (escaneo Steam + SDL3).
-- **Prueba de arranque de la interfaz:** abre `SplitForge.exe`, selecciona las **7 pestañas** con UI Automation (falla si no son 7), guarda una captura de cada una (artefacto `captura-interfaz`, 7 días) y exige un cierre ordenado.
+- **Prueba de arranque de la interfaz:** abre `SplitForge.exe`, selecciona con UI Automation las **3 secciones** (JUGAR, MANDOS, AVANZADO) y las **6 pestañas de AVANZADO** (falla si no son esas), guarda una captura de cada una (artefacto `captura-interfaz`, 7 días) y exige un cierre ordenado.
 
 Historial:
 - Primera ejecución (commit 3018ffa): verde; SDL3 3.5.0 inicializó en Windows (hilo a 646 Hz).
