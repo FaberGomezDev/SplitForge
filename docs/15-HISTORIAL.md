@@ -503,6 +503,27 @@ LIMITACIONES EXPLÍCITAS: falta que el propietario lo confirme jugando con los d
 PRÓXIMO PASO: confirmación del propietario (W23, W24) y siguiente juego: No Man's Sky.
 ```
 
+## 2026-10-11 · No Man's Sky: inspección y por qué no sirve la vía de 7DTD
+
+```text
+FECHA: 2026-10-11 (tarde)
+RELEASE/COMMIT: (ver el registro de git de esta fecha)
+OBJETIVO: el propietario pide seguir con No Man's Sky (AppID 275850, build 25732212).
+HECHO (solo lectura, sin ejecutar el juego): el multijugador va por PlayFab (el ejecutable importa
+  PartyWin y PlayFabMultiplayer y no pide ninguna interfaz SteamNetworking); el ejecutable lleva la
+  protección de Steam (sección .bind con el punto de entrada); mandos por XINPUT9_1_0 y SteamInput006;
+  ajustes de pantalla en la carpeta del juego; guardados por cuenta. En el PC solo hay la copia de Steam.
+  El handler de Nucleus Co-op solo vale para la versión antigua y usa un parcheador de la protección.
+CONSECUENCIA: no se puede hacer como 7DTD. No hay partida por red local ni identidad emulable: cada
+  jugador necesita su copia y su cuenta. No se quitará la protección del ejecutable ni se usará una
+  versión antigua.
+CAMBIOS EFECTIVOS: docs/plans/no-mans-sky.md (plantilla de adaptador, estado NO VALIDADO) y fila de la
+  matriz de 05-INTEGRACION-STEAM.md. Ningún cambio de código.
+LIMITACIONES EXPLÍCITAS: nada ejecutado; los supuestos (XInput con Steam Input desactivado, foco, VRAM
+  para dos instancias, riesgo del filtro en juego en línea) están sin comprobar.
+PRÓXIMO PASO: decisión del propietario sobre la segunda copia (GOG recomendada) o cambiar de juego.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

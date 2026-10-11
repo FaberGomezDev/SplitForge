@@ -21,6 +21,17 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam? Cliente: build `25661859` (V 3.3.0 b18); el servidor dedicado aún no está instalado.
 
+## No Man's Sky (siguiente juego pedido)
+
+Detalle en [`plans/no-mans-sky.md`](plans/no-mans-sky.md). Bloqueado por una decisión del propietario: hace falta una segunda copia con otra cuenta.
+
+- ¿Qué segunda copia? GOG (recomendada), segunda cuenta de Steam (exige dos clientes de Steam a la vez) o Xbox / Game Pass (dudosa).
+- ¿Lee los mandos por XInput con Steam Input desactivado para el juego? Si no, el filtro no puede aislarlos.
+- ¿Atiende el mando la ventana sin foco? El foco simulado del filtro busca primero la ventana de Unity y no cubre `GetKeyboardState` ni Raw Input.
+- ¿Caben dos instancias en 8 GB de VRAM? Sin medir.
+- ¿Acepta el propietario usar el filtro de mandos en un juego en línea? No hay antitrampas y el juego admite mods; riesgo bajo, no nulo.
+- El lanzador solo conoce 7DTD: un segundo juego exige generalizar adaptador, biblioteca y botón JUGAR.
+
 ## Emulador de Steam (componente principal)
 
 - ~~Bloqueante: API plana sin `self` e incompleta~~ → resuelto (2026-10-10): API plana generada con las 944 entradas de Steamworks.NET; `steamemu.log` registra la primera llamada a cada entrada, con «[sin implementar]» en las neutras.

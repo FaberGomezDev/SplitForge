@@ -23,6 +23,7 @@
 | [`15-HISTORIAL.md`](15-HISTORIAL.md) | Hitos históricos y notas para próximas sesiones |
 | [`16-PENDIENTES.md`](16-PENDIENTES.md) | Riesgos y preguntas abiertas sin suposiciones |
 | [`plans/7-days-to-die-original.md`](plans/7-days-to-die-original.md) | Plan de investigación heredado del prototipo |
+| [`plans/no-mans-sky.md`](plans/no-mans-sky.md) | No Man's Sky: lo inspeccionado, por qué no sirve la vía de 7DTD y las rutas posibles |
 | [`templates/ADAPTADOR.md`](templates/ADAPTADOR.md) | Plantilla obligatoria para adaptadores de juegos |
 | [`templates/ENTREGA.md`](templates/ENTREGA.md) | Plantilla para actualizar memoria/handoff |
 
