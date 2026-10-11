@@ -287,7 +287,7 @@ PRÓXIMO PASO: averiguar qué módulo carga la 1.4 desde System32 y hacer que es
 
 ```text
 FECHA: 2026-10-10 (noche)
-RELEASE/COMMIT: este commit
+RELEASE/COMMIT: 56fe872 en main
 OBJETIVO: que la vía xinput1_4 de 7DTD pase por el filtro (W16: cada stick movía las dos ventanas).
 CAUSA COMPROBADA (corrige la entrada anterior):
   - UnityPlayer.dll (con símbolos): win::RawInput::Open hace LoadLibraryA("xinput1_3.dll") → copia del
