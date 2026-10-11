@@ -436,7 +436,7 @@ PRÓXIMO PASO: opinión del propietario sobre el diseño; partida real desde JUG
 
 ```text
 FECHA: 2026-10-11
-RELEASE/COMMIT: (ver el registro de git de esta fecha)
+RELEASE/COMMIT: 619f4c2 en main
 OBJETIVO: el propietario informa de que la ventana sin foco solo deja moverse y golpear (el resto de
   botones no responde hasta darle el foco), de que su puntero a veces parpadea y de que con Ctrl+Alt+B
   no sabe si el teclado y el ratón están bloqueados.
