@@ -548,7 +548,7 @@ PRÓXIMO PASO: que el propietario desactive Steam Input solo para este juego y r
 
 ```text
 FECHA: 2026-10-11 (noche)
-RELEASE/COMMIT: pendiente
+RELEASE/COMMIT: e025a13 en main
 OBJETIVO: el propietario pide añadir No Man's Sky a SplitForge para hacerlo funcionar como 7DTD.
 CAMBIOS EFECTIVOS (ADR-027):
   - Core: catálogo LauncherGames; NoMansSkyAdapter (instalación, copia de J2, jugador de cada proceso,
