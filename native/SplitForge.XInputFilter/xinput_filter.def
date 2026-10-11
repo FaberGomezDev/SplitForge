@@ -12,3 +12,6 @@ EXPORTS
     XInputWaitForGuideButton=SF_XInputWaitForGuideButton @101 NONAME
     XInputCancelGuideButtonWait=SF_XInputCancelGuideButtonWait @102 NONAME
     XInputPowerOffController=SF_XInputPowerOffController @103 NONAME
+    XInputGetBaseBusInformation=SF_XInputGetBaseBusInformation @104 NONAME
+    XInputGetCapabilitiesEx=SF_XInputGetCapabilitiesEx @108 NONAME
+    XInputOrdinal109=SF_XInputOrdinal109 @109 NONAME

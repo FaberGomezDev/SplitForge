@@ -30,8 +30,8 @@ Primer `SplitForge_Reporte_7DTD.json` real (esquema v2), con **un** cliente abie
 | Dato del informe | Valor | Qué significa |
 | --- | --- | --- |
 | Cliente | `7DaysToDie.exe`, 1 ventana, módulos legibles | **Hecho:** abierto sin EAC. Ningún módulo de EAC está cargado y Windows permitió leer los módulos |
-| XInput | `xinput1_3.dll` y `xinput1_4.dll` | **Hecho:** el juego carga las dos, así que el filtro debe estar con ambos nombres (la instalación ya lo hace). **Resuelto con dos clientes (2026-10-10):** las lecturas solo llegan por `xinput1_3.dll` |
-| DirectInput / HID | `dinput8.dll`, `hid.dll` | **Pendiente:** son otras vías posibles. Si el juego leyera los mandos por ellas, el filtro XInput no bastaría |
+| XInput | `xinput1_3.dll` y `xinput1_4.dll` | **Hecho (2026-10-10, desensamblado y `Player.log`):** Unity pide `xinput1_3.dll` por nombre y recibe la copia del filtro. InControlNative, que es quien mueve al jugador, pide `XInput1_4.dll` y recibía la real de System32, ya cargada. El filtro intercepta esa DLL real (ADR-021) |
+| DirectInput / HID | `dinput8.dll`, `hid.dll` | Las carga InControlNative. **Hecho:** con los dos mandos conectados, InControl solo lista mandos de tipo XInput (ninguno por DirectInput o HID) |
 | InControl | `incontrolnative.dll` | **Hecho:** usa InControl, la biblioteca de mandos para Unity, con su módulo nativo |
 | Steam | `steam_api64.dll`, `steamclient64.dll`, `gameoverlayrenderer64.dll` | **Hecho:** API de Steam y superposición cargadas |
 | EOS | `eossdk-win64-shipping.dll` | SDK de Epic Online Services; no es el antitrampas |
@@ -87,14 +87,24 @@ Resultado con 7DTD real, paso a paso:
 | Sin tocar archivos | 7DTD admite `-crossplatform=` y `-serverplatforms=` como argumentos (`PlatformManager.GetCommandLineOverrides`, formato `-clave=valor`, valores vacíos ignorados). SplitForge lanza con `-crossplatform=None -serverplatforms=Steam` | **Hecho:** sin EOS, sin diálogo, **menú principal** |
 | Dos clientes | J1 y J2 a la vez desde la misma carpeta; en pantalla «PERFIL: SPLITFORGEJ1» y «PERFIL: SPLITFORGEJ2» | **Hecho:** `DOS_CLIENTES_VALIDOS` (dos clientes simultáneos, identidades distintas) |
 | Ventana | 960×1032 (lado a lado sin ajuste) corta el menú por la izquierda; 960×540 (16:9) y 1920×516 (arriba/abajo) lo muestran completo | **Hecho:** 7DTD necesita paneles de 16:9 o más anchos (`SevenDaysToDieAdapter.MinAspect`); el propietario prefiere arriba/abajo |
-| Mandos | Filtro cargado en los dos clientes por `xinput1_3.dll`, DLL real cargada, J1 → mando 1, J2 → mando 2; las lecturas suben en ambos (~60 por segundo cada uno) aunque solo uno tenga el foco | **Hecho:** el juego consulta su mando también sin foco. **Pendiente (W16):** que el propietario confirme que cada mando mueve solo su ventana y que la ventana sin foco reacciona |
+| Mandos | Filtro cargado en los dos clientes por `xinput1_3.dll`, DLL real cargada, J1 → mando 1, J2 → mando 2; las lecturas suben en ambos (~60 por segundo cada uno) aunque solo uno tenga el foco | **Hecho:** el juego consulta su mando también sin foco. Esas lecturas eran las de Unity; InControlNative leía aparte, sin filtrar (corregido, ver «Causa y corrección»). **Pendiente (W16):** que el propietario confirme que cada mando mueve solo su ventana |
 
 **Foco (2026-10-10, noche):** el propietario confirmó que los mandos **no** eran independientes: solo atendía la ventana activa. El IL del juego lo explica: `GameManager.OnApplicationFocus` → `GameIsFocused`. El handler de Nucleus usa `ForceFocus`, `FocusHooks` y `SetForegroundWindowElsewhere`. SplitForge añade al filtro el foco simulado (ADR-015). Con «Lanzar J1 y J2» real: J1 → mando 1 y J2 → mando 2, los dos con «foco simulado» en su estado. El puntero de 7DTD es propio de cada instancia (`SoftCursor`), así que no hace falta puntero virtual.
 
-**W16, resultado (propietario, 2026-10-10, noche):** con el foco simulado, **cada stick mueve las dos ventanas**. El diagnóstico v3 con los dos clientes lo explica: ambos tienen cargada la `xinput1_4.dll` **real** de System32 (origen «sistema») y el filtro solo está como `xinput1_3`. El juego (InControl pide `XInput1_3`/`XInput1_4`/`XInput9_1_0` por nombre) lee por la 1.4 sin filtrar. Descartado: la `XInput1_3.dll` del sistema no importa la 1.4. Siguiente: que la vía `xinput1_4` también pase por el filtro (Nucleus: `Game.Hook.XInputEnabled`).
+**W16, resultado (propietario, 2026-10-10, noche):** con el foco simulado, **cada stick mueve las dos ventanas**. El diagnóstico v3 con los dos clientes lo explica: ambos tienen cargada la `xinput1_4.dll` **real** de System32 (origen «sistema») y el filtro solo está como `xinput1_3`. El juego (InControl pide `XInput1_3`/`XInput1_4`/`XInput9_1_0` por nombre) lee por la 1.4 sin filtrar. Siguiente: que la vía `xinput1_4` también pase por el filtro (Nucleus: `Game.Hook.XInputEnabled`).
+
+**Causa y corrección (2026-10-10, noche; ADR-021):** la 1.4 real la cargaba el propio filtro. Su DLL real era la `XInput1_3.dll` de System32, que en este Windows reenvía a `xinput1_4.dll` cargándola en ejecución (no la importa: por eso se había descartado). InControlNative hace `LoadLibraryW("XInput1_4.dll")` y Windows le daba esa 1.4 ya cargada. Ahora el filtro usa siempre la 1.4 como DLL real y redirige sus exportaciones hacia sí mismo.
+
+| Comprobación con dos clientes reales y los dos mandos conectados | Antes | Ahora |
+| --- | --- | --- |
+| Mandos que lista InControl en cada cliente (`Player.log`) | 2 (`XInput::1`, `XInput::2`) | **1** (`XInput::1`) |
+| Estado del filtro | solo lecturas por `xinput1_3` | `intercepcion=activa`, `previa=no`, 702 y 603 lecturas por la DLL real |
+| Orden de carga | — | `xinput1_3.dll` (juego) → `xinput1_4.dll` (System32) → `InControlNative.dll` |
+
+Nadie movió los sticks en esta comprobación: **la confirmación física sigue pendiente**.
 
 **Siguiente evidencia necesaria:**
-- **W16:** pulsar en el mando 2 con la ventana de J1 activa; la ventana de J2 debe reaccionar. **Primer resultado (2026-10-10, propietario):** los mandos no son independientes. Respuesta: foco simulado desde fuera (ADR-020, pestaña 07, activado por defecto); repetir W16 con la casilla activada y desactivada. Si no basta, falta la parte de Nucleus que actúa dentro del juego (`ForceFocus` / `FocusHooks`).
+- **W16 (propietario):** con «Lanzar J1 y J2», cada stick debe mover solo su ventana, también la que no tiene el foco. El estado de la pestaña 06 debe decir «XInput real interceptada».
 - **W14:** J2 se une a la partida de J1 en 127.0.0.1.
 
 ### Alternativas descartadas para 7DTD
@@ -111,7 +121,7 @@ En cualquier punto: `BLOQUEADO` con motivo verificable. **Nunca** inferir `COMPA
 
 | Juego | ID Steam | Estado | Restricción por validar |
 | --- | --- | --- | --- |
-| 7 Days to Die | 251570 | `DOS_CLIENTES_VALIDOS` (2026-10-10, build `25661859`, V 3.3.0 b18): dos clientes con el emulador en el menú a la vez, filtro XInput cargado en ambos por `xinput1_3` | Confirmación física de los mandos y de la ventana sin foco (W16); misma partida (W14); guardados |
+| 7 Days to Die | 251570 | `DOS_CLIENTES_VALIDOS` (2026-10-10, build `25661859`, V 3.3.0 b18): dos clientes con el emulador en el menú a la vez; cada uno enumera un solo mando (filtro XInput con la DLL real interceptada, ADR-021) | Confirmación física de los mandos y de la ventana sin foco (W16); misma partida (W14); guardados |
 | No Man's Sky | 275850 | Investigación posterior · instalado (build `25732212`) | Autenticación, sesiones multijugador, offline |
 | State of Decay 2 | 495420 | Investigación posterior · no instalado en el PC de pruebas | Servicios online |
 | GTA V Legacy | 271590 | Investigación posterior · no instalado (sí GTA V Enhanced, 3240220) | Sin cooperativo en campaña, protecciones de GTA Online |

@@ -283,6 +283,38 @@ PRÓXIMO PASO: averiguar qué módulo carga la 1.4 desde System32 y hacer que es
   la DLL), además de XInputPlusDll con los mismos nombres que SplitForge.
 ```
 
+## 2026-10-10 · XInput real interceptada: cada cliente enumera un solo mando
+
+```text
+FECHA: 2026-10-10 (noche)
+RELEASE/COMMIT: este commit
+OBJETIVO: que la vía xinput1_4 de 7DTD pase por el filtro (W16: cada stick movía las dos ventanas).
+CAUSA COMPROBADA (corrige la entrada anterior):
+  - UnityPlayer.dll (con símbolos): win::RawInput::Open hace LoadLibraryA("xinput1_3.dll") → copia del
+    filtro. El sistema nuevo (NewInput, Windows.Gaming.Input) no se usa: no aparece en Player.log.
+  - La XInput1_3.dll de System32 (10.0.26200.1) es un reenviador: carga xinput1_4.dll en ejecución
+    (LoadLibraryExW + GetProcAddress), no por importación. «No depende de la 1.4» era falso.
+  - InControlNative.dll: LoadLibraryW("XInput1_4.dll") y GetProcAddress (ordinal 100, SetState,
+    GetCapabilities, GetBatteryInformation). Con la 1.4 real ya en memoria, Windows le daba esa.
+  - Player.log real: «NativeInputDeviceManager enabled» y dos mandos (XInput::1, XInput::2) por cliente.
+CAMBIOS EFECTIVOS: filtro: DLL real = xinput1_4.dll de System32 siempre; tabla de exportación de la DLL
+  real redirigida al filtro (ADR-021); segunda copia delega; copia fijada en memoria; ordinales 104, 108
+  y 109; XInputGetDSoundAudioDeviceGuids emulada; estado con intercepcion/interceptadas/previa.
+  Aplicación: «Lanzar J1 y J2» asigna cada mando al crear el proceso y pone al día el filtro instalado;
+  pestaña 06 y diagnóstico `xinput` muestran la intercepción.
+EVIDENCIA AUTOMÁTICA: 173 xUnit; filtro sin avisos (MSVC /W4 /WX); prueba de humo ampliada: la XInput
+  real de System32 queda interceptada, lecturas contadas aparte, segunda copia «delegada».
+EVIDENCIA EN WINDOWS REAL: dos clientes de 7DTD lanzados como «Lanzar J1 y J2», con los dos mandos
+  conectados (ranuras 1 y 2). Orden de carga en ambos: xinput1_3.dll (juego) → xinput1_4.dll (System32) →
+  InControlNative.dll. Estado: intercepcion=activa, previa=no, 702 y 603 lecturas por la DLL real, foco
+  forzado. Player.log de cada cliente: UN solo «XInput Controller» (XInput::1). Con J1 asignado después
+  de arrancar, su InControl aún listaba dos: por eso ahora se asigna al crear el proceso.
+  Las copias del filtro de la carpeta del juego quedaron actualizadas (solo copias propias, por SHA-256).
+LIMITACIONES EXPLÍCITAS: nadie movió los sticks: falta la confirmación física (W16). Quien resuelva la
+  XInput real antes que el filtro no queda cubierto (previa=si lo avisa). Ordinal 109: firma supuesta.
+PRÓXIMO PASO: W16 con el propietario; después W14 (J2 se une a J1 en 127.0.0.1).
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

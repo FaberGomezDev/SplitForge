@@ -1,14 +1,20 @@
 // SplitForge · Filtro XInput por proceso (EXPERIMENTAL)
 //
 // Se copia en la carpeta de un juego con el nombre de la DLL de XInput que el juego carga
-// (xinput1_3.dll, xinput1_4.dll o xinput9_1_0.dll). Reenvía todas las llamadas a la DLL real
+// (xinput1_3.dll, xinput1_4.dll o xinput9_1_0.dll). Reenvía todas las llamadas a la XInput real
 // de System32, pero hace que ESTE proceso vea un único mando: la ranura física que SplitForge
 // le asigna en %LOCALAPPDATA%\SplitForge\xinput\asignacion.txt (líneas "PID RANURA").
 // Sin asignación para el PID, es transparente.
 //
-// Estado: cada copia cargada escribe estado-PID-<dll>.txt (7DTD carga xinput1_3 y xinput1_4 a la vez),
-// con la ranura vigente, cuántas lecturas (XInputGetState/Ex) ha atendido y si el foco está forzado.
-// Se reescribe al cambiar la asignación y, como mucho, cada 2 s mientras el juego lee mandos.
+// XInput real: xinput1_4.dll de System32, la única implementación desde Windows 8 (en Windows 11
+// recientes, XInput1_3.dll y XInput9_1_0.dll de System32 solo la cargan y le reenvían). Al cargarla, el
+// filtro redirige además sus exportaciones hacia sí mismo (ver «Intercepción»): quien la pida después
+// sin pasar por la copia del filtro (en 7DTD, InControlNative) también ve un único mando.
+//
+// Estado: cada copia cargada escribe estado-PID-<dll>.txt con la ranura vigente, cuántas lecturas
+// (XInputGetState/Ex) ha atendido, cuántas de ellas llegaron por la DLL real interceptada, si la
+// intercepción está activa y si el foco está forzado. Se reescribe al cambiar la asignación y, como mucho,
+// cada 2 s mientras el juego lee mandos.
 //
 // Con mando asignado, además simula el foco de su ventana (ver «Foco simulado»): en pantalla dividida
 // cada cliente atiende su mando aunque no sea la ventana activa.
@@ -20,6 +26,7 @@
 
 #include <atomic>
 #include <cstdio>
+#include <cstring>
 #include <cwchar>
 
 namespace {
@@ -82,9 +89,24 @@ using GetAudioIdsFn = DWORD(WINAPI*)(DWORD, LPWSTR, UINT*, LPWSTR, UINT*);
 using WaitGuideFn = DWORD(WINAPI*)(DWORD, DWORD, void*);
 using CancelGuideFn = DWORD(WINAPI*)(DWORD);
 using PowerOffFn = DWORD(WINAPI*)(DWORD);
+using GetBusInfoFn = DWORD(WINAPI*)(DWORD, void*);
+using GetCapabilitiesExFn = DWORD(WINAPI*)(DWORD, DWORD, DWORD, void*);
+using IndexedFn = DWORD(WINAPI*)(DWORD, void*);
+
+// Funciones de la XInput real que el filtro reenvía.
+enum RouteId {
+    kGetState, kGetStateEx, kSetState, kGetCapabilities, kEnable, kGetDSoundGuids, kGetBattery, kGetKeystroke,
+    kGetAudioIds, kWaitGuide, kCancelGuide, kPowerOff, kGetBusInfo, kGetCapabilitiesEx, kOrdinal109, kRouteCount
+};
+
+enum Interception : int { kNotIntercepted, kIntercepted, kDelegated };
 
 HMODULE g_self = nullptr;
 std::atomic<HMODULE> g_real{nullptr};
+void* g_original[kRouteCount] = {};                // Direcciones reales; se rellenan una sola vez en LoadBackend().
+std::atomic<int> g_interception{kNotIntercepted};
+std::atomic<bool> g_realPreloaded{false};          // La DLL real ya estaba en el proceso antes de interceptarla.
+std::atomic<unsigned long long> g_hookedReads{0};  // Lecturas que llegaron por las exportaciones de la DLL real.
 std::atomic<int> g_slot{kPassThrough};
 std::atomic<ULONGLONG> g_nextReload{0};
 std::atomic<unsigned long long> g_reads{0}; // Llamadas a XInputGetState/Ex atendidas por esta copia.
@@ -108,10 +130,13 @@ void ResolveOwnName() {
 
 // Carga una DLL de System32 por ruta absoluta y comprueba que de verdad viene de allí (nunca esta misma
 // copia ni otra copia del filtro con otro nombre, que ya está cargada en el proceso con ese nombre base).
-HMODULE LoadFromSystem(const wchar_t* system, const wchar_t* name) {
+// `alreadyLoaded`: si esa DLL ya estaba cargada en el proceso antes de esta llamada.
+HMODULE LoadFromSystem(const wchar_t* system, const wchar_t* name, bool* alreadyLoaded) {
     wchar_t full[MAX_PATH] = {};
     if (swprintf_s(full, L"%ls\\%ls", system, name) <= 0)
         return nullptr;
+    HMODULE before = nullptr;
+    *alreadyLoaded = GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, full, &before) && before;
     HMODULE module = LoadLibraryExW(full, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (!module)
         return nullptr;
@@ -126,27 +151,20 @@ HMODULE LoadFromSystem(const wchar_t* system, const wchar_t* name) {
     return module;
 }
 
-HMODULE Real() {
-    HMODULE module = g_real.load(std::memory_order_acquire);
-    if (module)
-        return module;
-    wchar_t system[MAX_PATH] = {};
-    const UINT length = GetSystemDirectoryW(system, MAX_PATH);
-    if (length == 0 || length >= MAX_PATH - 20)
-        return nullptr;
-    module = LoadFromSystem(system, g_realName);
-    if (!module) // p. ej. xinput1_3.dll no instalada: xinput1_4.dll viene con Windows 8 o posterior.
-        module = LoadFromSystem(system, L"xinput1_4.dll");
-    HMODULE expected = nullptr;
-    if (!g_real.compare_exchange_strong(expected, module) && module)
-        FreeLibrary(module); // Otro hilo ganó la carrera.
-    return g_real.load(std::memory_order_acquire);
+void LoadBackend(); // Al final del archivo: necesita las funciones exportadas.
+
+// Carga la XInput real e instala la intercepción una sola vez (inicialización estática, segura entre hilos).
+// Nunca en DllMain: la dispara la primera llamada del juego a cualquier función del filtro.
+void EnsureBackend() {
+    static const bool loaded = (LoadBackend(), true);
+    static_cast<void>(loaded);
 }
 
+// Dirección real de una función de XInput (nullptr si la DLL real no la tiene).
 template <typename Fn>
-Fn Resolve(const char* name) {
-    HMODULE module = Real();
-    return module ? reinterpret_cast<Fn>(reinterpret_cast<void*>(GetProcAddress(module, name))) : nullptr;
+Fn Original(RouteId id) {
+    EnsureBackend();
+    return reinterpret_cast<Fn>(g_original[id]);
 }
 
 bool AssignmentPath(wchar_t* out, size_t size, const wchar_t* file) {
@@ -184,8 +202,13 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
             && AssignmentPath(path, MAX_PATH * 2, file)
             && swprintf_s(temp, L"%ls.tmp", path) > 0
             && _wfopen_s(&f, temp, L"w") == 0 && f) {
-            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\n", g_realName, Real() ? L"cargada" : L"NO",
-                     slot, reads, g_focusActive.load(std::memory_order_relaxed) ? L"forzado" : L"no");
+            static const wchar_t* const interception[] = {L"no", L"activa", L"delegada"};
+            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\nintercepcion=%ls\ninterceptadas=%llu\nprevia=%ls\n",
+                     g_realName, g_real.load(std::memory_order_acquire) ? L"cargada" : L"NO", slot, reads,
+                     g_focusActive.load(std::memory_order_relaxed) ? L"forzado" : L"no",
+                     interception[g_interception.load(std::memory_order_relaxed)],
+                     g_hookedReads.load(std::memory_order_relaxed),
+                     g_realPreloaded.load(std::memory_order_relaxed) ? L"si" : L"no");
             const bool written = fclose(f) == 0;
             if (written && MoveFileExW(temp, path, MOVEFILE_REPLACE_EXISTING)) {
                 g_writtenSlot = slot;
@@ -369,11 +392,18 @@ int CurrentSlot() {
     return slot;
 }
 
+// Ranura que aplica ESTA copia. Si otra copia del filtro ya intercepta la DLL real, las llamadas de esta
+// llegan a aquella y es ella quien cambia el índice (hacerlo dos veces ocultaría el mando).
+int MappingSlot() {
+    const int slot = CurrentSlot();
+    return g_interception.load(std::memory_order_relaxed) == kDelegated ? kPassThrough : slot;
+}
+
 // Índice que pide el juego → ranura física. Con asignación, solo el índice 0 existe.
 bool Map(DWORD userIndex, DWORD* physical) {
     if (userIndex >= kMaxSlots)
         return false;
-    const int slot = CurrentSlot();
+    const int slot = MappingSlot();
     if (slot == kPassThrough) {
         *physical = userIndex;
         return true;
@@ -389,7 +419,7 @@ bool Map(DWORD userIndex, DWORD* physical) {
 extern "C" {
 
 DWORD WINAPI SF_XInputGetState(DWORD userIndex, XInputState* state) {
-    static auto fn = Resolve<GetStateFn>("XInputGetState");
+    const auto fn = Original<GetStateFn>(kGetState);
     g_reads.fetch_add(1, std::memory_order_relaxed);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
@@ -399,8 +429,8 @@ DWORD WINAPI SF_XInputGetState(DWORD userIndex, XInputState* state) {
 
 // Ordinal 100: igual que XInputGetState pero incluye el botón Guía. Muchos juegos lo usan.
 DWORD WINAPI SF_XInputGetStateEx(DWORD userIndex, XInputState* state) {
-    static auto fn = Resolve<GetStateFn>(MAKEINTRESOURCEA(100));
-    static auto fallback = Resolve<GetStateFn>("XInputGetState");
+    const auto fn = Original<GetStateFn>(kGetStateEx);
+    const auto fallback = Original<GetStateFn>(kGetState);
     g_reads.fetch_add(1, std::memory_order_relaxed);
     DWORD physical = 0;
     if (!Map(userIndex, &physical))
@@ -411,7 +441,7 @@ DWORD WINAPI SF_XInputGetStateEx(DWORD userIndex, XInputState* state) {
 }
 
 DWORD WINAPI SF_XInputSetState(DWORD userIndex, XInputVibration* vibration) {
-    static auto fn = Resolve<SetStateFn>("XInputSetState");
+    const auto fn = Original<SetStateFn>(kSetState);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -419,7 +449,7 @@ DWORD WINAPI SF_XInputSetState(DWORD userIndex, XInputVibration* vibration) {
 }
 
 DWORD WINAPI SF_XInputGetCapabilities(DWORD userIndex, DWORD flags, XInputCapabilities* capabilities) {
-    static auto fn = Resolve<GetCapabilitiesFn>("XInputGetCapabilities");
+    const auto fn = Original<GetCapabilitiesFn>(kGetCapabilities);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -427,21 +457,32 @@ DWORD WINAPI SF_XInputGetCapabilities(DWORD userIndex, DWORD flags, XInputCapabi
 }
 
 void WINAPI SF_XInputEnable(BOOL enable) {
-    static auto fn = Resolve<EnableFn>("XInputEnable");
+    const auto fn = Original<EnableFn>(kEnable);
     if (fn)
         fn(enable);
 }
 
 DWORD WINAPI SF_XInputGetDSoundAudioDeviceGuids(DWORD userIndex, GUID* render, GUID* capture) {
-    static auto fn = Resolve<GetDSoundGuidsFn>("XInputGetDSoundAudioDeviceGuids");
+    const auto fn = Original<GetDSoundGuidsFn>(kGetDSoundGuids);
     DWORD physical = 0;
-    if (!fn || !Map(userIndex, &physical))
+    if (!Map(userIndex, &physical))
         return kNotConnected;
-    return fn(physical, render, capture);
+    if (fn)
+        return fn(physical, render, capture);
+    // xinput1_4 ya no tiene esta función (es de xinput1_3): mando conectado, sin dispositivo de audio.
+    const auto getState = Original<GetStateFn>(kGetState);
+    XInputState state{};
+    if (!getState || getState(physical, &state) != ERROR_SUCCESS)
+        return kNotConnected;
+    if (render)
+        *render = GUID{};
+    if (capture)
+        *capture = GUID{};
+    return ERROR_SUCCESS;
 }
 
 DWORD WINAPI SF_XInputGetBatteryInformation(DWORD userIndex, BYTE devType, XInputBatteryInformation* info) {
-    static auto fn = Resolve<GetBatteryFn>("XInputGetBatteryInformation");
+    const auto fn = Original<GetBatteryFn>(kGetBattery);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -449,10 +490,10 @@ DWORD WINAPI SF_XInputGetBatteryInformation(DWORD userIndex, BYTE devType, XInpu
 }
 
 DWORD WINAPI SF_XInputGetKeystroke(DWORD userIndex, DWORD reserved, XInputKeystroke* keystroke) {
-    static auto fn = Resolve<GetKeystrokeFn>("XInputGetKeystroke");
+    const auto fn = Original<GetKeystrokeFn>(kGetKeystroke);
     if (!fn)
         return kNotConnected;
-    const int slot = CurrentSlot();
+    const int slot = MappingSlot();
     if (slot == kPassThrough)
         return fn(userIndex, reserved, keystroke);
     // XUSER_INDEX_ANY (0xFF) o 0: solo la ranura asignada, y se informa como índice 0.
@@ -465,7 +506,7 @@ DWORD WINAPI SF_XInputGetKeystroke(DWORD userIndex, DWORD reserved, XInputKeystr
 }
 
 DWORD WINAPI SF_XInputGetAudioDeviceIds(DWORD userIndex, LPWSTR render, UINT* renderCount, LPWSTR capture, UINT* captureCount) {
-    static auto fn = Resolve<GetAudioIdsFn>("XInputGetAudioDeviceIds");
+    const auto fn = Original<GetAudioIdsFn>(kGetAudioIds);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -473,7 +514,7 @@ DWORD WINAPI SF_XInputGetAudioDeviceIds(DWORD userIndex, LPWSTR render, UINT* re
 }
 
 DWORD WINAPI SF_XInputWaitForGuideButton(DWORD userIndex, DWORD flags, void* listen) {
-    static auto fn = Resolve<WaitGuideFn>(MAKEINTRESOURCEA(101));
+    const auto fn = Original<WaitGuideFn>(kWaitGuide);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -481,7 +522,7 @@ DWORD WINAPI SF_XInputWaitForGuideButton(DWORD userIndex, DWORD flags, void* lis
 }
 
 DWORD WINAPI SF_XInputCancelGuideButtonWait(DWORD userIndex) {
-    static auto fn = Resolve<CancelGuideFn>(MAKEINTRESOURCEA(102));
+    const auto fn = Original<CancelGuideFn>(kCancelGuide);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
@@ -489,11 +530,36 @@ DWORD WINAPI SF_XInputCancelGuideButtonWait(DWORD userIndex) {
 }
 
 DWORD WINAPI SF_XInputPowerOffController(DWORD userIndex) {
-    static auto fn = Resolve<PowerOffFn>(MAKEINTRESOURCEA(103));
+    const auto fn = Original<PowerOffFn>(kPowerOff);
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
     return fn(physical);
+}
+
+// Ordinal 104 (solo xinput1_4): su primer argumento es un bus (admite hasta 16), no un mando; se reenvía tal cual.
+DWORD WINAPI SF_XInputGetBaseBusInformation(DWORD busIndex, void* info) {
+    const auto fn = Original<GetBusInfoFn>(kGetBusInfo);
+    return fn ? fn(busIndex, info) : kNotConnected;
+}
+
+// Ordinal 108 (solo xinput1_4): XInputGetCapabilities con identificadores del mando (lo usa SDL).
+DWORD WINAPI SF_XInputGetCapabilitiesEx(DWORD reserved, DWORD userIndex, DWORD flags, void* capabilities) {
+    const auto fn = Original<GetCapabilitiesExFn>(kGetCapabilitiesEx);
+    DWORD physical = 0;
+    if (!fn || !Map(userIndex, &physical))
+        return kNotConnected;
+    return fn(reserved, physical, flags, capabilities);
+}
+
+// Ordinal 109 (xinput1_4 de Windows 11 recientes, sin documentar). Supuesto a partir de su código: recibe
+// (índice de mando < 4, puntero), como XInputGetState; solo se cambia el índice.
+DWORD WINAPI SF_XInputOrdinal109(DWORD userIndex, void* data) {
+    const auto fn = Original<IndexedFn>(kOrdinal109);
+    DWORD physical = 0;
+    if (!fn || !Map(userIndex, &physical))
+        return kNotConnected;
+    return fn(physical, data);
 }
 
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
@@ -507,3 +573,204 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID) {
 }
 
 } // extern "C"
+
+namespace {
+
+// --- Intercepción de XInput dentro del proceso ---
+//
+// Un módulo del juego puede llegar a la XInput real sin pasar por la copia del filtro. En 7DTD, InControlNative
+// hace LoadLibrary("XInput1_4.dll") cuando la xinput1_4.dll de System32 ya está en el proceso (cargada como
+// DLL real de la copia xinput1_3 que usa Unity): por nombre, Windows devuelve la que ya está en memoria, y el
+// juego veía los dos mandos. Para que cualquier vía pase por el filtro, al cargar la DLL real se redirigen sus
+// exportaciones: cada entrada de su tabla apunta a un salto hacia la función equivalente del filtro.
+// Solo cambia datos de este proceso (la tabla de exportación, con escrituras atómicas de 32 bits): no se
+// parchea código de Windows ni se toca otro proceso.
+// Límite: quien resolviera las funciones ANTES de que el filtro cargara la DLL real conserva las direcciones
+// originales; el estado lo avisa con «previa=si».
+
+constexpr char kStubMagic[16] = {'S', 'p', 'l', 'i', 't', 'F', 'o', 'r', 'g', 'e', 'X', 'I', 'n', 'p', 't', '1'};
+constexpr size_t kStubSize = 16; // jmp [rip+0] (6 bytes) + dirección (8) + relleno (2)
+constexpr size_t kStubPageSize = 4096;
+
+struct Route {
+    RouteId id;
+    const char* name; // Nombre u ordinal (MAKEINTRESOURCEA) en la DLL real.
+    void* wrapper;    // Función del filtro que la sustituye; nullptr: no lleva índice de mando, no se intercepta.
+};
+
+// Las lecturas que entran por la DLL real se cuentan aparte: prueban que esa vía pasa por el filtro.
+DWORD WINAPI Hooked_XInputGetState(DWORD userIndex, XInputState* state) {
+    g_hookedReads.fetch_add(1, std::memory_order_relaxed);
+    return SF_XInputGetState(userIndex, state);
+}
+
+DWORD WINAPI Hooked_XInputGetStateEx(DWORD userIndex, XInputState* state) {
+    g_hookedReads.fetch_add(1, std::memory_order_relaxed);
+    return SF_XInputGetStateEx(userIndex, state);
+}
+
+// ¿La dirección es un salto instalado por otra copia del filtro (su página empieza con la firma)?
+bool IsFilterStub(const void* address) {
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (!address || VirtualQuery(address, &mbi, sizeof(mbi)) == 0)
+        return false;
+    if (mbi.State != MEM_COMMIT || mbi.Type != MEM_PRIVATE || mbi.BaseAddress != mbi.AllocationBase
+        || mbi.Protect != PAGE_EXECUTE_READ || mbi.RegionSize < kStubPageSize)
+        return false;
+    return std::memcmp(mbi.AllocationBase, kStubMagic, sizeof(kStubMagic)) == 0;
+}
+
+#if defined(_M_X64) || defined(__x86_64__)
+
+// Reserva una página por encima de la DLL real y a menos de 2 GB de su base: la tabla de exportación guarda
+// desplazamientos de 32 bits respecto a la base del módulo.
+BYTE* AllocateStubPage(const BYTE* base, DWORD imageSize) {
+    SYSTEM_INFO info{};
+    GetSystemInfo(&info);
+    const ULONG_PTR step = info.dwAllocationGranularity;
+    const ULONG_PTR limit = reinterpret_cast<ULONG_PTR>(base) + 0x7FF00000;
+    ULONG_PTR address = reinterpret_cast<ULONG_PTR>(base) + imageSize;
+    for (;;) {
+        address = (address + step - 1) / step * step;
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (address >= limit || VirtualQuery(reinterpret_cast<void*>(address), &mbi, sizeof(mbi)) == 0)
+            return nullptr;
+        const ULONG_PTR end = reinterpret_cast<ULONG_PTR>(mbi.BaseAddress) + mbi.RegionSize;
+        if (mbi.State != MEM_FREE || end - address < kStubPageSize) {
+            address = end;
+            continue;
+        }
+        void* page = VirtualAlloc(reinterpret_cast<void*>(address), kStubPageSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        if (page)
+            return static_cast<BYTE*>(page);
+        address += step; // Otro hilo ocupó el hueco: se prueba el siguiente.
+    }
+}
+
+// Posición de una exportación (por nombre u ordinal) en la tabla de funciones, o -1.
+int ExportIndex(const BYTE* base, const IMAGE_EXPORT_DIRECTORY* exports, const char* name) {
+    if (IS_INTRESOURCE(name)) {
+        const DWORD ordinal = LOWORD(reinterpret_cast<ULONG_PTR>(name));
+        return ordinal >= exports->Base && ordinal - exports->Base < exports->NumberOfFunctions
+                   ? static_cast<int>(ordinal - exports->Base) : -1;
+    }
+    const auto* names = reinterpret_cast<const DWORD*>(base + exports->AddressOfNames);
+    const auto* ordinals = reinterpret_cast<const WORD*>(base + exports->AddressOfNameOrdinals);
+    for (DWORD i = 0; i < exports->NumberOfNames; ++i) {
+        if (std::strcmp(reinterpret_cast<const char*>(base + names[i]), name) == 0)
+            return ordinals[i];
+    }
+    return -1;
+}
+
+// Apunta las exportaciones de la DLL real a las funciones del filtro. Primero se escriben todos los saltos
+// y se deja su página como solo ejecución; después se cambia cada entrada de la tabla.
+bool InterceptExports(HMODULE real, const Route* routes, size_t count) {
+    auto* base = reinterpret_cast<BYTE*>(real);
+    const auto* dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(base);
+    if (dos->e_magic != IMAGE_DOS_SIGNATURE)
+        return false;
+    const auto* nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+    const auto& dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+    if (nt->Signature != IMAGE_NT_SIGNATURE || !dir.VirtualAddress)
+        return false;
+    const auto* exports = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY*>(base + dir.VirtualAddress);
+    auto* functions = reinterpret_cast<DWORD*>(base + exports->AddressOfFunctions);
+    BYTE* page = AllocateStubPage(base, nt->OptionalHeader.SizeOfImage);
+    if (!page)
+        return false;
+    std::memcpy(page, kStubMagic, sizeof(kStubMagic));
+
+    struct Patch {
+        DWORD* entry;
+        DWORD rva;
+    } patches[kRouteCount] = {};
+    size_t pending = 0;
+    BYTE* stub = page + sizeof(kStubMagic);
+    for (size_t i = 0; i < count && pending < kRouteCount; ++i) {
+        const Route& route = routes[i];
+        if (!route.wrapper || !g_original[route.id])
+            continue;
+        const int index = ExportIndex(base, exports, route.name);
+        // Solo si la tabla apunta a lo mismo que resolvió GetProcAddress (ni reenvíos ni tablas ya alteradas).
+        if (index < 0 || base + functions[index] != g_original[route.id])
+            continue;
+        const BYTE jump[] = {0xFF, 0x25, 0, 0, 0, 0}; // jmp qword ptr [rip+0]
+        std::memcpy(stub, jump, sizeof(jump));
+        std::memcpy(stub + sizeof(jump), &route.wrapper, sizeof(route.wrapper));
+        stub[14] = stub[15] = 0xCC;
+        patches[pending++] = {&functions[index], static_cast<DWORD>(stub - base)};
+        stub += kStubSize;
+    }
+    DWORD old = 0;
+    if (pending == 0 || !VirtualProtect(page, kStubPageSize, PAGE_EXECUTE_READ, &old)) {
+        VirtualFree(page, 0, MEM_RELEASE);
+        return false;
+    }
+    FlushInstructionCache(GetCurrentProcess(), page, kStubPageSize);
+    size_t done = 0;
+    for (size_t i = 0; i < pending; ++i) {
+        if (!VirtualProtect(patches[i].entry, sizeof(DWORD), PAGE_READWRITE, &old))
+            continue;
+        InterlockedExchange(reinterpret_cast<volatile LONG*>(patches[i].entry), static_cast<LONG>(patches[i].rva));
+        VirtualProtect(patches[i].entry, sizeof(DWORD), old, &old);
+        ++done;
+    }
+    return done == pending;
+}
+
+#else
+
+bool InterceptExports(HMODULE, const Route*, size_t) { return false; } // Los saltos son de x64.
+
+#endif
+
+void LoadBackend() {
+    const Route routes[] = {
+        {kGetState, "XInputGetState", reinterpret_cast<void*>(&Hooked_XInputGetState)},
+        {kGetStateEx, MAKEINTRESOURCEA(100), reinterpret_cast<void*>(&Hooked_XInputGetStateEx)},
+        {kSetState, "XInputSetState", reinterpret_cast<void*>(&SF_XInputSetState)},
+        {kGetCapabilities, "XInputGetCapabilities", reinterpret_cast<void*>(&SF_XInputGetCapabilities)},
+        {kEnable, "XInputEnable", nullptr},
+        {kGetDSoundGuids, "XInputGetDSoundAudioDeviceGuids", reinterpret_cast<void*>(&SF_XInputGetDSoundAudioDeviceGuids)},
+        {kGetBattery, "XInputGetBatteryInformation", reinterpret_cast<void*>(&SF_XInputGetBatteryInformation)},
+        {kGetKeystroke, "XInputGetKeystroke", reinterpret_cast<void*>(&SF_XInputGetKeystroke)},
+        {kGetAudioIds, "XInputGetAudioDeviceIds", reinterpret_cast<void*>(&SF_XInputGetAudioDeviceIds)},
+        {kWaitGuide, MAKEINTRESOURCEA(101), reinterpret_cast<void*>(&SF_XInputWaitForGuideButton)},
+        {kCancelGuide, MAKEINTRESOURCEA(102), reinterpret_cast<void*>(&SF_XInputCancelGuideButtonWait)},
+        {kPowerOff, MAKEINTRESOURCEA(103), reinterpret_cast<void*>(&SF_XInputPowerOffController)},
+        {kGetBusInfo, MAKEINTRESOURCEA(104), nullptr},
+        {kGetCapabilitiesEx, MAKEINTRESOURCEA(108), reinterpret_cast<void*>(&SF_XInputGetCapabilitiesEx)},
+        {kOrdinal109, MAKEINTRESOURCEA(109), reinterpret_cast<void*>(&SF_XInputOrdinal109)},
+    };
+    wchar_t system[MAX_PATH] = {};
+    const UINT length = GetSystemDirectoryW(system, MAX_PATH);
+    if (length == 0 || length >= MAX_PATH - 20)
+        return;
+    bool preloaded = false;
+    HMODULE real = LoadFromSystem(system, L"xinput1_4.dll", &preloaded);
+    if (!real) // Windows 7: solo hay xinput1_3.dll (redistribuible de DirectX) o xinput9_1_0.dll.
+        real = LoadFromSystem(system, g_realName, &preloaded);
+    if (!real)
+        return;
+    bool delegated = false;
+    for (const Route& route : routes) {
+        void* address = reinterpret_cast<void*>(GetProcAddress(real, route.name));
+        g_original[route.id] = address;
+        delegated = delegated || (route.wrapper && IsFilterStub(address));
+    }
+    g_real.store(real, std::memory_order_release);
+    if (delegated) { // Otra copia del filtro ya intercepta esta DLL: esta solo reenvía.
+        g_interception.store(kDelegated, std::memory_order_relaxed);
+        return;
+    }
+    g_realPreloaded.store(preloaded, std::memory_order_relaxed);
+    // Los saltos apuntan a esta copia: no debe descargarse mientras viva el proceso.
+    HMODULE pinned = nullptr;
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           reinterpret_cast<LPCWSTR>(g_self), &pinned)
+        && InterceptExports(real, routes, sizeof(routes) / sizeof(routes[0])))
+        g_interception.store(kIntercepted, std::memory_order_relaxed);
+}
+
+} // namespace

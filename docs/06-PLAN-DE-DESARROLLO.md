@@ -37,7 +37,9 @@
 - [x] Reversible: instalar/retirar con consentimiento, sin sobrescribir archivos del juego (manifiesto con SHA-256).
 - [x] Confirmado con el diagnóstico real que 7DTD carga XInput (`xinput1_3` y `xinput1_4`).
 - [x] Instrumentación para la prueba real: estado por DLL con contador de lecturas, DLL real comprobada en System32, detección de la ranura XInput de cada mando, actualización segura del filtro, informe v3 y comando `xinput`.
-- [ ] Comprobar con dos clientes (W16) si las lecturas suben en ambos y si la ventana sin foco lee su mando; decidir el siguiente paso con esa evidencia.
+- [x] Comprobado con dos clientes (W16, 2026-10-10): las lecturas subían en ambos, pero cada stick movía las dos ventanas; InControlNative leía por la `xinput1_4.dll` real.
+- [x] XInput real interceptada dentro del proceso (ADR-021): cada cliente enumera un solo mando.
+- [ ] Confirmación física de W16 por el propietario.
 - [ ] Verificar en Windows 11 con dos PS4 reales: cada mando controla solo su cliente.
 
 **Criterio de salida:** una partida de 7DTD con J1 y J2 visibles entre sí, entrada aislada y cierre seguro → estado `INPUT_AISLADO_VALIDADO`.

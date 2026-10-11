@@ -71,7 +71,7 @@ Las etiquetas `v*` crean una release con ZIP y SHA-256 (prerelease para `v0.*`).
 
 **Foco simulado (2026-10-10, técnica `ForceFocus` / `FocusHooks` de Nucleus):** 7DTD solo atiende la entrada si Unity le notifica el foco (`GameManager.OnApplicationFocus` → `GameIsFocused`), así que en pantalla dividida solo respondía la ventana activa. Con mando asignado, el filtro (una vez por proceso) subclasifica la ventana de Unity: bloquea `WM_KILLFOCUS` y convierte `WM_ACTIVATE`/`WM_ACTIVATEAPP`/`WM_NCACTIVATE` inactivos en activos. Además redirige `GetForegroundWindow`/`GetActiveWindow`/`GetFocus` en la tabla de importaciones de `UnityPlayer.dll` y del ejecutable a su ventana, y le envía una activación inicial. Todo dentro del propio proceso del juego, sin parchear código. Tras dividir la pantalla, SplitForge recupera el foco real (`SetForegroundWindowElsewhere` de Nucleus). El puntero no necesita nada: 7DTD dibuja el suyo por instancia (`SoftCursor`).
 
-**Pendiente:** confirmación física de W16 (cada mando mueve solo su ventana).
+**Ampliada por ADR-021** (2026-10-10): la DLL real pasa a ser siempre `xinput1_4.dll` y el filtro intercepta sus exportaciones. **Pendiente:** confirmación física de W16 (cada mando mueve solo su ventana).
 
 ## ADR-016 · Aceptada (experimental) · Emulador de Steam como componente principal (técnica de Goldberg)
 
@@ -136,4 +136,26 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 **Por qué así:** no inyecta código, no modifica archivos del juego y no bloquea la interfaz (mensajes publicados en un hilo propio). Nucleus reenvía cada 1000 ms y ProtoInput cada 5 ms; 100 ms recupera el foco enseguida sin saturar la cola del juego.
 
 **Límites (sin comprobar):** no está probado con 7DTD ni con mandos. Si el juego consulta el foco real (`GetForegroundWindow`) o recibe el mando ajeno por DirectInput/Raw Input en la ventana con foco, los mensajes externos no bastan; Nucleus lo resuelve dentro del juego. Siguiente evidencia: W16 con el foco simulado activado y desactivado.
+
+## ADR-021 · Aceptada (experimental) · XInput real interceptada dentro del proceso (tabla de exportación)
+
+**Contexto (2026-10-10, PC del propietario, Windows 11 compilación 26300):** en W16 cada stick movía las dos ventanas. Causa comprobada con el desensamblado de los binarios del juego y el `Player.log` real:
+
+- Unity (`win::RawInput::Open`) carga `xinput1_3.dll` por nombre: recibe la copia del filtro.
+- El filtro usaba como DLL real la `XInput1_3.dll` de System32. En este Windows esa DLL es un reenviador: carga `xinput1_4.dll` de System32 **en tiempo de ejecución** (no la importa; por eso se descartó por error).
+- `InControlNative.dll`, la vía que mueve al jugador («NativeInputDeviceManager enabled»), hace `LoadLibraryW("XInput1_4.dll")`. Como ya hay un módulo con ese nombre en memoria, Windows le entrega la 1.4 real y no la copia del filtro. InControl listaba dos mandos (`XInput::1` y `XInput::2`) en cada cliente.
+
+**Decisión:**
+
+1. La DLL real del filtro es siempre `xinput1_4.dll` de System32, por ruta completa (la única implementación desde Windows 8), se llame como se llame la copia.
+2. Al cargarla, el filtro guarda las direcciones reales y redirige su tabla de exportación hacia saltos a sus propias funciones: `XInputGetState`, `XInputSetState`, `XInputGetCapabilities`, `XInputGetBatteryInformation`, `XInputGetKeystroke`, `XInputGetAudioDeviceIds` y los ordinales 100–103, 108 y 109. Quien resuelva después esas funciones (`GetProcAddress` o importación) recibe las del filtro.
+3. Una segunda copia del filtro reconoce los saltos (firma al principio de su página) y delega en la primera: el índice no se cambia dos veces.
+4. La copia que intercepta queda fijada en memoria mientras viva el proceso.
+5. «Lanzar J1 y J2» asigna cada mando nada más crear el proceso (antes de su primera lectura) y pone al día las copias instaladas si son de otra compilación.
+
+**Por qué así y no como Nucleus:** `Game.Hook.XInputEnabled` engancha el código de `XInputGetState` con EasyHook e inyección. Redirigir la tabla de exportación no parchea código de Windows, no exige desensamblar prólogos ni suspender hilos, y cada escritura es atómica (32 bits). Cubre el caso comprobado porque la 1.4 real la carga el propio filtro antes que nadie.
+
+**Límites:** quien resolviera las funciones antes de que el filtro cargara la DLL real conserva las direcciones originales (el estado lo avisa con `previa=si`); para ese caso haría falta enganchar el código. Solo x64. El ordinal 109 no está documentado: por su código se **supone** que recibe (índice de mando, puntero). `XInputGetDSoundAudioDeviceGuids` no existe en la 1.4: el filtro responde «sin dispositivo de audio» para el mando asignado.
+
+**Evidencia (2026-10-10, dos clientes reales con los dos mandos conectados):** `intercepcion=activa`, `previa=no`, cientos de lecturas por la DLL real en cada cliente, e InControl lista **un** solo mando por cliente (`XInput::1`). Prueba de humo ampliada. **Pendiente:** confirmación física de W16.
 

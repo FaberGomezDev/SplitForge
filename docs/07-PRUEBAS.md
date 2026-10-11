@@ -50,6 +50,8 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - que cada copia carga la DLL real de System32 y no la otra copia;
 - que los índices 1–3 aparecen desconectados;
 - que cada copia escribe su `estado-PID-<dll>.txt` con ranura y lecturas;
+- que quien pide la `xinput1_4.dll` real de System32 por su cuenta (como InControlNative en 7DTD) recibe las funciones del filtro: índices 1–3 ocultos y lecturas contadas como «interceptadas» (ADR-021);
+- que la segunda copia queda como «delegada» y no cambia el índice otra vez;
 - que, al cambiar la asignación con el proceso abierto, el estado pasa a la ranura nueva. Compila sin avisos con MSVC `/W4 /WX` (CI) y MinGW `-Wall -Wextra -Werror` (Linux).
 
 ### Emulador de Steam nativo (C++)
@@ -100,7 +102,7 @@ Historial:
 | W13 | Diagnóstico 7DTD | Informe con APIs de mando; sin rutas ni títulos. **Hecho con 1 cliente (2026-10-10, esquema v2)**; repetir con v3 y dos clientes |
 | W14 | Dos clientes 7DTD | Dos clientes en la misma partida |
 | W15 | Cierre | Cerrar SplitForge restaura ventanas y apaga el servidor propio |
-| W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; el estado de cada cliente muestra su ranura y sus lecturas suben; anotar si la ventana sin foco responde |
+| W16 | Filtro XInput | Con dos clientes sin EAC y el filtro asignado, cada mando controla solo su cliente; el estado de cada cliente muestra su ranura, «XInput real interceptada» y lecturas que suben; anotar si la ventana sin foco responde |
 | W17 | Ranuras XInput | «Detectar» (o `SplitForge.Diagnostico.exe xinput`) identifica la ranura de cada mando al pulsar un botón, también con otra ventana enfocada |
 | W18 | Bloqueo de ratón | Con pantalla dividida activa y el bloqueo (botón o Ctrl+Alt+L), el cursor no cruza a la otra ventana; al soltar o detener la sesión, vuelve a ser libre |
 | W19 | Ajuste a ventana | Con «Mantener proporción» la ventana conserva su forma sin deformarse; la resolución sugerida por panel coincide con lo que encaja en el juego en modo ventana |
@@ -114,7 +116,8 @@ Historial:
   - W13 con un cliente (informe real).
   - Parte de W02: hilo SDL3 a 1000 Hz, sin mandos.
   - **W20 superado (tarde):** tras generar la API plana y lanzar sin juego cruzado, J1 y J2 llegan al menú a la vez con perfiles distintos, colocados arriba/abajo, con el filtro cargado en ambos (J1 → mando 1, J2 → mando 2, lecturas subiendo). Por la mañana fallaba: 7DTD se cerraba al iniciar Steam.
-  - **W16 parcial:** filtro y lecturas comprobados; falta que el propietario confirme con los mandos que cada uno mueve solo su ventana.
+  - **W16, primer intento fallido (propietario):** cada stick movía las dos ventanas. Corregido con ADR-021.
+  - **W16 parcial (noche):** con dos clientes reales y los dos mandos conectados, cada cliente enumera un solo mando (InControl) y el filtro intercepta la XInput real. Falta que el propietario confirme con los mandos que cada uno mueve solo su ventana.
   - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
   - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
 - El resto, sin confirmar. W11, W12 y W14 requieren instalar antes el servidor dedicado (no instalado).

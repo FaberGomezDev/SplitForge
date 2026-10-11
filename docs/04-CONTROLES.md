@@ -56,7 +56,8 @@ Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input
 
 - **XInput → implementado (experimental, ADR-015):** `native/SplitForge.XInputFilter` se gestiona desde la pestaña 06 con «Instalar filtro», «Detectar», «Asignar mandos a los clientes» y «Quitar filtro».
   - Cada cliente ve solo su ranura, y los mandos deben llegar como XInput sin duplicados.
-  - Cada copia cargada escribe `estado-PID-<dll>.txt` con la DLL, si cargó la real, la ranura y las lecturas. 7DTD carga dos copias, `xinput1_3` y `xinput1_4`, y por las lecturas se ve cuál usa de verdad.
+  - Cada copia cargada escribe `estado-PID-<dll>.txt` con la DLL, si cargó la real, la ranura, las lecturas, cuántas llegaron por la XInput real interceptada y si la intercepción está activa.
+  - La DLL real es siempre `xinput1_4.dll` de System32 y el filtro redirige sus exportaciones hacia sí mismo (ADR-021): un módulo del juego que la pida por su cuenta también ve un solo mando. En 7DTD, Unity usa la copia `xinput1_3` e InControlNative la 1.4 real interceptada.
 - **Ranuras XInput:** XInput numera los mandos del 1 al 4. «Detectar» pide pulsar un botón en el mando de cada jugador y elige su ranura; también lo hace `SplitForge.Diagnostico.exe xinput`. La lectura se hace en un hilo de fondo, nunca en el de la interfaz.
 - **PC del propietario (2026-10-10):**
   - SDL3 ve los dos mandos como `Xbox 360 Controller`, es decir, como XInput.
@@ -64,5 +65,5 @@ Windows suele entregar el mando solo a la ventana con foco (Windows.Gaming.Input
   - El hilo de entrada SDL3 3.5.0 mide 1000 Hz (`mandos`, sin mandos conectados en esa medición).
 - **Windows.Gaming.Input / foco:** además, simular foco por proceso (técnica de Nucleus Co-op), solo con EAC desactivado mediante la opción oficial.
 - **Bloqueo de entrada «solo mandos» (Ctrl+Alt+B, ADR-019):** el teclado y el ratón dejan de llegar a los juegos y al escritorio; los mandos siguen funcionando. Se suelta con el mismo atajo.
-- **Evidencia (2026-10-10, dos clientes de 7DTD):** el filtro se carga por `xinput1_3.dll`, J1 solo ve el mando 1 y J2 el mando 2, y ambos consultan su mando unas 60 veces por segundo también sin foco.
+- **Evidencia (2026-10-10, dos clientes de 7DTD):** el filtro se carga por `xinput1_3.dll`, J1 solo ve el mando 1 y J2 el mando 2, y ambos consultan su mando unas 60 veces por segundo también sin foco. Esas eran las lecturas de Unity; InControlNative leía por la `xinput1_4.dll` real y veía los dos mandos hasta ADR-021. Ahora InControl lista un solo mando en cada cliente.
 - Sin drivers de kernel por defecto.

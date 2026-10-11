@@ -5,12 +5,13 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 ## 7 Days to Die (prioritario)
 
 - ~~¿Qué APIs de mando carga 7DTD en el PC del propietario?~~ → **Resuelto con un cliente (2026-10-10):** `xinput1_3` + `xinput1_4`, DirectInput, HID, InControl. Falta repetir con dos clientes (informe v3).
-- ¿Por qué DLL lee 7DTD los mandos: XInput, DirectInput o HID? → «lecturas» de cada copia del filtro en W16.
+- ~~¿Por qué DLL lee 7DTD los mandos: XInput, DirectInput o HID?~~ → **Resuelto (2026-10-10):** por XInput en dos vías. Unity usa `xinput1_3` (copia del filtro) e InControlNative, que es quien mueve al jugador, usa `xinput1_4`. InControl no lista mandos por DirectInput ni HID.
 - Los mandos llegan como `Xbox 360 Controller` y están instalados ViGEmBus y HidHide (2026-10-10). ¿HidHide oculta de verdad los PS4 originales al juego, sin duplicados por HID/DirectInput? ¿Qué programa crea los mandos virtuales?
 - ¿La ventana **sin foco** sigue simulando el juego y leyendo mandos? (Unity puede pausar o ignorar la entrada en segundo plano).
 - ~~¿Abre 7DTD una segunda instancia en la misma sesión de Windows?~~ → **Sí** con el emulador (2026-10-10): dos clientes en el menú a la vez desde la misma carpeta. Con Sandboxie-Plus u otro usuario, sin probar.
 - ~~¿Procesa la ventana sin foco la entrada del mando?~~ → **No** (el propietario, 2026-10-10): 7DTD ignora la entrada sin foco (`GameIsFocused`). Hecho: foco simulado desde fuera (ADR-020) y dentro del filtro.
-- **Bloqueante actual (W16):** con foco simulado, cada stick mueve las dos ventanas. Los dos clientes cargan la `xinput1_4.dll` **real** de System32 y el filtro solo está en `xinput1_3`. ¿Qué módulo la carga desde System32 (¿InControl con búsqueda solo en System32?) y cómo hacer que pase por el filtro? Nucleus usa `Game.Hook.XInputEnabled` (interceptar XInput dentro del proceso). La `XInput1_3.dll` del sistema no depende de la 1.4 (comprobado).
+- ~~Bloqueante (W16): cada stick mueve las dos ventanas~~ → **causa encontrada y corregida (ADR-021, 2026-10-10):** la 1.4 real la cargaba el propio filtro a través de la `XInput1_3.dll` de System32 (un reenviador), e InControlNative la recibía por nombre. Ahora el filtro la intercepta y cada cliente enumera un solo mando. **Falta la confirmación física del propietario.**
+- Si en otro juego (o tras una actualización) el estado del filtro dice «ya estaba cargada antes del filtro» (`previa=si`), alguien resolvió la XInput real antes: habría que enganchar el código de sus funciones, como `Game.Hook.XInputEnabled` de Nucleus.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam? Cliente: build `25661859` (V 3.3.0 b18); el servidor dedicado aún no está instalado.
 
@@ -30,7 +31,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 ## Diseño técnico
 
-- Filtro XInput implementado (experimental): ¿lo carga 7DTD? → el informe v3 lo dice (`filtro_xinput_cargado`). ¿Basta para aislar los mandos? → W16.
+- Filtro XInput (experimental): 7DTD lo carga y, con la intercepción de ADR-021, cada cliente enumera un solo mando. ¿Basta para jugar con mandos independientes? → W16 físico.
 - Clientes en Sandboxie: el estado del filtro queda dentro del sandbox (escritura virtualizada); SplitForge lo lee de la carpeta por defecto de `SplitForge_J2`. Si el sandbox usa otra ruta raíz, no se verá (la asignación sí se lee).
 - Identificador estable tras reconexión Bluetooth sin guardar seriales en reportes (hoy: reasignación explícita).
 - Fullscreen exclusivo, DPI mixto y varios monitores (hoy: área útil del monitor principal).

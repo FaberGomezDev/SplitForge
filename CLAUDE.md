@@ -50,7 +50,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Interfaz WPF (`SplitForge.exe`); con `--lab-viewer N` actúa como visor |
 | `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` |
-| `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015); CMake + prueba de humo |
+| `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015), con la XInput real interceptada por su tabla de exportación (ADR-021) y foco simulado; CMake + prueba de humo |
 | `native/SplitForge.SteamEmu` | C++20: emulador de `steam_api64.dll` (ADR-016), **componente principal y permanente**: una identidad distinta por instancia del juego sin un segundo Steam; pestaña 07 y paquete (`native\SplitForge.SteamEmu`); API plana generada con `tools/generar_api_plana.py` (las 944 entradas de Steamworks.NET); CMake + prueba de humo. Con 7DTD real llega al menú con dos instancias |
 | `tests/SplitForge.Tests` | xUnit (Core) |
 | `launcher.py`, `splitforge/`, `tests/test_*.py` | Prototipo Python 0.6 (referencia; no ampliar salvo diagnósticos) |
@@ -84,10 +84,10 @@ En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y s
 Estado real (2026-10-10, PC del propietario, 7DTD build `25661859` = V 3.3.0 b18):
 - **Dos clientes de 7DTD abiertos a la vez en el menú principal** con el emulador de Steam, cada uno con su perfil (`SPLITFORGEJ1` / `SPLITFORGEJ2`).
 - Lanzados como el handler de Nucleus Co-op: sin juego cruzado (`-crossplatform=None -serverplatforms=Steam`), ventana sin marco con el tamaño de su panel, pantalla dividida automática (arriba/abajo, la preferida del propietario; 16:9 como mínimo).
-- **Filtro XInput cargado en los dos** por `xinput1_3.dll`, con J1 → mando 1 y J2 → mando 2; las «lecturas» suben en ambos aunque solo uno tenga el foco.
+- **Filtro XInput cargado en los dos** por `xinput1_3.dll`, con J1 → mando 1 y J2 → mando 2, y con la `xinput1_4.dll` real interceptada (ADR-021): **cada cliente enumera un solo mando** (InControl: `XInput::1`).
 - Todo lo hace «Lanzar J1 y J2» de la pestaña 07 (ver `docs/05-INTEGRACION-STEAM.md`). La sesión tapa la barra de tareas y **Ctrl+Alt+B** bloquea teclado y ratón para jugar solo con mandos.
 
-W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (desde fuera, ADR-020, y dentro del filtro), **cada stick mueve las dos ventanas**. Causa (diagnóstico v3): los dos clientes tienen cargada la `xinput1_4.dll` **real** de System32 (origen «sistema») y el filtro solo actúa en `xinput1_3`; el juego lee los mandos por esa 1.4 sin filtrar. Descartado: la `XInput1_3.dll` del sistema no depende de la 1.4. Siguiente: averiguar qué módulo carga la 1.4 real (InControl la pide por nombre: `XInput1_3`, `XInput1_4`, `XInput9_1_0`) y hacer que también pase por el filtro; Nucleus lo cubre con `Game.Hook.XInputEnabled` (XInput interceptado dentro del proceso, venga de la DLL que venga). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
+W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (desde fuera, ADR-020, y dentro del filtro), **cada stick mueve las dos ventanas**. Causa comprobada (desensamblado y `Player.log`): Unity usa la copia `xinput1_3` del filtro, pero InControlNative, que es quien mueve al jugador, pide `XInput1_4.dll` por nombre y recibía la real de System32; la había cargado el propio filtro a través de la `XInput1_3.dll` del sistema, que en este Windows reenvía a la 1.4 en ejecución. **Corregido (ADR-021):** la DLL real del filtro es siempre la 1.4 y el filtro redirige su tabla de exportación hacia sí mismo. Comprobado con dos clientes reales y los dos mandos conectados: InControl lista un solo mando en cada uno (antes, dos). **Falta la confirmación física del propietario** (nadie movió los sticks). Después: J2 se une a la partida de J1 por IP 127.0.0.1 (W14).
 
 Pendiente en el PC: no están instalados el servidor dedicado (AppID 294420) ni Sandboxie-Plus (solo hacen falta para la vía del servidor oficial).
 

@@ -7,7 +7,23 @@ namespace SplitForge.Core.Adapters;
 /// <summary>Estado que publica cada copia del filtro cargada en un proceso (una por nombre de DLL).</summary>
 /// <param name="Reads">Llamadas a XInputGetState/Ex atendidas (−1 si el filtro es anterior y no lo informa).</param>
 /// <param name="FocusForced">El filtro simula el foco de la ventana (pantalla dividida con mando asignado).</param>
-public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1, bool FocusForced = false);
+/// <param name="Interception">«activa»: esta copia redirige hacia el filtro las exportaciones de la XInput real;
+/// «delegada»: ya lo hace otra copia; «no»: no se pudo; vacío: filtro anterior, que no interceptaba.</param>
+/// <param name="InterceptedReads">Lecturas que llegaron por la XInput real interceptada (−1 si no lo informa).</param>
+/// <param name="RealPreloaded">La XInput real ya estaba cargada antes del filtro: quien la resolviera antes no pasa por él.</param>
+public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1, bool FocusForced = false,
+    string Interception = "", long InterceptedReads = -1, bool RealPreloaded = false)
+{
+    /// <summary>Resumen para la interfaz y el diagnóstico; vacío si el filtro es anterior a la intercepción.</summary>
+    public string InterceptionText => Interception switch
+    {
+        "activa" => "XInput real interceptada" + (InterceptedReads >= 0 ? $" ({InterceptedReads} lecturas por esa vía)" : string.Empty)
+                    + (RealPreloaded ? "; ATENCIÓN: ya estaba cargada antes del filtro, puede haber lecturas sin filtrar" : string.Empty),
+        "delegada" => "delega en la copia que intercepta",
+        "no" => "¡XInput real SIN interceptar!",
+        _ => string.Empty
+    };
+}
 
 /// <summary>Resultado de instalar: qué se copió, qué se actualizó y qué se dejó intacto.</summary>
 /// <param name="Updated">Copias antiguas de SplitForge (sin modificar) sustituidas por la versión actual.</param>
@@ -204,7 +220,10 @@ public static class XInputFilter
                         values.GetValueOrDefault("real") == "cargada",
                         int.TryParse(values.GetValueOrDefault("ranura"), out var slot) ? slot : -1,
                         long.TryParse(values.GetValueOrDefault("lecturas"), out var reads) ? reads : -1,
-                        values.GetValueOrDefault("foco") == "forzado");
+                        values.GetValueOrDefault("foco") == "forzado",
+                        values.GetValueOrDefault("intercepcion", string.Empty),
+                        long.TryParse(values.GetValueOrDefault("interceptadas"), out var intercepted) ? intercepted : -1,
+                        values.GetValueOrDefault("previa") == "si");
                     result.TryAdd((pid, status.Dll.ToLowerInvariant()), status);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

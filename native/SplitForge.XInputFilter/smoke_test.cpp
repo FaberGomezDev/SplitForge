@@ -4,12 +4,16 @@
 //  - que encuentra y carga la DLL real de System32 (nunca otra copia del filtro),
 //  - que solo existe el índice 0 para el juego (los demás: no conectado sin consultar la real),
 //  - que cada copia escribe su propio estado-PID-<dll>.txt con la ranura y las lecturas,
+//  - que quien pide la XInput real de System32 sin pasar por la copia del filtro (como InControlNative en
+//    7DTD) también queda filtrado: sus exportaciones llevan al filtro y esas lecturas se cuentan aparte,
+//  - que una segunda copia del filtro delega en la primera (el índice no se cambia dos veces),
 //  - que el estado se actualiza cuando SplitForge cambia la asignación con el juego abierto.
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <cwchar>
 #include <string>
@@ -76,7 +80,52 @@ bool PollUntil(GetStateFn getState, const std::wstring& folder, const wchar_t* d
     return false;
 }
 
-int CheckCopy(const wchar_t* path, const wchar_t* dll, const std::wstring& folder, GetStateFn* loaded) {
+// Valor numérico de una línea "clave=número" del estado (-1 si no está).
+long long StatusNumber(const std::string& text, const char* key) {
+    const char* found = std::strstr(text.c_str(), key);
+    return found ? std::strtoll(found + std::strlen(key), nullptr, 10) : -1;
+}
+
+// Hace lo que un módulo del juego que no pasa por la copia del filtro: pide la XInput real de System32 y
+// resuelve sus funciones. Con el filtro ya cargado, deben llevar al filtro (índices 1–3 ocultos, lecturas
+// contadas como interceptadas).
+int CheckRealIsIntercepted(const std::wstring& folder, const wchar_t* dll) {
+    // Por ruta completa: por nombre, Windows devolvería la copia del filtro ya cargada como xinput1_4.dll.
+    wchar_t system[MAX_PATH] = {};
+    GetSystemDirectoryW(system, MAX_PATH);
+    HMODULE real = LoadLibraryW((std::wstring(system) + L"\\xinput1_4.dll").c_str());
+    if (!real)
+        return Fail("no se pudo cargar la xinput1_4.dll de System32");
+    auto getState = reinterpret_cast<GetStateFn>(reinterpret_cast<void*>(GetProcAddress(real, "XInputGetState")));
+    auto getStateEx = reinterpret_cast<GetStateFn>(reinterpret_cast<void*>(GetProcAddress(real, MAKEINTRESOURCEA(100))));
+    if (!getState || !getStateEx)
+        return Fail("la DLL real no exporta XInputGetState / ordinal 100");
+    HMODULE owner = nullptr;
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           reinterpret_cast<LPCWSTR>(reinterpret_cast<void*>(getState)), &owner) && owner == real)
+        return Fail("XInputGetState de la DLL real no está interceptada");
+    State state{};
+    for (DWORD i = 1; i < 4; i++) {
+        if (getState(i, &state) != kNotConnected || getStateEx(i, &state) != kNotConnected)
+            return Fail("por la DLL real, los índices 1–3 deben estar desconectados");
+    }
+    const DWORD first = getStateEx(0, &state);
+    if (first != ERROR_SUCCESS && first != kNotConnected)
+        return Fail("respuesta inesperada por la DLL real para el índice 0");
+    const ULONGLONG until = GetTickCount64() + 6000; // El estado se reescribe como mucho cada 2 s.
+    long long intercepted = 0;
+    while (intercepted <= 0 && GetTickCount64() < until) {
+        getState(0, &state);
+        intercepted = StatusNumber(ReadStatus(folder, dll), "interceptadas=");
+        Sleep(16);
+    }
+    if (intercepted <= 0)
+        return Fail("las lecturas por la DLL real no pasan por el filtro");
+    std::printf("Por la DLL real de System32: %lld lecturas interceptadas.\n", intercepted);
+    return 0;
+}
+
+int CheckCopy(const wchar_t* path, const wchar_t* dll, const char* interception, const std::wstring& folder, GetStateFn* loaded) {
     HMODULE filter = LoadLibraryW(path);
     if (!filter)
         return Fail("no se pudo cargar el filtro");
@@ -101,7 +150,8 @@ int CheckCopy(const wchar_t* path, const wchar_t* dll, const std::wstring& folde
     char expectedDll[64] = {};
     std::snprintf(expectedDll, sizeof(expectedDll), "dll=%ls.dll", dll);
     if (!std::strstr(text.c_str(), "ranura=2") || !std::strstr(text.c_str(), "real=cargada")
-        || !std::strstr(text.c_str(), expectedDll) || !std::strstr(text.c_str(), "lecturas="))
+        || !std::strstr(text.c_str(), expectedDll) || !std::strstr(text.c_str(), "lecturas=")
+        || !std::strstr(text.c_str(), interception))
         return Fail("estado incorrecto");
     *loaded = getState;
     return 0;
@@ -122,13 +172,15 @@ int wmain(int argc, wchar_t** argv) {
         return Fail("no se pudo escribir la asignación");
 
     GetStateFn getState = nullptr;
-    if (const int r = CheckCopy(argv[1], L"xinput1_4", folder, &getState))
+    if (const int r = CheckCopy(argv[1], L"xinput1_4", "intercepcion=activa\n", folder, &getState))
+        return r;
+    if (const int r = CheckRealIsIntercepted(folder, L"xinput1_4"))
         return r;
     if (argc >= 3) {
-        // Segunda copia con otro nombre en el mismo proceso: su DLL real debe ser la de System32,
-        // no la copia xinput1_4.dll ya cargada (eso aplicaría la asignación dos veces).
+        // Segunda copia con otro nombre en el mismo proceso: su DLL real es la de System32, que la primera
+        // ya intercepta; debe delegar en ella (cambiar el índice dos veces ocultaría el mando).
         GetStateFn second = nullptr;
-        if (const int r = CheckCopy(argv[2], L"xinput1_3", folder, &second))
+        if (const int r = CheckCopy(argv[2], L"xinput1_3", "intercepcion=delegada\n", folder, &second))
             return r;
     }
 
@@ -142,6 +194,7 @@ int wmain(int argc, wchar_t** argv) {
     if (std::strstr(updated.c_str(), "lecturas=0\n"))
         return Fail("el estado no cuenta las lecturas");
     std::printf("Tras reasignar:\n%s", updated.c_str());
-    std::printf("OK: filtro XInput cargado, ranura asignada, índices 1-3 ocultos, estado por DLL actualizado en vivo.\n");
+    std::printf("OK: filtro XInput cargado, ranura asignada, índices 1-3 ocultos, DLL real interceptada, "
+                "estado por DLL actualizado en vivo.\n");
     return 0;
 }

@@ -174,7 +174,9 @@ public sealed partial class MainViewModel
         Guard(() =>
         {
             plan = PlanEmulatedLaunch();
+            UpdateInstalledFilter();
             first = StartEmulatedInstance(plan, 1);
+            AssignEmulatedPads(first);
         });
         if (plan is null || first == 0)
             return;
@@ -191,17 +193,51 @@ public sealed partial class MainViewModel
         Status = "7DTD: J1 y J2 arrancando; la pantalla se dividirá sola cuando aparezcan sus ventanas.";
     }
 
-    /// <summary>Cada cliente ve solo el mando de su jugador (ranuras de la pestaña 06), por PID.</summary>
-    private void AssignEmulatedPads(int pid1, int pid2)
+    /// <summary>
+    /// Cada cliente ve solo el mando de su jugador (ranuras de la pestaña 06), por PID. Se llama nada más
+    /// crear cada proceso, antes de su primera lectura de mandos: así ningún cliente llega a ver el del otro
+    /// (con J1 aún sin asignar, InControl enumeraba los dos mandos al arrancar).
+    /// </summary>
+    private void AssignEmulatedPads(int pid1, int pid2 = 0)
     {
         if (XInputFilter.InstalledNames(SevenDaysFolder()).Count == 0)
         {
-            _log.Write("Filtro XInput no instalado: los dos mandos controlarán ambas ventanas. Instálalo en la pestaña 06 (con los clientes cerrados).");
+            if (pid2 == 0)
+                _log.Write("Filtro XInput no instalado: los dos mandos controlarán ambas ventanas. Instálalo en la pestaña 06 (con los clientes cerrados).");
             return;
         }
-        XInputFilter.WriteAssignments(XInputFolder, [(pid1, SlotPlayer1 - 1), (pid2, SlotPlayer2 - 1)]);
+        List<(int Pid, int Slot)> assignments = [(pid1, SlotPlayer1 - 1)];
+        if (pid2 > 0)
+            assignments.Add((pid2, SlotPlayer2 - 1));
+        XInputFilter.WriteAssignments(XInputFolder, assignments);
+        if (pid2 == 0)
+            return;
         _log.Write($"Mandos asignados: J1 (PID {pid1}) → mando XInput {SlotPlayer1} · J2 (PID {pid2}) → mando XInput {SlotPlayer2}.");
         RefreshFilterStatus();
+    }
+
+    /// <summary>
+    /// Antes de lanzar: si las copias del filtro instaladas en el juego son de una compilación anterior, se
+    /// ponen al día (solo copias propias sin modificar, como al instalar). Sin esto, tras actualizar
+    /// SplitForge los clientes seguirían cargando el filtro antiguo.
+    /// </summary>
+    private void UpdateInstalledFilter()
+    {
+        var folder = SevenDaysFolder();
+        var installed = XInputFilter.InstalledNames(folder);
+        var dll = Path.Combine(AppContext.BaseDirectory, "native", XInputFilter.DllFileName);
+        if (installed.Count == 0 || !File.Exists(dll))
+            return;
+        try
+        {
+            var result = XInputFilter.Install(folder, dll, installed);
+            if (result.Updated.Count > 0)
+                _log.Write($"Filtro XInput puesto al día en 7DTD: {string.Join(", ", result.Updated)}.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Write($"No se pudo poner al día el filtro XInput ({ex.Message}); se lanza con el instalado.");
+        }
     }
 
     /// <summary>Llamado a ≈2 Hz: divide la pantalla cuando las ventanas de los clientes lanzados ya existen.</summary>

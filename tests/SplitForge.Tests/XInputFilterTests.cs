@@ -158,6 +158,32 @@ public class XInputFilterTests
         Assert.Equal(1, status[2].Slot);
         Assert.True(status[2].FocusForced);  // pantalla dividida: el filtro simula el foco
         Assert.False(status[0].FocusForced); // formato anterior, sin la línea «foco»
+        Assert.Equal(string.Empty, status[0].InterceptionText); // formato anterior: no interceptaba
+    }
+
+    [Fact]
+    public void ReadsInterceptionOfTheRealXInput()
+    {
+        using var tmp = new TempDir();
+        // 7DTD: Unity usa la copia xinput1_3; InControlNative pide la xinput1_4 real, que esa copia intercepta.
+        File.WriteAllText(tmp.Combine("estado-500-xinput1_3.txt"),
+            "dll=xinput1_3.dll\nreal=cargada\nranura=1\nlecturas=900\nfoco=forzado\nintercepcion=activa\ninterceptadas=640\nprevia=no\n");
+        File.WriteAllText(tmp.Combine("estado-500-xinput1_4.txt"),
+            "dll=xinput1_4.dll\nreal=cargada\nranura=1\nlecturas=3\nfoco=no\nintercepcion=delegada\ninterceptadas=0\nprevia=no\n");
+        File.WriteAllText(tmp.Combine("estado-600-xinput1_3.txt"),
+            "dll=xinput1_3.dll\nreal=cargada\nranura=0\nlecturas=5\nfoco=no\nintercepcion=activa\ninterceptadas=2\nprevia=si\n");
+        File.WriteAllText(tmp.Combine("estado-700-xinput1_3.txt"),
+            "dll=xinput1_3.dll\nreal=cargada\nranura=0\nlecturas=5\nfoco=no\nintercepcion=no\ninterceptadas=0\nprevia=no\n");
+
+        var status = XInputFilter.ReadStatus(tmp.Path);
+        Assert.Equal(["activa", "delegada", "activa", "no"], status.Select(s => s.Interception));
+        Assert.Equal(640, status[0].InterceptedReads);
+        Assert.False(status[0].RealPreloaded);
+        Assert.Equal("XInput real interceptada (640 lecturas por esa vía)", status[0].InterceptionText);
+        Assert.Equal("delega en la copia que intercepta", status[1].InterceptionText);
+        Assert.True(status[2].RealPreloaded);
+        Assert.Contains("ya estaba cargada antes del filtro", status[2].InterceptionText);
+        Assert.Contains("SIN interceptar", status[3].InterceptionText);
     }
 
     [Fact]
