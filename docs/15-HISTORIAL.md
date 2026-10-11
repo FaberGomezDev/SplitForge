@@ -432,6 +432,39 @@ LIMITACIONES EXPLÍCITAS: sin partida completa lanzada con el botón JUGAR nuevo
 PRÓXIMO PASO: opinión del propietario sobre el diseño; partida real desde JUGAR.
 ```
 
+## 2026-10-11 · Un puntero por cliente y aviso de bloqueo en pantalla
+
+```text
+FECHA: 2026-10-11
+RELEASE/COMMIT: (ver el registro de git de esta fecha)
+OBJETIVO: el propietario informa de que la ventana sin foco solo deja moverse y golpear (el resto de
+  botones no responde hasta darle el foco), de que su puntero a veces parpadea y de que con Ctrl+Alt+B
+  no sabe si el teclado y el ratón están bloqueados.
+CAUSA ENCONTRADA EN EL CÓDIGO (desensamblado de UnityPlayer.dll con símbolos e IL del juego): con el foco
+  simulado, los dos clientes creen estar en primer plano y cada uno recoloca y encierra el único puntero
+  de Windows (SetLockCursorInternal); Unity lee ese puntero en cada fotograma sin mirar el foco, y el
+  puntero de los menús con mando de 7DTD (SoftCursor) salta a esa posición y se oculta cuando cambia.
+  El foco simulado externo (ADR-020) lo provocaba 10 veces por segundo. SUPUESTO: que sea la causa de
+  los síntomas; no se pudo reproducir sin los mandos.
+CAMBIOS EFECTIVOS (ADR-025):
+  - Filtro XInput: puntero propio por cliente (GetCursorPos / SetCursorPos / ClipCursor redirigidos
+    mientras el cliente no es la ventana activa de verdad); estado «puntero=propio» y contador.
+  - Aplicación: el foco simulado externo ya no publica mensajes a los clientes cuyo filtro simula el
+    foco por dentro.
+  - Aviso en pantalla del bloqueo «solo mandos»: cartel de 3 s al bloquear y al desbloquear, e insignia
+    fija mientras dura (LockNotice, LockNoticePlan, OverlayWindow).
+EVIDENCIA AUTOMÁTICA: 192 xUnit (5 nuevas), 77 unittest; prueba de humo del filtro ampliada (el proceso
+  cree tener el foco, mueve y encierra «su» puntero y el de Windows no cambia).
+EVIDENCIA EN WINDOWS REAL: el aviso, mostrado solo y medido con Win32 (sin bloquear nada): arriba y
+  centrado, por encima, sin clics ni foco, pasa a insignia a los 3 s y desaparece al desbloquear.
+  Paquete publicado con Compilar_SplitForge.bat.
+LIMITACIONES EXPLÍCITAS: nada de esto se ha visto con 7DTD ni con los mandos (el propietario estaba
+  usando el PC: no se abrieron los juegos). Sin compilar con MinGW; la CI aún no lo ha ejecutado.
+PRÓXIMO PASO: el propietario prueba con los dos mandos (W23 y W24). Si la ventana sin foco siguiera
+  fallando, lanzar con -debuginput=verbose y leer en Player.log el foco, el cursor y los conjuntos de
+  acciones.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

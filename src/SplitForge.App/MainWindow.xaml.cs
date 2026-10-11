@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _vm;
     private bool _closingConfirmed;
     private nint _hotkeyWindow;
+    private LockNotice? _lockNotice;
 
     public MainWindow()
     {
@@ -25,6 +26,7 @@ public partial class MainWindow : Window
         Height = Math.Min(Height, area.Height - 24);
         _vm = new MainViewModel();
         DataContext = _vm;
+        _vm.InputLockChanged += ShowLockNotice;
         // Mantener visible la última línea del registro.
         ((INotifyCollectionChanged)LogList.Items).CollectionChanged += (_, _) =>
         {
@@ -68,6 +70,22 @@ public partial class MainWindow : Window
         return nint.Zero;
     }
 
+    /// <summary>Aviso en pantalla, por encima de los juegos, de que el teclado y el ratón se bloquearon o se soltaron.</summary>
+    private void ShowLockNotice(bool locked)
+    {
+        if (_closingConfirmed)
+            return;
+        try
+        {
+            _lockNotice ??= new LockNotice();
+            _lockNotice.Announce(locked, _vm.NoticeArea(), _vm.InputLockHotkey);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            // El aviso es solo informativo: si Windows no deja mostrarlo, el bloqueo funciona igual.
+        }
+    }
+
     protected override async void OnClosing(CancelEventArgs e)
     {
         if (_closingConfirmed)
@@ -92,6 +110,8 @@ public partial class MainWindow : Window
             GlobalHotkey.Unregister(_hotkeyWindow, MouseLockHotkeyId);
             GlobalHotkey.Unregister(_hotkeyWindow, InputLockHotkeyId);
         }
+        _vm.InputLockChanged -= ShowLockNotice;
+        _lockNotice?.Close();
         _vm.Dispose();
         base.OnClosed(e);
     }

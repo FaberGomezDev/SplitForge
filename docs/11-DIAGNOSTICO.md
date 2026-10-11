@@ -42,6 +42,11 @@ Herramienta principal (0.7): `SplitForge.Diagnostico.exe` en la carpeta del paqu
    - `motor`: `unity` si carga `UnityPlayer.dll`.
    - Informe real del 2026-10-10 (v2, un cliente): `xinput1_3` + `xinput1_4`, `dinput8`, `hid`, `incontrolnative`; ver `05-INTEGRACION-STEAM.md`.
 5. `SplitForge.Diagnostico.exe xinput` muestra las ranuras XInput con mando, la ranura de cada pulsación en vivo y el estado del filtro en cada cliente. Ese estado sale de `%LOCALAPPDATA%\SplitForge\xinput\estado-PID-<dll>.txt` y, para el jugador 2, de la carpeta por defecto del sandbox `SplitForge_J2`. Si un cliente asignado tiene las «lecturas» en 0 mientras el juego responde al mando, el juego no lee por esa DLL. El estado indica además si la XInput real está interceptada y cuántas lecturas llegaron por ella; «ya estaba cargada antes del filtro» significa que algún módulo pudo resolverla antes y leer sin filtrar (ADR-021).
+6. **La ventana sin foco no responde a todos los botones, o su puntero parpadea o salta** (ADR-025):
+   - El estado de **los dos** clientes debe decir «foco simulado · puntero propio». Si no, el filtro instalado es antiguo: JUGAR lo pone al día al lanzar.
+   - En `estado-PID-<dll>.txt`, `puntero_propio=N` debe subir en el cliente que no tiene el foco: son las veces que el juego pidió, movió o encerró el puntero sin tocar el de Windows.
+   - Si sigue fallando, el juego tiene su propio registro de entrada: lanzado con el argumento `-debuginput=verbose` anota en `Player.log` los cambios de foco («Focus:»), de cursor («CursorEnabled:») y de conjuntos de acciones. Anotar qué botones fallan y con qué pantalla abierta.
+   - Un botón que la herramienta de los mandos convierte en tecla o ratón solo llega a la ventana activa: no pasa por XInput.
 6. Anotar si la ventana **sin foco** sigue procesando el juego y los mandos: es la clave para el siguiente paso del módulo nativo.
 
 ## F. Emulador de Steam (pestaña 07)

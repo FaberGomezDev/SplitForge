@@ -187,6 +187,31 @@ public class XInputFilterTests
     }
 
     [Fact]
+    public void ReadsTheOwnPointerAndWhichClientsFakeFocusInside()
+    {
+        using var tmp = new TempDir();
+        File.WriteAllText(tmp.Combine("estado-500-xinput1_3.txt"),
+            "dll=xinput1_3.dll\nreal=cargada\nranura=1\nlecturas=900\nfoco=forzado\nintercepcion=activa\ninterceptadas=640\nprevia=no\n"
+            + "puntero=propio\npuntero_propio=1234\n");
+        File.WriteAllText(tmp.Combine("estado-500-xinput1_4.txt"),
+            "dll=xinput1_4.dll\nreal=cargada\nranura=1\nlecturas=3\nfoco=no\nintercepcion=delegada\ninterceptadas=0\nprevia=no\n"
+            + "puntero=no\npuntero_propio=0\n");
+        // Filtro anterior: no informa del puntero.
+        File.WriteAllText(tmp.Combine("estado-600-xinput1_3.txt"),
+            "dll=xinput1_3.dll\nreal=cargada\nranura=0\nlecturas=5\nfoco=no\nintercepcion=activa\ninterceptadas=2\nprevia=no\n");
+
+        var status = XInputFilter.ReadStatus(tmp.Path);
+        Assert.True(status[0].OwnCursor);
+        Assert.Equal(1234, status[0].OwnCursorCalls);
+        Assert.False(status[1].OwnCursor);
+        Assert.Equal(0, status[1].OwnCursorCalls);
+        Assert.False(status[2].OwnCursor);
+        Assert.Equal(-1, status[2].OwnCursorCalls);
+        // Basta con que una copia del filtro del proceso simule el foco.
+        Assert.Equal(new[] { 500 }, XInputFilterStatus.FocusedInGame(status).Order());
+    }
+
+    [Fact]
     public void SandboxieStatusFolderUsesTheDefaultBoxLayoutAndRejectsUnsafeNames()
     {
         Assert.Equal(@"C:\Sandbox\jugador\SplitForge_J2\user\current\AppData\Local\SplitForge\xinput",

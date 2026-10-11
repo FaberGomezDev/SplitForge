@@ -25,6 +25,19 @@ public class FakeFocusTests
         Assert.Equal([(nint)5, (nint)6], FakeFocusPlan.Targets(true, [(nint)5, (nint)0, (nint)6, (nint)5]));
     }
 
+    [Fact]
+    public void WindowsWhoseGameAlreadyFakesFocusInsideGetNoMessages()
+    {
+        nint[] session = [5, 6];
+        // El filtro XInput de los dos juegos ya simula el foco: no se publica nada desde fuera.
+        Assert.Empty(FakeFocusPlan.Targets(true, session, new HashSet<nint> { 5, 6 }));
+        // Solo uno lo hace por dentro: el otro sigue recibiendo los mensajes.
+        Assert.Equal([(nint)6], FakeFocusPlan.Targets(true, session, new HashSet<nint> { 5 }));
+        Assert.Equal(session, FakeFocusPlan.Targets(true, session, new HashSet<nint>()));
+        // Una sola ventana de sesión no es pantalla dividida, aunque no esté en la lista.
+        Assert.Empty(FakeFocusPlan.Targets(true, [(nint)6], new HashSet<nint> { 5 }));
+    }
+
     [Theory]
     [InlineData(0, FakeFocusPlan.MinIntervalMs)]
     [InlineData(100, 100)]

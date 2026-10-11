@@ -52,6 +52,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - que cada copia escribe su `estado-PID-<dll>.txt` con ranura y lecturas;
 - que quien pide la `xinput1_4.dll` real de System32 por su cuenta (como InControlNative en 7DTD) recibe las funciones del filtro: índices 1–3 ocultos y lecturas contadas como «interceptadas» (ADR-021);
 - que la segunda copia queda como «delegada» y no cambia el índice otra vez;
+- que, con una ventana como la de Unity que no es la activa, el proceso cree tener el foco y usa un puntero propio (ADR-025): mover o encerrar «su» puntero no cambia ni la posición ni el encierro del puntero de Windows, y el estado pasa a `foco=forzado`, `puntero=propio` con su contador;
 - que, al cambiar la asignación con el proceso abierto, el estado pasa a la ranura nueva. Compila sin avisos con MSVC `/W4 /WX` (CI) y MinGW `-Wall -Wextra -Werror` (Linux).
 
 ### Emulador de Steam nativo (C++)
@@ -110,6 +111,8 @@ Historial:
 | W20 | Emulador de Steam | Instalar desde la pestaña 07; «Lanzar J1 y J2» abre dos instancias de 7DTD con identidades distintas que llegan al menú, en pantalla dividida y con su mando asignado; «Restaurar DLL original» deja el juego como estaba |
 | W21 | Bloqueo de entrada | Con Ctrl+Alt+B (o el botón), el teclado y el ratón no llegan a los juegos ni al escritorio y los mandos siguen funcionando; Ctrl+Alt+B lo suelta sin teclas pegadas; detener la sesión o cerrar SplitForge también lo suelta |
 | W22 | Tapar barra de tareas | Con la casilla activa, las ventanas ocupan el monitor completo y la barra de tareas no se ve; al detener, vuelven a su sitio y a su orden |
+| W23 | Ventana sin foco | Dentro de una partida, con el foco en la ventana de J1, J2 usa **todos** los botones de su mando (inventario, menús, rueda, mapa, saltar, recargar) y el puntero de sus menús no parpadea ni salta; repetir con el foco en J2. El estado del filtro dice «foco simulado · puntero propio» en los dos clientes |
+| W24 | Aviso de bloqueo | Al pulsar Ctrl+Alt+B aparece arriba, sobre los juegos, «TECLADO Y RATÓN BLOQUEADOS» y queda la insignia «Bloqueado · Ctrl+Alt+B»; al volver a pulsarlo, «DESBLOQUEADOS» y el aviso desaparece a los 3 s. El aviso no quita el foco al juego ni recibe clics |
 
 **Resultado físico conocido:**
 - Prototipo: laboratorio v0.4 y Steam v0.5 confirmados.
@@ -122,6 +125,8 @@ Historial:
   - **W16 superado (propietario, noche):** con el paquete nuevo y «Lanzar J1 y J2», cada mando controla solo su ventana.
   - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
   - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
+  - **W23, antes de la corrección (propietario, 2026-10-11):** la ventana sin foco solo dejaba moverse y golpear, y su puntero parpadeaba. Corregido con ADR-025; **pendiente de repetir con los mandos**.
+  - **W24 (2026-10-11):** el aviso se midió solo, sin bloquear nada (arriba y centrado, por encima, sin clics ni foco, insignia a los 3 s, desaparece al desbloquear). Pendiente de verlo sobre los juegos.
   - **W14 superado (noche, sin servidor dedicado):** J1 aloja su partida y J2 entra sola en ella (ADR-022). En el registro del anfitrión: autenticación `k_EAuthSessionResponseOK`, «Player 'SplitForgeJ2' joined the game» y `PlayerSpawnedInWorld (reason: JoinMultiplayer)`. Falta una sesión de juego real de los dos jugadores.
 - El resto, sin confirmar. W11 y W12 requieren instalar antes el servidor dedicado (no instalado).
 

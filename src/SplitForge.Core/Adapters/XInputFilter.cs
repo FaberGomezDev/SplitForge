@@ -11,9 +11,15 @@ namespace SplitForge.Core.Adapters;
 /// «delegada»: ya lo hace otra copia; «no»: no se pudo; vacío: filtro anterior, que no interceptaba.</param>
 /// <param name="InterceptedReads">Lecturas que llegaron por la XInput real interceptada (−1 si no lo informa).</param>
 /// <param name="RealPreloaded">La XInput real ya estaba cargada antes del filtro: quien la resolviera antes no pasa por él.</param>
+/// <param name="OwnCursor">El cliente usa un puntero propio mientras no es la ventana activa: no mueve ni encierra el de Windows.</param>
+/// <param name="OwnCursorCalls">Llamadas de puntero atendidas sin tocar el de Windows (−1 si el filtro es anterior y no lo informa).</param>
 public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1, bool FocusForced = false,
-    string Interception = "", long InterceptedReads = -1, bool RealPreloaded = false)
+    string Interception = "", long InterceptedReads = -1, bool RealPreloaded = false, bool OwnCursor = false, long OwnCursorCalls = -1)
 {
+    /// <summary>Procesos cuyo filtro ya simula el foco dentro del juego: no necesitan el foco simulado desde fuera.</summary>
+    public static IReadOnlySet<int> FocusedInGame(IEnumerable<XInputFilterStatus> status) =>
+        status.Where(s => s.FocusForced).Select(s => s.Pid).ToHashSet();
+
     /// <summary>Resumen para la interfaz y el diagnóstico; vacío si el filtro es anterior a la intercepción.</summary>
     public string InterceptionText => Interception switch
     {
@@ -223,7 +229,9 @@ public static class XInputFilter
                         values.GetValueOrDefault("foco") == "forzado",
                         values.GetValueOrDefault("intercepcion", string.Empty),
                         long.TryParse(values.GetValueOrDefault("interceptadas"), out var intercepted) ? intercepted : -1,
-                        values.GetValueOrDefault("previa") == "si");
+                        values.GetValueOrDefault("previa") == "si",
+                        values.GetValueOrDefault("puntero") == "propio",
+                        long.TryParse(values.GetValueOrDefault("puntero_propio"), out var ownCursor) ? ownCursor : -1);
                     result.TryAdd((pid, status.Dll.ToLowerInvariant()), status);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

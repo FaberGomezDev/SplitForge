@@ -330,6 +330,10 @@ public sealed partial class MainViewModel
     });
 
     private int _filterRefreshing;
+    private static readonly IReadOnlySet<int> NoPids = new HashSet<int>();
+
+    /// <summary>Clientes cuyo filtro ya simula el foco dentro del juego (se lee cada ≈2 s, fuera del hilo de la interfaz).</summary>
+    private IReadOnlySet<int> _focusedInGame = NoPids;
 
     /// <summary>
     /// Estado del filtro y de las ranuras XInput. Enumerar procesos y leer archivos se hace fuera del hilo
@@ -356,25 +360,26 @@ public sealed partial class MainViewModel
                 if (!t.IsCompletedSuccessfully)
                     return;
                 FilterStatus = t.Result.Filter;
+                _focusedInGame = t.Result.FocusedInGame;
                 if (!_detectingSlot)
                     XInputSlotsStatus = t.Result.Slots;
             }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
-    private static (string Filter, string Slots) DescribeFilter(string? gameFolder, string dataFolder)
+    private static (string Filter, string Slots, IReadOnlySet<int> FocusedInGame) DescribeFilter(string? gameFolder, string dataFolder)
     {
         var connected = XInputProbe.ConnectedSlots();
         var slots = connected.Count > 0
             ? $"Ranuras XInput con mando: {string.Join(", ", connected)}. Usa «Detectar» para saber cuál es cada mando."
             : "Ninguna ranura XInput con mando: los mandos deben llegar a Windows como XInput (p. ej. «Xbox 360 Controller»).";
         if (gameFolder is null)
-            return ("7 Days to Die no detectado.", slots);
+            return ("7 Days to Die no detectado.", slots, NoPids);
         var installed = XInputFilter.InstalledNames(gameFolder);
         if (installed.Count == 0)
-            return ("Filtro XInput no instalado.", slots);
+            return ("Filtro XInput no instalado.", slots, NoPids);
         var status = WindowsDiagnostics.XInputStatus(dataFolder);
         if (status.Count == 0)
-            return ($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots);
+            return ($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, NoPids);
         var perClient = status.GroupBy(st => st.Pid).Select(g =>
         {
             var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
@@ -382,9 +387,10 @@ public sealed partial class MainViewModel
                 $"{st.Dll}{(st.RealLoaded ? "" : " (¡DLL real NO cargada!)")}{(st.Reads >= 0 ? $" {st.Reads} lecturas" : "")}"
                 + (st.InterceptionText.Length > 0 ? $" [{st.InterceptionText}]" : "")));
             var focus = g.Any(st => st.FocusForced) ? " · foco simulado" : "";
-            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}";
+            var pointer = g.Any(st => st.OwnCursor) ? " · puntero propio" : "";
+            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}";
         });
-        return ($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots);
+        return ($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, XInputFilterStatus.FocusedInGame(status));
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>

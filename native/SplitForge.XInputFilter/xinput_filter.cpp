@@ -17,7 +17,8 @@
 // cada 2 s mientras el juego lee mandos.
 //
 // Con mando asignado, además simula el foco de su ventana (ver «Foco simulado»): en pantalla dividida
-// cada cliente atiende su mando aunque no sea la ventana activa.
+// cada cliente atiende su mando aunque no sea la ventana activa. Y, mientras no es la ventana activa de
+// verdad, usa un puntero propio (ver «Puntero propio»): no mueve ni encierra el puntero de Windows.
 //
 // No inyecta código en otros procesos. Úsese con el juego abierto sin EAC (opción oficial del juego).
 
@@ -116,6 +117,8 @@ unsigned long long g_writtenReads = ~0ull;
 ULONGLONG g_writtenAt = 0;
 std::atomic<bool> g_statusDirty{false};        // Algo cambió (p. ej. el foco): reescribir el estado ya.
 std::atomic<bool> g_focusActive{false};
+std::atomic<bool> g_cursorOwn{false};                 // Puntero propio instalado en este proceso.
+std::atomic<unsigned long long> g_cursorVirtual{0};   // Llamadas de puntero atendidas sin tocar el de Windows.
 wchar_t g_realName[MAX_PATH] = L"xinput1_3.dll";
 
 // Nombre de esta DLL (xinput1_3.dll, xinput1_4.dll...) para cargar la real con el mismo nombre.
@@ -203,12 +206,15 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
             && swprintf_s(temp, L"%ls.tmp", path) > 0
             && _wfopen_s(&f, temp, L"w") == 0 && f) {
             static const wchar_t* const interception[] = {L"no", L"activa", L"delegada"};
-            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\nintercepcion=%ls\ninterceptadas=%llu\nprevia=%ls\n",
+            fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\nintercepcion=%ls\ninterceptadas=%llu\nprevia=%ls\n"
+                        L"puntero=%ls\npuntero_propio=%llu\n",
                      g_realName, g_real.load(std::memory_order_acquire) ? L"cargada" : L"NO", slot, reads,
                      g_focusActive.load(std::memory_order_relaxed) ? L"forzado" : L"no",
                      interception[g_interception.load(std::memory_order_relaxed)],
                      g_hookedReads.load(std::memory_order_relaxed),
-                     g_realPreloaded.load(std::memory_order_relaxed) ? L"si" : L"no");
+                     g_realPreloaded.load(std::memory_order_relaxed) ? L"si" : L"no",
+                     g_cursorOwn.load(std::memory_order_relaxed) ? L"propio" : L"no",
+                     g_cursorVirtual.load(std::memory_order_relaxed));
             const bool written = fclose(f) == 0;
             if (written && MoveFileExW(temp, path, MOVEFILE_REPLACE_EXISTING)) {
                 g_writtenSlot = slot;
@@ -239,13 +245,117 @@ std::atomic<bool> g_focusStarted{false};
 
 HWND WINAPI FocusedWindow() { return g_window.load(std::memory_order_relaxed); }
 
+// --- Puntero propio (como el puntero falso y los ganchos de cursor de ProtoInput en Nucleus Co-op) ---
+//
+// Windows tiene UN puntero. Con el foco simulado, cada cliente cree estar en primer plano, y Unity
+// (ScreenManagerWin::SetLockCursorInternal) lo lleva al centro de su ventana y lo encierra allí con
+// ClipCursor; además lee su posición en cada fotograma (GetCursorPos), y 7DTD coloca el puntero de sus
+// menús donde esté el de Windows en cuanto cambia (SoftCursor.HandleMovement). Con dos clientes, cada uno
+// le quita el puntero al otro. Por eso el cliente que NO es la ventana activa de verdad usa uno propio:
+//  - GetCursorPos devuelve su última posición conocida (o el centro de su ventana), que no cambia aunque
+//    se mueva el puntero de Windows;
+//  - SetCursorPos solo la recuerda y ClipCursor no hace nada.
+// El cliente que sí es la ventana activa usa el puntero real, como siempre (ratón y teclado intactos).
+// Igual que el foco: se reescribe la tabla de importaciones de UnityPlayer.dll y del ejecutable.
+
+std::atomic<bool> g_cursorKnown{false};
+std::atomic<LONG> g_cursorX{0};
+std::atomic<LONG> g_cursorY{0};
+SRWLOCK g_clipLock = SRWLOCK_INIT;
+bool g_clipHeld = false; // Este proceso encerró el puntero real (con g_clipLock tomado).
+RECT g_clipRect{};       // Rectángulo que Windows aplicó entonces.
+
+void RememberCursor(LONG x, LONG y) {
+    g_cursorX.store(x, std::memory_order_relaxed);
+    g_cursorY.store(y, std::memory_order_relaxed);
+    g_cursorKnown.store(true, std::memory_order_relaxed);
+}
+
+// ¿La ventana activa de verdad es de este proceso? (Las importaciones del propio filtro no se redirigen.)
+bool OwnsRealForeground() {
+    const HWND foreground = GetForegroundWindow();
+    if (!foreground)
+        return false;
+    if (foreground == g_window.load(std::memory_order_relaxed))
+        return true;
+    DWORD pid = 0;
+    GetWindowThreadProcessId(foreground, &pid);
+    return pid == GetCurrentProcessId();
+}
+
+BOOL WINAPI Own_GetCursorPos(POINT* point) {
+    if (!point || OwnsRealForeground()) {
+        const BOOL ok = GetCursorPos(point);
+        if (ok && point)
+            RememberCursor(point->x, point->y);
+        return ok;
+    }
+    g_cursorVirtual.fetch_add(1, std::memory_order_relaxed);
+    if (!g_cursorKnown.load(std::memory_order_relaxed)) {
+        // Nunca fue la ventana activa ni fijó el puntero: el centro de su ventana.
+        POINT center{};
+        RECT client{};
+        const HWND hwnd = g_window.load(std::memory_order_relaxed);
+        if (hwnd && GetClientRect(hwnd, &client)) {
+            center = {(client.left + client.right) / 2, (client.top + client.bottom) / 2};
+            ClientToScreen(hwnd, &center);
+        }
+        RememberCursor(center.x, center.y);
+    }
+    point->x = g_cursorX.load(std::memory_order_relaxed);
+    point->y = g_cursorY.load(std::memory_order_relaxed);
+    return TRUE;
+}
+
+BOOL WINAPI Own_SetCursorPos(int x, int y) {
+    if (OwnsRealForeground()) {
+        const BOOL ok = SetCursorPos(x, y);
+        if (ok)
+            RememberCursor(x, y);
+        return ok;
+    }
+    g_cursorVirtual.fetch_add(1, std::memory_order_relaxed);
+    RememberCursor(x, y);
+    return TRUE;
+}
+
+BOOL WINAPI Own_ClipCursor(const RECT* rect) {
+    if (!OwnsRealForeground()) {
+        g_cursorVirtual.fetch_add(1, std::memory_order_relaxed);
+        return TRUE;
+    }
+    const BOOL ok = ClipCursor(rect);
+    AcquireSRWLockExclusive(&g_clipLock);
+    g_clipHeld = ok && rect && GetClipCursor(&g_clipRect);
+    ReleaseSRWLockExclusive(&g_clipLock);
+    return ok;
+}
+
+// Al dejar de ser la ventana activa: si el encierro vigente es el que puso este proceso, se suelta. Nunca se
+// quita el de otro (el siguiente cliente activo pone el suyo).
+void ReleaseClipIfBackground() {
+    if (OwnsRealForeground())
+        return;
+    AcquireSRWLockExclusive(&g_clipLock);
+    const bool held = g_clipHeld;
+    const RECT ours = g_clipRect;
+    g_clipHeld = false;
+    ReleaseSRWLockExclusive(&g_clipLock);
+    RECT current{};
+    if (held && GetClipCursor(&current) && EqualRect(&current, &ours))
+        ClipCursor(nullptr);
+}
+
 LRESULT CALLBACK FocusProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_KILLFOCUS:
+        ReleaseClipIfBackground();
         return 0;
     case WM_ACTIVATE:
-        if (LOWORD(wParam) == WA_INACTIVE)
+        if (LOWORD(wParam) == WA_INACTIVE) {
+            ReleaseClipIfBackground();
             wParam = MAKEWPARAM(WA_ACTIVE, HIWORD(wParam));
+        }
         break;
     case WM_ACTIVATEAPP:
     case WM_NCACTIVATE:
@@ -280,9 +390,16 @@ BOOL CALLBACK FindOwnWindow(HWND hwnd, LPARAM lParam) {
     return TRUE;
 }
 
-// Sustituye en la tabla de importaciones de `module` las funciones de foco de user32 por FocusedWindow.
-void RedirectFocusImports(HMODULE module) {
-    if (!module)
+struct ImportHook {
+    const char* name;  // Función de user32.
+    void* replacement; // Función del filtro que la sustituye.
+};
+
+constexpr size_t kMaxImportHooks = 8;
+
+// Sustituye en la tabla de importaciones de `module` las funciones de user32 indicadas por las del filtro.
+void RedirectImports(HMODULE module, const ImportHook* hooks, size_t count) {
+    if (!module || count > kMaxImportHooks)
         return;
     auto* base = reinterpret_cast<BYTE*>(module);
     auto* dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
@@ -295,25 +412,23 @@ void RedirectFocusImports(HMODULE module) {
     HMODULE user32 = GetModuleHandleW(L"user32.dll");
     if (!user32)
         return;
-    void* targets[] = {
-        reinterpret_cast<void*>(GetProcAddress(user32, "GetForegroundWindow")),
-        reinterpret_cast<void*>(GetProcAddress(user32, "GetActiveWindow")),
-        reinterpret_cast<void*>(GetProcAddress(user32, "GetFocus")),
-    };
+    void* targets[kMaxImportHooks] = {};
+    for (size_t i = 0; i < count; ++i)
+        targets[i] = reinterpret_cast<void*>(GetProcAddress(user32, hooks[i].name));
     for (auto* imp = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(base + dir.VirtualAddress); imp->Name; ++imp) {
         if (_stricmp(reinterpret_cast<const char*>(base + imp->Name), "user32.dll") != 0)
             continue;
         for (auto* thunk = reinterpret_cast<IMAGE_THUNK_DATA*>(base + imp->FirstThunk); thunk->u1.Function; ++thunk) {
             void* current = reinterpret_cast<void*>(thunk->u1.Function);
-            for (void* target : targets) {
-                if (!target || current != target)
+            for (size_t i = 0; i < count; ++i) {
+                if (!targets[i] || current != targets[i])
                     continue;
                 DWORD old = 0;
                 if (VirtualProtect(&thunk->u1.Function, sizeof(void*), PAGE_READWRITE, &old)) {
-                    InterlockedExchangePointer(reinterpret_cast<void* volatile*>(&thunk->u1.Function),
-                                               reinterpret_cast<void*>(&FocusedWindow));
+                    InterlockedExchangePointer(reinterpret_cast<void* volatile*>(&thunk->u1.Function), hooks[i].replacement);
                     VirtualProtect(&thunk->u1.Function, sizeof(void*), old, &old);
                 }
+                break;
             }
         }
     }
@@ -332,8 +447,17 @@ DWORD WINAPI FocusThread(void*) {
         return 0;
     const HWND hwnd = data.found;
     g_window.store(hwnd, std::memory_order_relaxed);
-    RedirectFocusImports(GetModuleHandleW(nullptr));
-    RedirectFocusImports(GetModuleHandleW(L"UnityPlayer.dll"));
+    const ImportHook hooks[] = {
+        {"GetForegroundWindow", reinterpret_cast<void*>(&FocusedWindow)},
+        {"GetActiveWindow", reinterpret_cast<void*>(&FocusedWindow)},
+        {"GetFocus", reinterpret_cast<void*>(&FocusedWindow)},
+        {"GetCursorPos", reinterpret_cast<void*>(&Own_GetCursorPos)},
+        {"SetCursorPos", reinterpret_cast<void*>(&Own_SetCursorPos)},
+        {"ClipCursor", reinterpret_cast<void*>(&Own_ClipCursor)},
+    };
+    RedirectImports(GetModuleHandleW(nullptr), hooks, sizeof(hooks) / sizeof(hooks[0]));
+    RedirectImports(GetModuleHandleW(L"UnityPlayer.dll"), hooks, sizeof(hooks) / sizeof(hooks[0]));
+    g_cursorOwn.store(true, std::memory_order_relaxed);
     g_originalProc = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(hwnd, GWLP_WNDPROC));
     SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&FocusProc));
     g_focusActive.store(true, std::memory_order_relaxed);

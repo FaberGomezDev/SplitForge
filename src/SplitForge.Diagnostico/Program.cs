@@ -174,6 +174,7 @@ static void PrintFilterStatus()
                           + $"mando {(s.Slot >= 0 ? (s.Slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")}"
                           + (s.Reads >= 0 ? $" · {s.Reads} lecturas" : string.Empty)
                           + (s.FocusForced ? " · foco simulado" : string.Empty)
+                          + (s.OwnCursor ? $" · puntero propio ({s.OwnCursorCalls} llamadas sin tocar el de Windows)" : string.Empty)
                           + (s.InterceptionText.Length > 0 ? $" · {s.InterceptionText}" : string.Empty));
     }
 }

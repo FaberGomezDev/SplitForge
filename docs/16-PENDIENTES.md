@@ -11,6 +11,10 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 - ~~¿Abre 7DTD una segunda instancia en la misma sesión de Windows?~~ → **Sí** con el emulador (2026-10-10): dos clientes en el menú a la vez desde la misma carpeta. Con Sandboxie-Plus u otro usuario, sin probar.
 - ~~¿Procesa la ventana sin foco la entrada del mando?~~ → **No** (el propietario, 2026-10-10): 7DTD ignora la entrada sin foco (`GameIsFocused`). Hecho: foco simulado desde fuera (ADR-020) y dentro del filtro.
 - ~~Bloqueante (W16): cada stick mueve las dos ventanas~~ → **causa encontrada y corregida (ADR-021, 2026-10-10):** la 1.4 real la cargaba el propio filtro a través de la `XInput1_3.dll` de System32 (un reenviador), e InControlNative la recibía por nombre. Ahora el filtro la intercepta y cada cliente enumera un solo mando. **Confirmado por el propietario con los mandos.**
+- **Ventana sin foco (propietario, 2026-10-11):** solo dejaba moverse y golpear, y su puntero parpadeaba. Corrección aplicada (ADR-025: puntero propio por cliente, sin mensajes de foco externos). **Falta que el propietario lo pruebe con los mandos (W23).** Que la pelea por el puntero sea la causa es un supuesto apoyado en el código, no reproducido. Preguntas que quedan si persiste:
+  - ¿Qué botones fallan exactamente y con qué pantalla abierta (inventario, menú, mapa, rueda)?
+  - ¿Qué dice `Player.log` con `-debuginput=verbose` (foco, cursor y conjuntos de acciones)?
+  - ¿Envía algún botón del mando teclas o ratón (herramienta que convierte los PS4, Steam Input en modo escritorio)? Eso solo llega a la ventana activa.
 - Si en otro juego (o tras una actualización) el estado del filtro dice «ya estaba cargada antes del filtro» (`previa=si`), alguien resolvió la XInput real antes: habría que enganchar el código de sus funciones, como `Game.Hook.XInputEnabled` de Nucleus.
 - ¿Steam Input o la superposición de Steam (`gameoverlayrenderer64.dll`, cargada en 7DTD) interfieren con el filtro? Si las lecturas no suben, probar con Steam Input desactivado para 7DTD.
 - ¿Coinciden versión de cliente y servidor tras las actualizaciones de Steam? Cliente: build `25661859` (V 3.3.0 b18); el servidor dedicado aún no está instalado.
@@ -30,7 +34,7 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 ## Bloqueo de ratón y teclado
 
 - `ClipCursor` desde SplitForge (en segundo plano, con el juego en primer plano): ¿lo respeta Windows 11 o lo ignora por seguridad? Validar en hardware (W18).
-- Bloqueo de entrada «solo mandos» (Ctrl+Alt+B): validar en uso real (W21) que no deja teclas pegadas y que los juegos siguen leyendo los mandos.
+- Bloqueo de entrada «solo mandos» (Ctrl+Alt+B): validar en uso real (W21) que no deja teclas pegadas y que los juegos siguen leyendo los mandos. Desde el 2026-10-11 avisa en pantalla al bloquear y al desbloquear; falta ver que el cartel y la insignia quedan por encima de los juegos y no molestan.
 - Aislamiento de teclado por dispositivo: hoy el teclado va a la ventana con foco; separar dos teclados físicos exigiría Raw Input por dispositivo o un módulo nativo. Pendiente de decidir si hace falta.
 
 ## Diseño técnico

@@ -50,6 +50,13 @@ public sealed partial class MainViewModel
 
     public string InputLockButtonText => _inputLocked ? $"Entrada bloqueada ({InputLockHotkey} para soltar)" : "Bloquear entrada (solo mandos)";
 
+    /// <summary>El bloqueo de entrada cambió (true = bloqueado): la ventana muestra el aviso en pantalla.</summary>
+    public event Action<bool>? InputLockChanged;
+
+    /// <summary>Zona (píxeles) donde se ve el aviso: la de la pantalla dividida o, sin sesión, el área útil del monitor.</summary>
+    public SplitForge.Core.Layout.Region NoticeArea() =>
+        _sessions.Active is { Pending: false, Layout.CoverTaskbar: true } ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea();
+
     /// <summary>
     /// Alterna el bloqueo: mientras está activo, el teclado y el ratón no llegan a nada (ni juegos ni
     /// escritorio) y los mandos siguen funcionando. Se suelta con el mismo atajo, al detener la sesión
@@ -72,6 +79,7 @@ public sealed partial class MainViewModel
         InputLocked = true;
         _log.Write($"Entrada bloqueada: solo funcionan los mandos. Pulsa {InputLockHotkey} para soltarla.");
         Status = $"Entrada bloqueada (solo mandos). {InputLockHotkey} para soltar.";
+        InputLockChanged?.Invoke(true);
     }
 
     private void ReleaseInputLock()
@@ -81,6 +89,8 @@ public sealed partial class MainViewModel
         InputLock.Stop();
         InputLocked = false;
         _log.Write("Entrada liberada: teclado y ratón vuelven a funcionar.");
+        Status = $"Entrada liberada: teclado y ratón vuelven a funcionar. {InputLockHotkey} para bloquear.";
+        InputLockChanged?.Invoke(false);
     }
 
     /// <summary>El atajo del bloqueo de entrada ya estaba en uso por otra app.</summary>

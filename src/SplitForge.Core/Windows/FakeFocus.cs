@@ -37,12 +37,20 @@ public static class FakeFocusPlan
         new(WM_MOUSEACTIVATE, hwnd, HTCLIENT, "WM_MOUSEACTIVATE"),
     ];
 
-    /// <summary>Ventanas a las que aplicar el foco simulado: solo con dos o más clientes colocados, sin repetidos.</summary>
-    public static IReadOnlyList<nint> Targets(bool enabled, IReadOnlyCollection<nint>? sessionHandles)
+    /// <summary>
+    /// Ventanas a las que aplicar el foco simulado: solo con dos o más clientes colocados, sin repetidos.
+    /// Se excluyen las de <paramref name="focusedInGame"/>: su juego ya simula el foco por dentro (filtro XInput)
+    /// y los mensajes de fuera solo estorban. COMPROBADO en el código de Unity 2022 (7DTD): cada WM_ACTIVATE
+    /// ejecuta <c>PlayerWindowActivated</c> y cada WM_NCACTIVATE vuelve a recolocar y encerrar el puntero.
+    /// </summary>
+    public static IReadOnlyList<nint> Targets(bool enabled, IReadOnlyCollection<nint>? sessionHandles,
+        IReadOnlySet<nint>? focusedInGame = null)
     {
         if (!enabled || sessionHandles is null)
             return [];
         var distinct = sessionHandles.Where(h => h != 0).Distinct().ToArray();
-        return distinct.Length >= 2 ? distinct : [];
+        if (distinct.Length < 2)
+            return [];
+        return focusedInGame is { Count: > 0 } ? [.. distinct.Where(h => !focusedInGame.Contains(h))] : distinct;
     }
 }

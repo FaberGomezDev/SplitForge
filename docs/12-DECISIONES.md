@@ -123,6 +123,8 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Límites:** bloquea todo el teclado y el ratón (también el escritorio) mientras está activo. No separa varios teclados o ratones por jugador.
 
+**Aviso en pantalla (2026-10-11, petición del propietario: «no me doy ni cuenta cuando está desbloqueado o bloqueado»):** al cambiar el estado aparece un cartel arriba, centrado sobre los juegos, durante 3 s («TECLADO Y RATÓN BLOQUEADOS» / «DESBLOQUEADOS», con el atajo). Mientras dura el bloqueo queda una insignia pequeña («Bloqueado · Ctrl+Alt+B»). Es una ventana propia (`LockNotice`): no recibe clics, no toma el foco, no sale en Alt+Tab y se vuelve a subir cada 0,5 s por si un juego queda delante. Solo refleja el estado. Textos y posición son lógica pura (`LockNoticePlan`). Medido con Win32 sin bloquear nada; **sin ver aún sobre los juegos reales**.
+
 ## ADR-017 · Aceptada (experimental) · Bloqueo de ratón por ventana con ClipCursor
 
 **Decisión:** un atajo global (Ctrl+Alt+L) y un botón confinan el cursor al área de cliente de la ventana del jugador en primer plano, usando `ClipCursor`, que se reaplica en el tick de la interfaz porque Windows lo reinicia al cambiar el foco. **Por qué:** en pantalla dividida el ratón se escapa a la otra mitad; es la técnica de Nucleus Co-op, sin inyección ni hooks. **Límites:** solo confina el ratón; el teclado sigue yendo a la ventana con foco (el aislamiento por dispositivo exigiría Raw Input, aún no implementado); Windows podría ignorar `ClipCursor` desde una app en segundo plano. **Garantías:** solo bloquea ventanas que SplitForge colocó; se suelta al desactivar, detener la sesión o cerrar. **Pendiente:** validar en hardware (W18).
@@ -136,6 +138,8 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 **Por qué así:** no inyecta código, no modifica archivos del juego y no bloquea la interfaz (mensajes publicados en un hilo propio). Nucleus reenvía cada 1000 ms y ProtoInput cada 5 ms; 100 ms recupera el foco enseguida sin saturar la cola del juego.
 
 **Límites (sin comprobar):** no está probado con 7DTD ni con mandos. Si el juego consulta el foco real (`GetForegroundWindow`) o recibe el mando ajeno por DirectInput/Raw Input en la ventana con foco, los mensajes externos no bastan; Nucleus lo resuelve dentro del juego. Siguiente evidencia: W16 con el foco simulado activado y desactivado.
+
+**Revisión (2026-10-11, ADR-025):** estos mensajes ya no se publican a las ventanas cuyo juego simula el foco por dentro (filtro XInput con `foco=forzado`). En esos juegos sobran y, comprobado en el código de Unity, cada tanda hacía que el juego recolocara y encerrara el puntero de Windows. Siguen en uso para ventanas sin filtro.
 
 ## ADR-021 · Aceptada (experimental) · XInput real interceptada dentro del proceso (tabla de exportación)
 
@@ -210,4 +214,38 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 **Detalle a recordar:** en una plantilla propia de `TabControl`, el presentador del contenido debe llamarse `PART_SelectedContentHost`; sin ese nombre la automatización (lectores de pantalla y la prueba de la CI) no ve el contenido de las pestañas.
 
 **Evidencia (2026-10-10):** 187 xUnit; los 130 enlaces de la ventana tienen su propiedad en el modelo; el paquete publicado arranca, muestra las 3 secciones y las 6 pestañas de AVANZADO y se cierra de forma ordenada. **Sin comprobar:** una partida completa lanzada desde el botón JUGAR nuevo (usa la misma orden que antes) y la opinión del propietario sobre el diseño.
+
+## ADR-025 · Aceptada (experimental) · Un puntero propio por cliente
+
+**Contexto (propietario, 2026-10-11):** los mandos ya son independientes, pero la ventana **sin foco** solo permite moverse y golpear; el resto de botones no responde hasta que se le da el foco, y su puntero a veces parpadea.
+
+**Hechos comprobados** (desensamblado de `UnityPlayer.dll` del juego con sus símbolos e IL de `Assembly-CSharp.dll`, build `25661859`):
+
+- Windows tiene **un** puntero. Unity lo lee en cada fotograma con `GetCursorPos`, sin mirar el foco (`win::Input::Process`, `InputProcess`).
+- `ScreenManagerWin::SetLockCursorInternal`: con el cursor bloqueado, si `GetForegroundWindow()` es su ventana, lleva el puntero al centro (`SetCursorPos`) y lo encierra (`ClipCursor`); con el cursor libre, suelta el encierro (`ClipCursor(NULL)`), sea de quien sea.
+- El foco simulado del filtro hace que `GetForegroundWindow` devuelva la ventana propia en **los dos** clientes: los dos movían y encerraban el mismo puntero.
+- En `PlayerMainWndProc`, cada `WM_ACTIVATE` ejecuta `PlayerWindowActivated` (reactiva la entrada, vuelve a aplicar el bloqueo del cursor) y cada `WM_NCACTIVATE(TRUE)` llama a `SetLockCursorInternal` sin condiciones. El foco simulado **externo** (ADR-020) publicaba ambos mensajes 10 veces por segundo a cada ventana.
+- 7DTD, con mando, dibuja el puntero de sus menús como un elemento propio (`SoftCursor`). En cuanto `Input.mousePosition` cambia, lo lleva a esa posición, oculta su puntero y la caja de selección ese fotograma y muestra el cursor de Windows (`SoftCursor.HandleMovement` / `SetVisible`). Moverse y golpear no usan el puntero.
+
+**Supuesto (sin reproducir):** esa pelea por el puntero es la causa de los dos síntomas. No se ha podido comprobar sin los mandos del propietario.
+
+**Decisión:**
+
+- **Puntero propio.** Dentro de cada cliente con mando asignado, el filtro redirige `GetCursorPos`, `SetCursorPos` y `ClipCursor` de `UnityPlayer.dll` y del ejecutable (su tabla de importaciones, igual que el foco). Mientras el cliente **no** es la ventana activa de verdad:
+  - `GetCursorPos` devuelve su última posición conocida (o el centro de su ventana), que no cambia aunque se mueva el puntero de Windows;
+  - `SetCursorPos` solo la recuerda y `ClipCursor` no hace nada.
+- El cliente que **sí** es la ventana activa usa el puntero real: teclado y ratón siguen igual que siempre.
+- Al dejar de ser la ventana activa, si el encierro vigente es el que puso ese cliente, lo suelta; nunca quita el de otro.
+- **El foco externo se retira donde sobra** (revisión de ADR-020): la aplicación lee cada ≈2 s qué clientes tienen `foco=forzado` y deja de publicarles mensajes.
+- El estado del filtro añade `puntero=propio` y `puntero_propio=N` (llamadas atendidas sin tocar el puntero de Windows).
+
+**Por qué así:** es la técnica de ProtoInput en Nucleus Co-op (ganchos de cursor por proceso), reducida a lo que hace falta. Solo cambia datos del propio proceso del juego; no se parchea código ni se toca otro proceso. No hay que dibujar un puntero falso: el de los menús con mando lo dibuja el juego.
+
+**Límites:**
+
+- El cliente en segundo plano no ve el ratón real (su puntero está quieto). Para usar el ratón en un cliente hay que hacer clic en él, como siempre.
+- No se redirigen las llamadas administradas del juego a `user32` (`MouseLib` → `SetCursorPos`/`GetCursorPos` por P/Invoke): solo las usa `FlexibleCursor`, y por el código el puntero en uso es `SoftCursor` (`GameManager.setCursorEnabled` trata como tal a todos los punteros registrados). Deducción del código, sin ver en ejecución; otro juego podría necesitarlo.
+- **Sin comprobar con el juego real y los mandos.** Si el síntoma siguiera, el propio juego tiene un registro para esto: lanzado con `-debuginput=verbose` anota los cambios de foco, de cursor y de conjuntos de acciones (`ActionSetManager`).
+
+**Evidencia (2026-10-11):** prueba de humo del filtro con una ventana como la de Unity que no es la activa: el proceso cree tener el foco, mueve «su» puntero y el de Windows no cambia (ni su encierro); 192 xUnit.
 

@@ -7,6 +7,8 @@
 //  - que quien pide la XInput real de System32 sin pasar por la copia del filtro (como InControlNative en
 //    7DTD) también queda filtrado: sus exportaciones llevan al filtro y esas lecturas se cuentan aparte,
 //  - que una segunda copia del filtro delega en la primera (el índice no se cambia dos veces),
+//  - que, con una ventana como la de Unity que no es la activa, el proceso cree tener el foco y usa un
+//    puntero propio: mover o encerrar «su» puntero no toca el de Windows,
 //  - que el estado se actualiza cuando SplitForge cambia la asignación con el juego abierto.
 
 #define WIN32_LEAN_AND_MEAN
@@ -125,6 +127,103 @@ int CheckRealIsIntercepted(const std::wstring& folder, const wchar_t* dll) {
     return 0;
 }
 
+// Ventana con la clase de Unity, visible pero fuera de la pantalla y sin tomar el foco: el filtro la adopta
+// como «ventana del juego» de este proceso.
+HWND CreateGameWindow() {
+    WNDCLASSW windowClass{};
+    windowClass.lpfnWndProc = DefWindowProcW;
+    windowClass.hInstance = GetModuleHandleW(nullptr);
+    windowClass.lpszClassName = L"UnityWndClass";
+    if (!RegisterClassW(&windowClass))
+        return nullptr;
+    HWND hwnd = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, windowClass.lpszClassName, L"SplitForge humo",
+                                WS_POPUP, -20000, -20000, 320, 200, nullptr, nullptr, windowClass.hInstance, nullptr);
+    if (hwnd)
+        ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+    return hwnd;
+}
+
+void PumpMessages() {
+    MSG message{};
+    while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+        DispatchMessageW(&message);
+}
+
+// El «juego» de esta prueba no es la ventana activa (la activa es la consola o lo que tenga el usuario): debe
+// creer que tiene el foco y, al mover o encerrar el puntero, no tocar el de Windows.
+int CheckOwnCursor(HWND hwnd, GetStateFn getState, const std::wstring& folder, const wchar_t* dll) {
+    HMODULE user32 = GetModuleHandleW(L"user32.dll");
+    using GetPosFn = BOOL(WINAPI*)(POINT*);
+    using GetClipFn = BOOL(WINAPI*)(RECT*);
+    using GetWindowFn = HWND(WINAPI*)();
+    // Por GetProcAddress: las funciones de verdad, sin pasar por la tabla de importaciones de este ejecutable.
+    const auto realGetPos = reinterpret_cast<GetPosFn>(reinterpret_cast<void*>(GetProcAddress(user32, "GetCursorPos")));
+    const auto realGetClip = reinterpret_cast<GetClipFn>(reinterpret_cast<void*>(GetProcAddress(user32, "GetClipCursor")));
+    const auto realForeground = reinterpret_cast<GetWindowFn>(reinterpret_cast<void*>(GetProcAddress(user32, "GetForegroundWindow")));
+    if (!realGetPos || !realGetClip || !realForeground)
+        return Fail("user32 no exporta las funciones de puntero");
+
+    // El filtro activa el foco desde su hilo con SendMessage: esta ventana tiene que atender sus mensajes.
+    const ULONGLONG until = GetTickCount64() + 15000;
+    State state{};
+    std::string text;
+    while (GetTickCount64() < until) {
+        PumpMessages();
+        getState(0, &state);
+        text = ReadStatus(folder, dll);
+        if (std::strstr(text.c_str(), "foco=forzado") && std::strstr(text.c_str(), "puntero=propio"))
+            break;
+        Sleep(16);
+    }
+    if (!std::strstr(text.c_str(), "foco=forzado") || !std::strstr(text.c_str(), "puntero=propio"))
+        return Fail("el filtro no activó el foco simulado y el puntero propio");
+    if (realForeground() == hwnd) {
+        std::printf("AVISO: la ventana de prueba es la activa; no se comprueba el puntero propio.\n");
+        return 0;
+    }
+    if (GetForegroundWindow() != hwnd || GetActiveWindow() != hwnd || GetFocus() != hwnd)
+        return Fail("el proceso no cree tener el foco");
+
+    POINT before{};
+    RECT clipBefore{};
+    if (!realGetPos(&before) || !realGetClip(&clipBefore)) {
+        std::printf("AVISO: sin puntero en esta sesión; no se comprueba el puntero propio.\n");
+        return 0;
+    }
+    const POINT target{before.x + 137, before.y + 91};
+    POINT seen{};
+    if (!SetCursorPos(target.x, target.y) || !GetCursorPos(&seen))
+        return Fail("las funciones de puntero del filtro fallaron");
+    if (seen.x != target.x || seen.y != target.y)
+        return Fail("el proceso no ve su propio puntero donde lo dejó");
+    POINT real{};
+    realGetPos(&real);
+    if (real.x == target.x && real.y == target.y)
+        return Fail("mover el puntero propio movió el puntero de Windows");
+    const RECT cage{target.x, target.y, target.x + 1, target.y + 1};
+    if (!ClipCursor(&cage))
+        return Fail("ClipCursor del filtro falló");
+    RECT clipAfter{};
+    realGetClip(&clipAfter);
+    if (!EqualRect(&clipBefore, &clipAfter))
+        return Fail("encerrar el puntero propio encerró el puntero de Windows");
+    ClipCursor(nullptr);
+
+    long long served = 0;
+    const ULONGLONG wait = GetTickCount64() + 6000; // El estado se reescribe como mucho cada 2 s.
+    while (served <= 0 && GetTickCount64() < wait) {
+        PumpMessages();
+        getState(0, &state);
+        served = StatusNumber(ReadStatus(folder, dll), "puntero_propio=");
+        Sleep(16);
+    }
+    if (served <= 0)
+        return Fail("el estado no cuenta las llamadas atendidas con el puntero propio");
+    std::printf("Puntero propio: %lld llamadas sin tocar el de Windows (real en %ld,%ld; propio en %ld,%ld).\n",
+                served, real.x, real.y, seen.x, seen.y);
+    return 0;
+}
+
 int CheckCopy(const wchar_t* path, const wchar_t* dll, const char* interception, const std::wstring& folder, GetStateFn* loaded) {
     HMODULE filter = LoadLibraryW(path);
     if (!filter)
@@ -171,8 +270,13 @@ int wmain(int argc, wchar_t** argv) {
     if (!WriteAssignment(folder, assignment))
         return Fail("no se pudo escribir la asignación");
 
+    const HWND gameWindow = CreateGameWindow(); // Antes de cargar el filtro: es la ventana que adoptará.
     GetStateFn getState = nullptr;
     if (const int r = CheckCopy(argv[1], L"xinput1_4", "intercepcion=activa\n", folder, &getState))
+        return r;
+    if (!gameWindow)
+        std::printf("AVISO: no se pudo crear una ventana (¿sesión sin escritorio?); no se comprueba el puntero propio.\n");
+    else if (const int r = CheckOwnCursor(gameWindow, getState, folder, L"xinput1_4"))
         return r;
     if (const int r = CheckRealIsIntercepted(folder, L"xinput1_4"))
         return r;
