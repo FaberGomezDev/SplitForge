@@ -48,13 +48,15 @@
 - Servidor dedicado de 7DTD (AppID 294420) y Sandboxie-Plus **no instalados**.
 - Controladores ViGEmBus y HidHide instalados.
 
-**Verificado automáticamente:** 192 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador (esta última con la API plana de Steamworks.NET). La CI en Windows comprueba además que la API plana generada está al día. En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
+**Verificado automáticamente:** 195 pruebas xUnit + 77 unittest, más las pruebas de humo C++ del filtro XInput y del emulador (esta última con la API plana de Steamworks.NET). La CI en Windows comprueba además que la API plana generada está al día. En Linux, el hilo SDL3 mide 1000 Hz y el visor dibuja correctamente bajo pantalla virtual.
 
 **Experimental, sin validar en hardware:**
 - Filtro XInput nativo en C++ (un mando por cliente dentro del juego, ADR-015), con estado por DLL y contador de lecturas, detección de la ranura XInput de cada mando y diagnóstico v3 con el origen de cada módulo.
 - Bloqueo de ratón por ventana (`ClipCursor` + atajo global Ctrl+Alt+L, ADR-017) para pantalla dividida.
 - Bloqueo de entrada «solo mandos» (Ctrl+Alt+B, ADR-019), con aviso en pantalla al bloquear y al desbloquear, y pantalla dividida que tapa la barra de tareas (comprobado con 7DTD).
-- Un puntero propio por cliente (ADR-025), para que la ventana sin foco atienda todos los botones de su mando: implementado y probado sin el juego; **falta probarlo con los mandos**.
+- Un puntero propio por cliente (ADR-025): implementado y probado sin el juego.
+- Teclas que no se quedan pegadas al perder el foco (ADR-026): tras Alt+Tab, LB/RB dejaban de cambiar de objeto en la ventana sin foco. **Reproducido y corregido con el juego real** en un ensayo sin manos (`tools/ensayo_7dtd.ps1`); falta la confirmación del propietario con los mandos.
+- Los juegos se mantienen por encima de la barra de tareas durante la sesión (comprobado en el mismo ensayo).
 - Aislamiento de mandos dentro de 7DTD: el filtro intercepta también la `xinput1_4.dll` real (ADR-021) y cada cliente enumera un solo mando (J1 → mando 1, J2 → mando 2). **Validado por el propietario con los mandos (W16).**
 - Misma partida en 7DTD: J2 entra sola en la partida de J1 (W14, ADR-022), comprobado con el juego real. Falta una sesión de juego de los dos jugadores.
 

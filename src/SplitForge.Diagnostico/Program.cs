@@ -175,6 +175,7 @@ static void PrintFilterStatus()
                           + (s.Reads >= 0 ? $" · {s.Reads} lecturas" : string.Empty)
                           + (s.FocusForced ? " · foco simulado" : string.Empty)
                           + (s.OwnCursor ? $" · puntero propio ({s.OwnCursorCalls} llamadas sin tocar el de Windows)" : string.Empty)
+                          + (s.OwnCursor && s.KeysReleased >= 0 ? $" · {s.KeysReleased} teclas soltadas al perder el foco" : string.Empty)
                           + (s.InterceptionText.Length > 0 ? $" · {s.InterceptionText}" : string.Empty));
     }
 }

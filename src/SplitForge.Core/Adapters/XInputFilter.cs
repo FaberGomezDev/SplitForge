@@ -13,8 +13,11 @@ namespace SplitForge.Core.Adapters;
 /// <param name="RealPreloaded">La XInput real ya estaba cargada antes del filtro: quien la resolviera antes no pasa por él.</param>
 /// <param name="OwnCursor">El cliente usa un puntero propio mientras no es la ventana activa: no mueve ni encierra el de Windows.</param>
 /// <param name="OwnCursorCalls">Llamadas de puntero atendidas sin tocar el de Windows (−1 si el filtro es anterior y no lo informa).</param>
+/// <param name="KeysReleased">Teclas que el filtro soltó en el juego al perder el foco de verdad, para que no se queden
+/// pegadas (−1 si el filtro es anterior y no lo hace).</param>
 public sealed record XInputFilterStatus(int Pid, string Dll, bool RealLoaded, int Slot, long Reads = -1, bool FocusForced = false,
-    string Interception = "", long InterceptedReads = -1, bool RealPreloaded = false, bool OwnCursor = false, long OwnCursorCalls = -1)
+    string Interception = "", long InterceptedReads = -1, bool RealPreloaded = false, bool OwnCursor = false, long OwnCursorCalls = -1,
+    long KeysReleased = -1)
 {
     /// <summary>Procesos cuyo filtro ya simula el foco dentro del juego: no necesitan el foco simulado desde fuera.</summary>
     public static IReadOnlySet<int> FocusedInGame(IEnumerable<XInputFilterStatus> status) =>
@@ -231,7 +234,8 @@ public static class XInputFilter
                         long.TryParse(values.GetValueOrDefault("interceptadas"), out var intercepted) ? intercepted : -1,
                         values.GetValueOrDefault("previa") == "si",
                         values.GetValueOrDefault("puntero") == "propio",
-                        long.TryParse(values.GetValueOrDefault("puntero_propio"), out var ownCursor) ? ownCursor : -1);
+                        long.TryParse(values.GetValueOrDefault("puntero_propio"), out var ownCursor) ? ownCursor : -1,
+                        long.TryParse(values.GetValueOrDefault("teclas_soltadas"), out var keys) ? keys : -1);
                     result.TryAdd((pid, status.Dll.ToLowerInvariant()), status);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

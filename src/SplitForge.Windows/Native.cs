@@ -144,6 +144,9 @@ internal static unsafe partial class Native
     [LibraryImport("user32.dll")]
     public static partial nint GetTopWindow(nint hwnd);
 
+    [LibraryImport("user32.dll", EntryPoint = "FindWindowW")]
+    public static partial nint FindWindow(char* className, char* windowName);
+
     [LibraryImport("user32.dll")]
     public static partial nint GetWindow(nint hwnd, uint command);
 

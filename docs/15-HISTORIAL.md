@@ -465,6 +465,44 @@ PRÓXIMO PASO: el propietario prueba con los dos mandos (W23 y W24). Si la venta
   acciones.
 ```
 
+## 2026-10-11 · LB/RB en la ventana sin foco: teclas pegadas, barra de tareas y ensayo sin manos
+
+```text
+FECHA: 2026-10-11 (tarde)
+RELEASE/COMMIT: (ver el registro de git de esta fecha)
+OBJETIVO: el propietario probó el paquete de la mañana. Dentro de la partida los dos se mueven bien, pero
+  LB/RB (cambiar de objeto) solo funcionan en la ventana con foco; en el inventario funcionan en las dos.
+  Además la barra de tareas se quedó visible hasta que eligió la ventana con Alt+Tab. Pide ensayarlo.
+CAUSA COMPROBADA: al cambiar de ventana con Alt+Tab, la que pierde el foco se queda con Alt pulsada (el
+  foco simulado le oculta a Unity la desactivación, que es cuando suelta las teclas). 7DTD, con Alt
+  pulsada, hace que LB/RB pasen de página del cinturón (XUiC_Radial.HandleToolbeltCommand). La corrección
+  de la mañana (puntero propio, ADR-025) no era la causa de este síntoma.
+CAMBIOS EFECTIVOS (ADR-026):
+  - Filtro XInput: al dejar de ser la ventana activa, el juego recibe el «soltar» de las teclas que tenía
+    pulsadas; las pulsaciones atrasadas no se entregan; GetAsyncKeyState/GetKeyState «sin pulsar» en
+    segundo plano; estado «teclas_soltadas».
+  - Filtro XInput: mando de prueba (prueba.txt) para ensayar sin manos.
+  - Aplicación: los juegos se mantienen por encima de la barra de tareas (TaskbarPlan, TaskbarGuard).
+  - Aplicación: corregido que el estado del filtro dejara de actualizarse (y con él la retirada del foco
+    simulado externo, que no había llegado a aplicarse).
+  - tools/ensayo_7dtd.ps1: ensayo de extremo a extremo con el juego real.
+EVIDENCIA AUTOMÁTICA: 195 xUnit (3 nuevas), 77 unittest; prueba de humo del filtro ampliada (Alt se suelta
+  al perder el foco, una pulsación atrasada no llega al juego, mando de prueba sin mando en la ranura).
+EVIDENCIA EN WINDOWS REAL (juego real, dos clientes, J1 en su partida y SIN foco, RB con el mando de
+  prueba, casilla del cinturón leída en la captura de su ventana):
+  fase A sin teclas pegadas 8 → 9; fase B Alt pegada con la corrección apagada 9 → 9 (fallo reproducido);
+  fase C con la corrección 9 → 10 (corregido), «teclas_soltadas=1». Juegos por encima de la barra de
+  tareas en todas las muestras. Registro: «Foco simulado: 2 ventanas lo hacen dentro del juego».
+  «Cerrar juegos» dentro de la partida guarda (SaveAndCleanupWorld).
+ERRORES PROPIOS: (1) el diagnóstico de la mañana era un supuesto y no explicaba el síntoma; (2) la retirada
+  del foco externo no funcionaba y no lo comprobé con el juego; (3) el mando de prueba metía pulsaciones
+  dobles al reescribirse su archivo: en ese ensayo J1 gastó un frasco de agua de la partida del
+  propietario. Corregido antes del ensayo válido.
+LIMITACIONES EXPLÍCITAS: falta que el propietario lo confirme jugando con los dos mandos. A veces el juego
+  abre un cuadro «Inicio de sesión de Discord» al arrancar (es del juego; al propietario no le molesta).
+PRÓXIMO PASO: confirmación del propietario (W23, W24) y siguiente juego: No Man's Sky.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

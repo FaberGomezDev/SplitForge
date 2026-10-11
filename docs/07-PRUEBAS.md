@@ -53,6 +53,8 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - que quien pide la `xinput1_4.dll` real de System32 por su cuenta (como InControlNative en 7DTD) recibe las funciones del filtro: índices 1–3 ocultos y lecturas contadas como «interceptadas» (ADR-021);
 - que la segunda copia queda como «delegada» y no cambia el índice otra vez;
 - que, con una ventana como la de Unity que no es la activa, el proceso cree tener el foco y usa un puntero propio (ADR-025): mover o encerrar «su» puntero no cambia ni la posición ni el encierro del puntero de Windows, y el estado pasa a `foco=forzado`, `puntero=propio` con su contador;
+- que una tecla que el juego vio pulsar se le suelta al perder el foco de verdad (Alt tras Alt+Tab), que no ve la desactivación y que una pulsación atrasada no le llega (ADR-026);
+- que el mando de prueba (`prueba.txt`) pulsa y suelta un botón aunque la ranura no tenga mando, y que su opción `sin_soltar` reproduce la tecla pegada;
 - que, al cambiar la asignación con el proceso abierto, el estado pasa a la ranura nueva. Compila sin avisos con MSVC `/W4 /WX` (CI) y MinGW `-Wall -Wextra -Werror` (Linux).
 
 ### Emulador de Steam nativo (C++)
@@ -79,6 +81,22 @@ Historial:
 - Run #2 (d1614bb): **1000 Hz** tras usar plazos absolutos.
 - Run #4: la prueba de arranque detectó un fallo real de cierre, que se corrigió.
 - Run #16 (`783da1d`, `main` actual): verde.
+
+### Ensayo sin manos con 7DTD real (`tools/ensayo_7dtd.ps1`, solo en el PC del propietario)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\ensayo_7dtd.ps1
+```
+
+Abre el paquete publicado, pulsa JUGAR y espera a que J1 esté dentro de su última partida (J2 se queda en el menú). Comprueba con el juego real:
+
+- que los juegos tapan la barra de tareas y que el foco simulado externo no se envía a quien lo simula por dentro;
+- el estado del filtro de los dos clientes;
+- que RB cambia de objeto en la ventana **sin foco**, en tres fases: sin teclas pegadas (A), tras perder el foco con Alt pulsada con la corrección apagada (B, debe fallar) y con ella encendida (C).
+
+Cómo lo hace: pulsa los botones con el mando de prueba del filtro (`prueba.txt`), da el foco como Alt+Tab (Alt pulsada antes del cambio) y lee la casilla resaltada del cinturón en una captura de la ventana de J1 (`PrintWindow`; nunca captura el escritorio y guarda las capturas fuera del repositorio). Imprime el veredicto de cada fase.
+
+**Avisos:** ocupa la pantalla unos 3 minutos; carga la **última partida del propietario** y cambia el objeto que J1 lleva en la mano; no se ejecuta si hay un juego o un SplitForge abierto. Mientras corre no hay que tocar teclado, ratón ni mandos, ni activar Ctrl+Alt+B: con el bloqueo de entrada, Alt no llega al juego y la fase B no reproduce el fallo (pasó en una repetición del 2026-10-11 en la que el propietario estaba usando el PC: las tres fases cambiaron de casilla). Al final cierra los juegos con el botón del lanzador (guardan al salir), cierra el lanzador y restaura `settings.v2.json` tal como estaba. Si el juego abre el cuadro «Inicio de sesión de Discord», lo acepta con el botón A del mando de prueba.
 
 ### Pruebas de humo en Linux (desarrollo)
 
@@ -125,7 +143,10 @@ Historial:
   - **W16 superado (propietario, noche):** con el paquete nuevo y «Lanzar J1 y J2», cada mando controla solo su ventana.
   - **W22 superado:** con los dos clientes arriba/abajo sobre el monitor completo, la franja de la barra de tareas (esquinas incluidas) es de la ventana de J2.
   - **W21:** pendiente de que el propietario lo pruebe (no se puede simular sin tocar su teclado y ratón).
-  - **W23, antes de la corrección (propietario, 2026-10-11):** la ventana sin foco solo dejaba moverse y golpear, y su puntero parpadeaba. Corregido con ADR-025; **pendiente de repetir con los mandos**.
+  - **W23, primer informe (propietario, 2026-10-11, mañana):** la ventana sin foco solo dejaba moverse y golpear, y su puntero parpadeaba. ADR-025 (puntero propio).
+  - **W23, segundo informe (tarde):** con el paquete de la mañana, LB/RB seguían sin cambiar de objeto en la ventana sin foco (sí en el inventario). Causa: Alt pegada tras Alt+Tab. **Corregido (ADR-026) y ensayado sin manos con el juego real** (`tools/ensayo_7dtd.ps1`): J1 sin foco, RB con el mando de prueba, casilla 8 → 9 sin teclas pegadas, 9 → 9 con Alt pegada y la corrección apagada, 9 → 10 con la corrección. **Falta la confirmación del propietario con los dos mandos.**
+  - **W22, de nuevo (tarde):** el propietario vio la barra de tareas hasta activar la ventana de abajo. Ahora los juegos se vuelven a subir solos; en el ensayo, el juego de abajo quedó por encima de la barra en todas las muestras.
+  - **«Cerrar juegos» dentro de una partida:** el juego guarda antes de salir (`SaveAndCleanupWorld`, «Saving 46 of chunks»), visto en el ensayo.
   - **W24 (2026-10-11):** el aviso se midió solo, sin bloquear nada (arriba y centrado, por encima, sin clics ni foco, insignia a los 3 s, desaparece al desbloquear). Pendiente de verlo sobre los juegos.
   - **W14 superado (noche, sin servidor dedicado):** J1 aloja su partida y J2 entra sola en ella (ADR-022). En el registro del anfitrión: autenticación `k_EAuthSessionResponseOK`, «Player 'SplitForgeJ2' joined the game» y `PlayerSpawnedInWorld (reason: JoinMultiplayer)`. Falta una sesión de juego real de los dos jugadores.
 - El resto, sin confirmar. W11 y W12 requieren instalar antes el servidor dedicado (no instalado).

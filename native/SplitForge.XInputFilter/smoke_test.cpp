@@ -9,6 +9,9 @@
 //  - que una segunda copia del filtro delega en la primera (el índice no se cambia dos veces),
 //  - que, con una ventana como la de Unity que no es la activa, el proceso cree tener el foco y usa un
 //    puntero propio: mover o encerrar «su» puntero no toca el de Windows,
+//  - que una tecla que el juego vio pulsar se le suelta al perder el foco de verdad (Alt tras Alt+Tab) y que
+//    no ve la desactivación,
+//  - que el mando de prueba (prueba.txt) pulsa y suelta botones aunque no haya mando en la ranura,
 //  - que el estado se actualiza cuando SplitForge cambia la asignación con el juego abierto.
 
 #define WIN32_LEAN_AND_MEAN
@@ -127,11 +130,28 @@ int CheckRealIsIntercepted(const std::wstring& folder, const wchar_t* dll) {
     return 0;
 }
 
+// Lo que le llega al «juego» (la ventana de prueba) después de pasar por el filtro.
+int g_altPresses = 0;   // WM_SYSKEYDOWN / WM_KEYDOWN de Alt
+int g_altReleases = 0;  // WM_KEYUP de Alt
+int g_inactiveSeen = 0; // WM_ACTIVATE con WA_INACTIVE (el filtro debe convertirlos en activaciones)
+
+LRESULT CALLBACK GameProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    if ((message == WM_SYSKEYDOWN || message == WM_KEYDOWN) && wParam == VK_MENU)
+        ++g_altPresses;
+    if (message == WM_KEYUP && wParam == VK_MENU && (lParam & 0x80000000))
+        ++g_altReleases;
+    if (message == WM_ACTIVATE && LOWORD(wParam) == WA_INACTIVE)
+        ++g_inactiveSeen;
+    if (message == WM_SYSKEYDOWN || message == WM_SYSKEYUP || message == WM_KEYDOWN || message == WM_KEYUP)
+        return 0; // Como Unity: las teclas no llegan a DefWindowProc (evita el modo menú con Alt).
+    return DefWindowProcW(hwnd, message, wParam, lParam);
+}
+
 // Ventana con la clase de Unity, visible pero fuera de la pantalla y sin tomar el foco: el filtro la adopta
 // como «ventana del juego» de este proceso.
 HWND CreateGameWindow() {
     WNDCLASSW windowClass{};
-    windowClass.lpfnWndProc = DefWindowProcW;
+    windowClass.lpfnWndProc = GameProc;
     windowClass.hInstance = GetModuleHandleW(nullptr);
     windowClass.lpszClassName = L"UnityWndClass";
     if (!RegisterClassW(&windowClass))
@@ -224,6 +244,110 @@ int CheckOwnCursor(HWND hwnd, GetStateFn getState, const std::wstring& folder, c
     return 0;
 }
 
+bool WriteTestPad(const std::wstring& folder, const char* text) {
+    const std::wstring path = folder + L"\\prueba.txt";
+    if (!text)
+        return DeleteFileW(path.c_str()) != 0 || GetLastError() == ERROR_FILE_NOT_FOUND;
+    const std::wstring temp = path + L".tmp";
+    FILE* f = nullptr;
+    if (_wfopen_s(&f, temp.c_str(), L"w") != 0 || !f)
+        return false;
+    std::fputs(text, f);
+    std::fclose(f);
+    return MoveFileExW(temp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING) != 0;
+}
+
+// Escribe la línea del mando de prueba de este proceso y espera a que el filtro la aplique: LB (0x0100)
+// sirve de acuse (pulsado o no, según `lb`). Las opciones van en la misma línea, así que llegan a la vez.
+bool SetTestPad(const std::wstring& folder, GetStateFn getState, bool lb, const char* options) {
+    char line[96] = {};
+    std::snprintf(line, sizeof(line), "%lu %s %s\n", GetCurrentProcessId(), lb ? "0100" : "0000", options);
+    if (!WriteTestPad(folder, line))
+        return false;
+    const ULONGLONG until = GetTickCount64() + 5000;
+    State state{};
+    static DWORD lastPacket = 0xFFFFFFFF;
+    while (GetTickCount64() < until) {
+        PumpMessages();
+        const DWORD result = getState(0, &state);
+        // El mando de prueba existe aunque la ranura no tenga mando; el paquete cambia con cada cambio.
+        if (result == ERROR_SUCCESS && ((state.buttons & 0x0100) != 0) == lb && state.packet != lastPacket) {
+            lastPacket = state.packet;
+            return true;
+        }
+        Sleep(16);
+    }
+    return false;
+}
+
+// La ventana deja de ser la activa: Windows le avisa con estos dos mensajes.
+void Deactivate(HWND hwnd) {
+    SendMessageW(hwnd, WM_ACTIVATE, WA_INACTIVE, 0);
+    SendMessageW(hwnd, WM_KILLFOCUS, 0, 0);
+}
+
+void PressAlt(HWND hwnd) { SendMessageW(hwnd, WM_SYSKEYDOWN, VK_MENU, 0x20380001); }
+
+// Teclas pegadas (el fallo de LB/RB en 7DTD tras Alt+Tab) y mando de prueba. La ventana de prueba nunca es la
+// activa de verdad: la opción «activa» del mando de prueba hace que el filtro la trate como tal.
+int CheckStuckKeysAndTestPad(HWND hwnd, GetStateFn getState, const std::wstring& folder, const wchar_t* dll) {
+    // 1) Alt+Tab: el juego ve pulsar Alt siendo la ventana activa y pierde el foco antes de verla soltar.
+    if (!SetTestPad(folder, getState, true, "activa"))
+        return Fail("el mando de prueba no pulsó LB");
+    PressAlt(hwnd);
+    if (g_altPresses != 1)
+        return Fail("con la ventana activa, el juego debe ver la pulsación de Alt");
+    if (!SetTestPad(folder, getState, false, ""))
+        return Fail("el mando de prueba no soltó LB (o el paquete no cambió)");
+    Deactivate(hwnd);
+    if (g_altReleases != 1)
+        return Fail("al perder el foco con Alt pulsada, el juego debe recibir que Alt se soltó (una vez)");
+    if (g_inactiveSeen != 0)
+        return Fail("el juego no debe ver la desactivación de su ventana");
+    Deactivate(hwnd);
+    if (g_altReleases != 1)
+        return Fail("una tecla ya soltada no se suelta dos veces");
+
+    // 2) Una pulsación atrasada (repetición de Alt en cola) llega cuando la ventana ya no es la activa.
+    PressAlt(hwnd);
+    if (g_altPresses != 1)
+        return Fail("una pulsación que llega sin ser la ventana activa no debe entregarse al juego");
+
+    // 3) «sin_soltar» desactiva la corrección: Alt se queda pegada (así se reproduce el fallo en un ensayo).
+    if (!SetTestPad(folder, getState, true, "activa sin_soltar"))
+        return Fail("el mando de prueba no aplicó sin_soltar");
+    PressAlt(hwnd);
+    if (!SetTestPad(folder, getState, false, "sin_soltar"))
+        return Fail("el mando de prueba no mantuvo sin_soltar");
+    Deactivate(hwnd);
+    if (g_altPresses != 2 || g_altReleases != 1)
+        return Fail("con sin_soltar no se debe soltar ninguna tecla");
+
+    // 4) Al volver la corrección, la tecla que quedó pegada se suelta en la siguiente pérdida de foco.
+    if (!SetTestPad(folder, getState, true, ""))
+        return Fail("el mando de prueba no volvió al modo normal");
+    Deactivate(hwnd);
+    if (g_altReleases != 2)
+        return Fail("la tecla pegada no se soltó al volver la corrección");
+
+    if (!WriteTestPad(folder, nullptr))
+        return Fail("no se pudo borrar prueba.txt");
+    long long released = 0;
+    State state{};
+    const ULONGLONG until = GetTickCount64() + 6000;
+    while (released < 2 && GetTickCount64() < until) {
+        PumpMessages();
+        getState(0, &state);
+        released = StatusNumber(ReadStatus(folder, dll), "teclas_soltadas=");
+        Sleep(16);
+    }
+    if (released != 2)
+        return Fail("el estado no cuenta las teclas soltadas");
+    std::printf("Teclas pegadas: Alt se suelta al perder el foco (%lld) y una pulsación atrasada no llega al juego; "
+                "mando de prueba: LB pulsado y soltado sin mando en la ranura.\n", released);
+    return 0;
+}
+
 int CheckCopy(const wchar_t* path, const wchar_t* dll, const char* interception, const std::wstring& folder, GetStateFn* loaded) {
     HMODULE filter = LoadLibraryW(path);
     if (!filter)
@@ -264,6 +388,7 @@ int wmain(int argc, wchar_t** argv) {
     const std::wstring folder = Folder();
     CreateDirectoryW((folder.substr(0, folder.rfind(L'\\'))).c_str(), nullptr);
     CreateDirectoryW(folder.c_str(), nullptr);
+    WriteTestPad(folder, nullptr); // Por si quedó de una ejecución anterior interrumpida.
 
     char assignment[64] = {};
     std::snprintf(assignment, sizeof(assignment), "12345 1\n%lu 2\n", GetCurrentProcessId());
@@ -278,6 +403,8 @@ int wmain(int argc, wchar_t** argv) {
         std::printf("AVISO: no se pudo crear una ventana (¿sesión sin escritorio?); no se comprueba el puntero propio.\n");
     else if (const int r = CheckOwnCursor(gameWindow, getState, folder, L"xinput1_4"))
         return r;
+    else if (const int r2 = CheckStuckKeysAndTestPad(gameWindow, getState, folder, L"xinput1_4"))
+        return r2;
     if (const int r = CheckRealIsIntercepted(folder, L"xinput1_4"))
         return r;
     if (argc >= 3) {

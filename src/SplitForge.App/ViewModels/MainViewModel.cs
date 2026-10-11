@@ -181,6 +181,25 @@ public sealed partial class MainViewModel : Observable, IDisposable
         _backdrop.Show(covers ? _windows.PrimaryBounds() : _windows.PrimaryWorkArea(), active.WindowHandles, covers);
     }
 
+    private int _taskbarRaises;
+
+    /// <summary>
+    /// Llamado a ≈2 Hz. Con «Tapar barra de tareas», Windows vuelve a subir la barra por encima de los juegos
+    /// cuando cambia la ventana activa (ninguno ocupa toda la pantalla): se vuelve a subir el juego que pisa.
+    /// </summary>
+    private void KeepSessionAboveTaskbar()
+    {
+        if (_sessions.Active is not { Pending: false, Layout.CoverTaskbar: true, WindowHandles.Count: >= 1 } active)
+        {
+            if (_taskbarRaises > 1)
+                _log.Write($"Barra de tareas: en esa sesión hubo que volver a taparla {_taskbarRaises} veces.");
+            _taskbarRaises = 0;
+            return;
+        }
+        if (TaskbarGuard.KeepAbove(active.WindowHandles) > 0 && ++_taskbarRaises == 1)
+            _log.Write("La barra de tareas quedó por encima de un juego: se volvió a tapar (se repetirá si hace falta).");
+    }
+
     /// <summary>
     /// Llamado a ≈2 Hz. Si todas las ventanas de la sesión han desaparecido (el jugador salió de los juegos
     /// desde su propio menú), la sesión termina sola: se quita el fondo negro y se sueltan el ratón y el
@@ -309,9 +328,11 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Guard(TileEmulatedClientsWhenReady, quiet: true);
             Guard(CloseEmulatedClientsStep, quiet: true);
             Guard(EndSessionWhenWindowsAreGone, quiet: true);
+            Guard(KeepSessionAboveTaskbar, quiet: true);
             Guard(SyncBackdrop, quiet: true);
             if (_tickCount == 15 || _tickCount % 60 == 0) // al arrancar y después ≈ cada 2 s
                 Guard(RefreshPlay, quiet: true);
+            ApplyFilterStatus();
             Guard(SyncFakeFocus, quiet: true);
             RefreshServer();
             var active = _sessions.Active;

@@ -249,3 +249,45 @@ Está **integrado en la interfaz** (pestaña 07 «EMULADOR STEAM»: instalar/res
 
 **Evidencia (2026-10-11):** prueba de humo del filtro con una ventana como la de Unity que no es la activa: el proceso cree tener el foco, mueve «su» puntero y el de Windows no cambia (ni su encierro); 192 xUnit.
 
+**Corrección del mismo día (tarde):**
+
+- **El supuesto era incompleto.** El propietario lo probó y precisó el síntoma: en la ventana sin foco no funcionaban LB/RB para cambiar de objeto, y sí dentro del inventario. La causa de eso era otra (teclas pegadas, ADR-026). El puntero propio sigue siendo correcto por lo que se lee en el código, pero no era lo que él notaba.
+- **La retirada del foco externo no llegó a aplicarse** en el paquete de la mañana: el estado del filtro se publicaba con una continuación atada al contexto de sincronización y, si la primera lectura llegaba sin contexto, la marca «en curso» se quedaba puesta para toda la sesión (el registro nunca mostró «lo hacen dentro del juego»). Ahora la lectura deja el resultado en un campo y lo publica el tick de la interfaz. Comprobado con el juego real: «Foco simulado: 2 ventanas lo hacen dentro del juego (filtro XInput); no se les envían mensajes».
+
+## ADR-026 · Aceptada (experimental) · Teclas que no se quedan pegadas al perder el foco, y un mando de prueba
+
+**Contexto (propietario, 2026-10-11):** dentro de la partida los dos se mueven bien, pero solo al jugador de la ventana con foco le funcionan LB/RB para cambiar de objeto; al otro hay que darle el foco con Alt+Tab. En el inventario, LB/RB funcionan en los dos.
+
+**Causa comprobada** (código del juego y de Unity, y reproducida con el juego real):
+
+- Unity suelta todas las teclas cuando su ventana se desactiva (`win::Input::Activate(false)`). El foco simulado del filtro le oculta esa desactivación.
+- Al cambiar de ventana con **Alt+Tab**, el juego ve pulsar Alt y el «soltar» llega a la otra ventana: Alt se queda pulsada para él.
+- En 7DTD, LB/RB abren la rueda del cinturón (`XUiC_Radial`); el toque rápido llama a `HandleToolbeltCommand`, que con Alt pulsada (`InputUtils.AltKeyPressed`) pasa de página en vez de cambiar de objeto. El inventario no mira Alt.
+
+**Decisión (en el filtro, junto al foco simulado):**
+
+- Se apuntan las teclas que el juego vio pulsar. Cuando su ventana deja de ser la activa de verdad, el juego recibe el «soltar» (`WM_KEYUP`) de cada una.
+- Una pulsación que llega cuando la ventana ya no es la activa no se entrega: nadie la soltaría. Pasa con las repeticiones de Alt que quedan en cola, porque Unity se devuelve el foco de teclado (`SetFocus`) al «activarse».
+- `GetAsyncKeyState` y `GetKeyState` del juego responden «sin pulsar» mientras no es la ventana activa (Unity los consulta para Mayús).
+- El estado del filtro añade `teclas_soltadas=N`.
+
+**Mando de prueba (diagnóstico):** si existe `%LOCALAPPDATA%\SplitForge\xinput\prueba.txt`, cada línea `PID BOTONES_HEX [opciones]` mantiene pulsados esos botones en el mando de ese proceso (si la ranura no tiene mando, simula uno en reposo). Opciones solo para pruebas: `sin_soltar` apaga esta corrección (para reproducir el fallo) y `activa` trata la ventana como la activa (para la prueba de humo). Sin el archivo no hace nada: solo se mira si existe una vez por segundo. **Por qué:** permite ensayar con el juego real sin las manos del propietario; así se comprobó esta corrección.
+
+**Barra de tareas (misma sesión):** con «Tapar barra de tareas», Windows volvía a subir la barra por encima del juego de abajo al cambiar la ventana activa (ninguna ventana de la pantalla dividida ocupa todo el monitor). Cada ≈0,5 s, si la barra está por encima de una ventana de la sesión a la que pisa, esa ventana se vuelve a subir sin activarla (`TaskbarPlan`, `TaskbarGuard`). No se oculta ni se modifica la barra.
+
+**Evidencia (2026-10-11, juego real, `tools/ensayo_7dtd.ps1`):** J1 dentro de su partida y sin foco; el mando de prueba pulsa RB y se lee la casilla resaltada del cinturón en una captura de su ventana:
+
+| Fase | Situación de J1 | Casilla antes → después |
+| --- | --- | --- |
+| A | Sin foco, sin teclas pegadas | 8 → 9 (cambia) |
+| B | Perdió el foco con Alt pulsada, corrección apagada | 9 → 9 (**no cambia: el fallo**) |
+| C | Perdió el foco con Alt pulsada, corrección encendida | 9 → 10 (**cambia: corregido**) |
+
+En la fase C el estado de J1 pasa a `teclas_soltadas=1`. Los juegos quedaron por encima de la barra de tareas en todas las muestras. Además, «Cerrar juegos» dentro de una partida guarda antes de salir (`SaveAndCleanupWorld`, «Saving 46 of chunks»).
+
+**Límites:**
+
+- Falta que el propietario lo confirme jugando con los dos mandos (W23).
+- El ensayo carga la última partida del propietario y manda Alt al juego: en un ensayo anterior, cuando el mando de prueba aún metía pulsaciones dobles, J1 gastó un frasco de agua.
+- A veces el juego abre al arrancar un cuadro «Inicio de sesión de Discord» que hay que aceptar; mientras está abierto no carga la partida. Es del propio juego (va sin EOS). El propietario indica que no le molesta: no se toca.
+

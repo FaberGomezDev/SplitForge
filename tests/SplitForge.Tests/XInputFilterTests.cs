@@ -192,7 +192,7 @@ public class XInputFilterTests
         using var tmp = new TempDir();
         File.WriteAllText(tmp.Combine("estado-500-xinput1_3.txt"),
             "dll=xinput1_3.dll\nreal=cargada\nranura=1\nlecturas=900\nfoco=forzado\nintercepcion=activa\ninterceptadas=640\nprevia=no\n"
-            + "puntero=propio\npuntero_propio=1234\n");
+            + "puntero=propio\npuntero_propio=1234\nteclas_soltadas=3\n");
         File.WriteAllText(tmp.Combine("estado-500-xinput1_4.txt"),
             "dll=xinput1_4.dll\nreal=cargada\nranura=1\nlecturas=3\nfoco=no\nintercepcion=delegada\ninterceptadas=0\nprevia=no\n"
             + "puntero=no\npuntero_propio=0\n");
@@ -207,6 +207,10 @@ public class XInputFilterTests
         Assert.Equal(0, status[1].OwnCursorCalls);
         Assert.False(status[2].OwnCursor);
         Assert.Equal(-1, status[2].OwnCursorCalls);
+        // Teclas soltadas al perder el foco (para que Alt no se quede pegada tras Alt+Tab).
+        Assert.Equal(3, status[0].KeysReleased);
+        Assert.Equal(-1, status[1].KeysReleased); // esa copia del estado no lo informa
+        Assert.Equal(-1, status[2].KeysReleased); // filtro anterior
         // Basta con que una copia del filtro del proceso simule el foco.
         Assert.Equal(new[] { 500 }, XInputFilterStatus.FocusedInGame(status).Order());
     }

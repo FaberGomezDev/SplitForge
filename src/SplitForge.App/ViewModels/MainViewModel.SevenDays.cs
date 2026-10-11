@@ -353,33 +353,57 @@ public sealed partial class MainViewModel
         {
             gameFolder = null;
         }
-        Task.Run(() => DescribeFilter(gameFolder, dataFolder))
-            .ContinueWith(t =>
+        // El resultado se deja en un campo y lo publica el tick de la interfaz (ApplyFilterStatus). Antes se
+        // publicaba con una continuación atada al contexto de sincronización: si la primera llamada llegaba
+        // sin contexto (al construir la ventana), lanzaba una excepción con la marca «en curso» puesta y el
+        // estado no volvía a actualizarse en toda la sesión.
+        Task.Run(() =>
+        {
+            try
+            {
+                Volatile.Write(ref _filterSnapshot, DescribeFilter(gameFolder, dataFolder));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException
+                                           or System.ComponentModel.Win32Exception)
+            {
+                // Se reintenta en la siguiente actualización (≈2 s).
+            }
+            finally
             {
                 Interlocked.Exchange(ref _filterRefreshing, 0);
-                if (!t.IsCompletedSuccessfully)
-                    return;
-                FilterStatus = t.Result.Filter;
-                _focusedInGame = t.Result.FocusedInGame;
-                if (!_detectingSlot)
-                    XInputSlotsStatus = t.Result.Slots;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            }
+        });
     }
 
-    private static (string Filter, string Slots, IReadOnlySet<int> FocusedInGame) DescribeFilter(string? gameFolder, string dataFolder)
+    private sealed record FilterSnapshot(string Filter, string Slots, IReadOnlySet<int> FocusedInGame);
+
+    private FilterSnapshot? _filterSnapshot;
+
+    /// <summary>Llamado desde el tick de la interfaz (≈2 Hz): publica el último estado del filtro leído en segundo plano.</summary>
+    private void ApplyFilterStatus()
+    {
+        if (Interlocked.Exchange(ref _filterSnapshot, null) is not { } snapshot)
+            return;
+        FilterStatus = snapshot.Filter;
+        _focusedInGame = snapshot.FocusedInGame;
+        if (!_detectingSlot)
+            XInputSlotsStatus = snapshot.Slots;
+    }
+
+    private static FilterSnapshot DescribeFilter(string? gameFolder, string dataFolder)
     {
         var connected = XInputProbe.ConnectedSlots();
         var slots = connected.Count > 0
             ? $"Ranuras XInput con mando: {string.Join(", ", connected)}. Usa «Detectar» para saber cuál es cada mando."
             : "Ninguna ranura XInput con mando: los mandos deben llegar a Windows como XInput (p. ej. «Xbox 360 Controller»).";
         if (gameFolder is null)
-            return ("7 Days to Die no detectado.", slots, NoPids);
+            return new("7 Days to Die no detectado.", slots, NoPids);
         var installed = XInputFilter.InstalledNames(gameFolder);
         if (installed.Count == 0)
-            return ("Filtro XInput no instalado.", slots, NoPids);
+            return new("Filtro XInput no instalado.", slots, NoPids);
         var status = WindowsDiagnostics.XInputStatus(dataFolder);
         if (status.Count == 0)
-            return ($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, NoPids);
+            return new($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, NoPids);
         var perClient = status.GroupBy(st => st.Pid).Select(g =>
         {
             var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
@@ -388,9 +412,10 @@ public sealed partial class MainViewModel
                 + (st.InterceptionText.Length > 0 ? $" [{st.InterceptionText}]" : "")));
             var focus = g.Any(st => st.FocusForced) ? " · foco simulado" : "";
             var pointer = g.Any(st => st.OwnCursor) ? " · puntero propio" : "";
-            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}";
+            var keys = g.Any(st => st.KeysReleased >= 0) ? " · teclas sin pegarse" : "";
+            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}{keys}";
         });
-        return ($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, XInputFilterStatus.FocusedInGame(status));
+        return new($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, XInputFilterStatus.FocusedInGame(status));
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>

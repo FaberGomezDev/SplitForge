@@ -50,7 +50,7 @@ Hardware de referencia: Ryzen 7 7700X, RTX 4060 (8 GB), 32 GB RAM, dos PS4, Wind
 | `src/SplitForge.LabViewer` | Visor del mundo compartido con el renderizador de SDL3 (Direct3D) y vsync |
 | `src/SplitForge.App` | Lanzador WPF (`SplitForge.exe`, ADR-024): JUGAR, MANDOS y AVANZADO; tema en `Theme.xaml`; con `--lab-viewer N` actúa como visor |
 | `src/SplitForge.Diagnostico` | Consola de solo lectura: `steam`, `ventanas`, `7dtd`, `xinput`, `mandos` |
-| `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015), con la XInput real interceptada por su tabla de exportación (ADR-021), foco simulado y un puntero propio por cliente (ADR-025); CMake + prueba de humo |
+| `native/SplitForge.XInputFilter` | C++20: filtro XInput por proceso (experimental, ADR-015), con la XInput real interceptada por su tabla de exportación (ADR-021), foco simulado, un puntero propio por cliente (ADR-025), teclas que se sueltan al perder el foco y mando de prueba para ensayos (ADR-026); CMake + prueba de humo |
 | `native/SplitForge.SteamEmu` | C++20: emulador de `steam_api64.dll` (ADR-016), **componente principal y permanente**: una identidad distinta por instancia del juego sin un segundo Steam; se gestiona en AVANZADO › 7 Days to Die y va en el paquete (`native\SplitForge.SteamEmu`); API plana generada con `tools/generar_api_plana.py` (las 944 entradas de Steamworks.NET); CMake + prueba de humo. Con 7DTD real llega al menú con dos instancias |
 | `tests/SplitForge.Tests` | xUnit (Core) |
 | `launcher.py`, `splitforge/`, `tests/test_*.py` | Prototipo Python 0.6 (referencia; no ampliar salvo diagnósticos) |
@@ -66,6 +66,7 @@ dotnet run --project src/SplitForge.Diagnostico -- 7dtd    # diagnóstico 7DTD
 Compilar_SplitForge.bat                                    # pruebas + publish\SplitForge autónomo
 python -m unittest discover -s tests -v                    # prototipo Python
 python tools/check_docs.py                                 # enlaces de documentación
+powershell -ExecutionPolicy Bypass -File tools\ensayo_7dtd.ps1   # ensayo sin manos con 7DTD real (ver docs/07-PRUEBAS.md)
 ```
 
 En Linux se compila todo (incluida la app WPF, con `EnableWindowsTargeting`) y se ejecutan las pruebas de Core; SDL3 funciona (hay `libSDL3.so`), así que el hilo de entrada y el visor pueden probarse con `xvfb-run`. Eso **no** valida Win32 ni el hardware. La CI (`.github/workflows/build.yml`) prueba y publica en `windows-latest`; el paquete `SplitForge-win-x64` queda como artefacto.
@@ -93,7 +94,11 @@ W16 (2026-10-10, noche, propietario): con el foco simulado en los dos clientes (
 
 Preferencias del propietario (2026-10-10): **nada automático sin pedirlo**. J1 elige su mundo; la unión automática y la carga automática de J1 son casillas desactivadas por defecto, y la unión vale en los dos sentidos. J2 usa su propia carpeta de datos (`%LOCALAPPDATA%\SplitForge\7dtd\clientes\J2`, `-UserDataFolder`): no comparte guardados con J1. Un fondo negro (ADR-023) tapa el escritorio detrás de los juegos. Tras una prueba, restaurar cualquier ajuste del propietario que se haya cambiado.
 
-**Ventana sin foco (2026-10-11, propietario):** con los mandos ya independientes, la ventana sin foco solo dejaba moverse y golpear y su puntero parpadeaba. En el código de Unity y del juego: con el foco simulado los dos clientes recolocan y encierran el único puntero de Windows, y el puntero de los menús con mando de 7DTD salta cuando ese puntero cambia. **Corrección (ADR-025):** el cliente que no es la ventana activa usa un puntero propio dentro del filtro, y el foco simulado externo ya no se envía a los clientes que lo simulan por dentro. Probado sin el juego (prueba de humo); **falta que el propietario lo pruebe con los mandos (W23)**. Que esa sea la causa es un supuesto. Ctrl+Alt+B avisa ahora en pantalla (cartel al cambiar, insignia mientras dura; W24).
+**Ventana sin foco (2026-10-11, propietario):** con los mandos ya independientes, en la ventana sin foco no funcionaban LB/RB para cambiar de objeto (sí en el inventario). **Causa comprobada y corregida (ADR-026):** al cambiar con Alt+Tab, la ventana que pierde el foco se quedaba con Alt pulsada (el foco simulado le oculta a Unity la desactivación, que es cuando suelta las teclas) y 7DTD, con Alt, hace que LB/RB pasen de página. El filtro suelta ahora las teclas al perder el foco de verdad. **Reproducido y corregido con el juego real** en un ensayo sin manos (`tools/ensayo_7dtd.ps1`, con el mando de prueba del filtro): casilla 8 → 9 sin teclas pegadas, 9 → 9 con Alt pegada y la corrección apagada, 9 → 10 con la corrección. **Falta que el propietario lo confirme jugando (W23).**
+
+También del 2026-10-11: un puntero propio por cliente (ADR-025; apoyado en el código, no era la causa de lo anterior); el foco simulado externo ya no se envía a los clientes que lo simulan por dentro; los juegos se mantienen por encima de la barra de tareas; Ctrl+Alt+B avisa en pantalla (cartel al cambiar, insignia mientras dura; W24). A veces el juego abre un cuadro «Inicio de sesión de Discord» al arrancar: es del juego y al propietario no le molesta; no tocar.
+
+**Siguiente juego pedido por el propietario: No Man's Sky.**
 
 Siguiente: sesión de juego real de los dos jugadores; con sus registros, comprobar lo que falta (unirse con la carpeta propia de J2, unión J2 → J1, «Cerrar J1 y J2» dentro de una partida) y si «Unirse a partida» lista la del otro jugador.
 

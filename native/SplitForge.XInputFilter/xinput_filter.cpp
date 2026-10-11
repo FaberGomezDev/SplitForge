@@ -18,7 +18,10 @@
 //
 // Con mando asignado, además simula el foco de su ventana (ver «Foco simulado»): en pantalla dividida
 // cada cliente atiende su mando aunque no sea la ventana activa. Y, mientras no es la ventana activa de
-// verdad, usa un puntero propio (ver «Puntero propio»): no mueve ni encierra el puntero de Windows.
+// verdad, usa un puntero propio (ver «Puntero propio»): no mueve ni encierra el puntero de Windows; al dejar
+// de serlo, se le sueltan las teclas que tenía pulsadas (ver «Teclas pegadas»).
+//
+// Diagnóstico: un «mando de prueba» opcional (prueba.txt) pulsa botones para ensayar sin manos.
 //
 // No inyecta código en otros procesos. Úsese con el juego abierto sin EAC (opción oficial del juego).
 
@@ -26,6 +29,7 @@
 #include <windows.h>
 
 #include <atomic>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
@@ -119,6 +123,14 @@ std::atomic<bool> g_statusDirty{false};        // Algo cambió (p. ej. el foco):
 std::atomic<bool> g_focusActive{false};
 std::atomic<bool> g_cursorOwn{false};                 // Puntero propio instalado en este proceso.
 std::atomic<unsigned long long> g_cursorVirtual{0};   // Llamadas de puntero atendidas sin tocar el de Windows.
+std::atomic<unsigned long long> g_keysReleased{0};    // Teclas soltadas por el filtro al perder el foco de verdad.
+std::atomic<bool> g_testFile{false};                  // Existe prueba.txt (se mira una vez por segundo).
+std::atomic<WORD> g_testButtons{0};                   // Botones que el mando de prueba mantiene pulsados.
+std::atomic<DWORD> g_testSerial{0};                   // Cambia con cada cambio del mando de prueba.
+std::atomic<bool> g_testKeepKeys{false};              // Prueba: no soltar las teclas (reproduce el fallo).
+std::atomic<bool> g_testForeground{false};            // Prueba: tratar la ventana como la activa de verdad.
+std::atomic<ULONGLONG> g_nextTestRead{0};
+std::atomic_flag g_testBusy;
 wchar_t g_realName[MAX_PATH] = L"xinput1_3.dll";
 
 // Nombre de esta DLL (xinput1_3.dll, xinput1_4.dll...) para cargar la real con el mismo nombre.
@@ -207,14 +219,15 @@ void MaybeWriteStatus(int slot, ULONGLONG now) {
             && _wfopen_s(&f, temp, L"w") == 0 && f) {
             static const wchar_t* const interception[] = {L"no", L"activa", L"delegada"};
             fwprintf(f, L"dll=%ls\nreal=%ls\nranura=%d\nlecturas=%llu\nfoco=%ls\nintercepcion=%ls\ninterceptadas=%llu\nprevia=%ls\n"
-                        L"puntero=%ls\npuntero_propio=%llu\n",
+                        L"puntero=%ls\npuntero_propio=%llu\nteclas_soltadas=%llu\n",
                      g_realName, g_real.load(std::memory_order_acquire) ? L"cargada" : L"NO", slot, reads,
                      g_focusActive.load(std::memory_order_relaxed) ? L"forzado" : L"no",
                      interception[g_interception.load(std::memory_order_relaxed)],
                      g_hookedReads.load(std::memory_order_relaxed),
                      g_realPreloaded.load(std::memory_order_relaxed) ? L"si" : L"no",
                      g_cursorOwn.load(std::memory_order_relaxed) ? L"propio" : L"no",
-                     g_cursorVirtual.load(std::memory_order_relaxed));
+                     g_cursorVirtual.load(std::memory_order_relaxed),
+                     g_keysReleased.load(std::memory_order_relaxed));
             const bool written = fclose(f) == 0;
             if (written && MoveFileExW(temp, path, MOVEFILE_REPLACE_EXISTING)) {
                 g_writtenSlot = slot;
@@ -273,6 +286,8 @@ void RememberCursor(LONG x, LONG y) {
 
 // ¿La ventana activa de verdad es de este proceso? (Las importaciones del propio filtro no se redirigen.)
 bool OwnsRealForeground() {
+    if (g_testForeground.load(std::memory_order_relaxed))
+        return true;
     const HWND foreground = GetForegroundWindow();
     if (!foreground)
         return false;
@@ -346,14 +361,77 @@ void ReleaseClipIfBackground() {
         ClipCursor(nullptr);
 }
 
+// --- Teclas pegadas ---
+//
+// Unity suelta todas las teclas cuando su ventana se desactiva (win::Input::Activate(false)). El foco simulado
+// le oculta esa desactivación, así que la tecla que estaba pulsada al cambiar de ventana se queda pulsada
+// para el juego: su «soltar» llega a la otra ventana. Con Alt+Tab se queda Alt, y 7DTD con Alt pulsada hace
+// que LB/RB pasen de página en el cinturón en vez de cambiar de objeto (XUiC_Radial.HandleToolbeltCommand →
+// InputUtils.AltKeyPressed). Por eso el filtro apunta las teclas que el juego vio pulsar y, cuando la ventana
+// deja de ser la activa de verdad, le entrega el «soltar» de cada una. Además, GetAsyncKeyState y GetKeyState
+// del juego responden «sin pulsar» mientras no es la ventana activa (Unity los consulta para Mayús).
+// Una pulsación que llega cuando la ventana ya no es la activa (una repetición de Alt que quedó en cola: Unity
+// vuelve a darse el foco de teclado con SetFocus al «activarse») no se entrega: nadie la soltaría.
+// Solo se tocan desde el hilo de la ventana.
+
+BYTE g_keysDown[256] = {};    // Bit 0: tecla normal; bit 1: tecla extendida (Alt o Ctrl derechos, flechas...).
+BYTE g_keyScan[256][2] = {};  // Código de exploración con el que se pulsó.
+
+void TrackKey(UINT message, WPARAM key, LPARAM lParam) {
+    if (key >= 256)
+        return;
+    const int extended = (lParam >> 24) & 1;
+    const BYTE bit = static_cast<BYTE>(1 << extended);
+    if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN) {
+        g_keysDown[key] = static_cast<BYTE>(g_keysDown[key] | bit);
+        g_keyScan[key][extended] = static_cast<BYTE>((lParam >> 16) & 0xFF);
+    } else {
+        g_keysDown[key] = static_cast<BYTE>(g_keysDown[key] & ~bit);
+    }
+}
+
+SHORT WINAPI Own_GetAsyncKeyState(int key) { return OwnsRealForeground() ? GetAsyncKeyState(key) : 0; }
+SHORT WINAPI Own_GetKeyState(int key) { return OwnsRealForeground() ? GetKeyState(key) : 0; }
+
+// La ventana dejó de ser la activa de verdad: el juego recibe el «soltar» de cada tecla que tenía pulsada.
+void ReleaseHeldKeysIfBackground(HWND hwnd) {
+    if (OwnsRealForeground() || g_testKeepKeys.load(std::memory_order_relaxed))
+        return;
+    for (UINT key = 0; key < 256; ++key) {
+        for (int extended = 0; extended < 2; ++extended) {
+            const BYTE bit = static_cast<BYTE>(1 << extended);
+            if (!(g_keysDown[key] & bit))
+                continue;
+            g_keysDown[key] = static_cast<BYTE>(g_keysDown[key] & ~bit);
+            // Como un WM_KEYUP de verdad: repetición 1, estado previo «pulsada», transición «soltar».
+            const DWORD flags = 0xC0000001u | (static_cast<DWORD>(g_keyScan[key][extended]) << 16)
+                                | (static_cast<DWORD>(extended) << 24);
+            CallWindowProcW(g_originalProc, hwnd, WM_KEYUP, key, static_cast<LPARAM>(flags));
+            g_keysReleased.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
+}
+
 LRESULT CALLBACK FocusProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+        if (!OwnsRealForeground() && !g_testKeepKeys.load(std::memory_order_relaxed))
+            return 0; // Pulsación atrasada: la ventana ya no es la activa y no recibirá el «soltar».
+        TrackKey(message, wParam, lParam);
+        break;
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+        TrackKey(message, wParam, lParam);
+        break;
     case WM_KILLFOCUS:
         ReleaseClipIfBackground();
+        ReleaseHeldKeysIfBackground(hwnd);
         return 0;
     case WM_ACTIVATE:
         if (LOWORD(wParam) == WA_INACTIVE) {
             ReleaseClipIfBackground();
+            ReleaseHeldKeysIfBackground(hwnd);
             wParam = MAKEWPARAM(WA_ACTIVE, HIWORD(wParam));
         }
         break;
@@ -454,6 +532,8 @@ DWORD WINAPI FocusThread(void*) {
         {"GetCursorPos", reinterpret_cast<void*>(&Own_GetCursorPos)},
         {"SetCursorPos", reinterpret_cast<void*>(&Own_SetCursorPos)},
         {"ClipCursor", reinterpret_cast<void*>(&Own_ClipCursor)},
+        {"GetAsyncKeyState", reinterpret_cast<void*>(&Own_GetAsyncKeyState)},
+        {"GetKeyState", reinterpret_cast<void*>(&Own_GetKeyState)},
     };
     RedirectImports(GetModuleHandleW(nullptr), hooks, sizeof(hooks) / sizeof(hooks[0]));
     RedirectImports(GetModuleHandleW(L"UnityPlayer.dll"), hooks, sizeof(hooks) / sizeof(hooks[0]));
@@ -488,6 +568,83 @@ void StartFocusOnce() {
         CloseHandle(thread);
 }
 
+// --- Mando de prueba (diagnóstico) ---
+//
+// Para ensayar sin manos. Si existe %LOCALAPPDATA%\SplitForge\xinput\prueba.txt, cada línea
+// "PID BOTONES_HEX [opciones]" hace que el mando del proceso PID tenga pulsados esos botones (máscara
+// wButtons de XInput) mientras la línea siga en el archivo; si su ranura no tiene mando, se simula uno en
+// reposo. Opciones, solo para pruebas: «sin_soltar» desactiva la corrección de las teclas pegadas (reproduce
+// ese fallo) y «activa» trata la ventana como la activa de verdad (para probar sin robar el foco a nadie).
+// Sin el archivo no hace nada: solo se mira si existe una vez por segundo.
+
+constexpr ULONGLONG kTestReloadMs = 30;
+std::atomic<bool> g_testListed{false}; // Este proceso tiene línea en prueba.txt.
+
+void SetTestPad(bool listed, WORD buttons, bool keepKeys, bool foreground) {
+    const bool changed = g_testButtons.exchange(buttons, std::memory_order_relaxed) != buttons;
+    if (g_testListed.exchange(listed, std::memory_order_relaxed) != listed || changed)
+        g_testSerial.fetch_add(1, std::memory_order_relaxed); // Los juegos solo miran el estado si cambia el paquete.
+    g_testKeepKeys.store(keepKeys, std::memory_order_relaxed);
+    g_testForeground.store(foreground, std::memory_order_relaxed);
+}
+
+void ReloadTestPad(ULONGLONG now) {
+    if (now < g_nextTestRead.load(std::memory_order_relaxed) || g_testBusy.test_and_set(std::memory_order_acquire))
+        return;
+    g_nextTestRead.store(now + kTestReloadMs, std::memory_order_relaxed);
+    bool listed = false;
+    bool keepKeys = false;
+    bool foreground = false;
+    WORD buttons = 0;
+    wchar_t path[MAX_PATH * 2] = {};
+    FILE* f = nullptr;
+    const errno_t opened = AssignmentPath(path, MAX_PATH * 2, L"prueba.txt") ? _wfopen_s(&f, path, L"r") : ENOENT;
+    if (opened != 0 && opened != ENOENT) {
+        // Lo están reescribiendo en este instante: se conserva lo anterior (si no, el botón «parpadearía»).
+        g_testBusy.clear(std::memory_order_release);
+        return;
+    }
+    if (opened == 0 && f) {
+        const unsigned long self = GetCurrentProcessId();
+        char line[128] = {};
+        while (!listed && fgets(line, sizeof(line), f)) {
+            unsigned long pid = 0;
+            unsigned int mask = 0;
+            if (sscanf_s(line, "%lu %x", &pid, &mask) == 2 && pid == self) {
+                listed = true;
+                buttons = static_cast<WORD>(mask);
+                keepKeys = std::strstr(line, "sin_soltar") != nullptr;
+                foreground = std::strstr(line, "activa") != nullptr;
+            }
+        }
+        fclose(f);
+    }
+    SetTestPad(listed, buttons, keepKeys, foreground);
+    g_testBusy.clear(std::memory_order_release);
+}
+
+// ¿Aplica el mando de prueba a esta copia? Solo a la que cambia el índice (la delegada reenvía a ella).
+bool TestPadActive() {
+    if (!g_testFile.load(std::memory_order_relaxed))
+        return false;
+    if (g_slot.load(std::memory_order_relaxed) == kPassThrough
+        || g_interception.load(std::memory_order_relaxed) == kDelegated)
+        return false;
+    ReloadTestPad(GetTickCount64());
+    return g_testListed.load(std::memory_order_relaxed);
+}
+
+// Añade al estado leído los botones del mando de prueba; sin mando real en la ranura, uno en reposo.
+DWORD WithTestPad(DWORD result, XInputState* state) {
+    if (!state || !TestPadActive())
+        return result;
+    if (result != ERROR_SUCCESS)
+        *state = XInputState{};
+    state->gamepad.buttons = static_cast<WORD>(state->gamepad.buttons | g_testButtons.load(std::memory_order_relaxed));
+    state->packetNumber += g_testSerial.load(std::memory_order_relaxed);
+    return ERROR_SUCCESS;
+}
+
 // Relee la asignación como mucho una vez por segundo. Formato: "PID RANURA" por línea (ranura 0–3).
 int CurrentSlot() {
     const ULONGLONG now = GetTickCount64();
@@ -510,6 +667,9 @@ int CurrentSlot() {
         fclose(f);
     }
     g_slot.store(slot, std::memory_order_relaxed);
+    const bool testFile = AssignmentPath(path, MAX_PATH * 2, L"prueba.txt") && GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES;
+    if (g_testFile.exchange(testFile, std::memory_order_relaxed) && !testFile)
+        SetTestPad(false, 0, false, false); // Se retiró el archivo: el mando de prueba deja de existir.
     if (slot != kPassThrough)
         StartFocusOnce(); // pantalla dividida: este cliente debe creer que siempre tiene el foco
     MaybeWriteStatus(slot, now);
@@ -548,7 +708,7 @@ DWORD WINAPI SF_XInputGetState(DWORD userIndex, XInputState* state) {
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
-    return fn(physical, state);
+    return WithTestPad(fn(physical, state), state);
 }
 
 // Ordinal 100: igual que XInputGetState pero incluye el botón Guía. Muchos juegos lo usan.
@@ -560,8 +720,8 @@ DWORD WINAPI SF_XInputGetStateEx(DWORD userIndex, XInputState* state) {
     if (!Map(userIndex, &physical))
         return kNotConnected;
     if (fn)
-        return fn(physical, state);
-    return fallback ? fallback(physical, state) : kNotConnected;
+        return WithTestPad(fn(physical, state), state);
+    return fallback ? WithTestPad(fallback(physical, state), state) : kNotConnected;
 }
 
 DWORD WINAPI SF_XInputSetState(DWORD userIndex, XInputVibration* vibration) {
@@ -577,7 +737,16 @@ DWORD WINAPI SF_XInputGetCapabilities(DWORD userIndex, DWORD flags, XInputCapabi
     DWORD physical = 0;
     if (!fn || !Map(userIndex, &physical))
         return kNotConnected;
-    return fn(physical, flags, capabilities);
+    const DWORD result = fn(physical, flags, capabilities);
+    if (result == ERROR_SUCCESS || !capabilities || !TestPadActive())
+        return result;
+    // Mando de prueba sin mando real en la ranura: un mando estándar completo.
+    *capabilities = XInputCapabilities{};
+    capabilities->type = 1;    // XINPUT_DEVTYPE_GAMEPAD
+    capabilities->subType = 1; // XINPUT_DEVSUBTYPE_GAMEPAD
+    capabilities->gamepad = {0xF3FF, 255, 255, 32767, 32767, 32767, 32767};
+    capabilities->vibration = {0xFFFF, 0xFFFF};
+    return ERROR_SUCCESS;
 }
 
 void WINAPI SF_XInputEnable(BOOL enable) {
