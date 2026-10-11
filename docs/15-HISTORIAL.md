@@ -583,7 +583,7 @@ PRÓXIMO PASO: el propietario desactiva Steam Input para el juego, pulsa «Prepa
 
 ```text
 FECHA: 2026-10-11 (noche)
-RELEASE/COMMIT: pendiente
+RELEASE/COMMIT: 6045f87 en main
 OBJETIVO: el propietario no encontró No Man's Sky en AVANZADO ni dónde instalar o actualizar, y pide que
   sea «igual, tal cual» 7 Days to Die, emulador de Steam incluido.
 CAMBIOS EFECTIVOS: pestaña AVANZADO › NO MAN'S SKY: copias, filtro de mandos («Instalar / actualizar»,
