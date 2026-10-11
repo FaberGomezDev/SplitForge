@@ -518,6 +518,43 @@
               </ScrollViewer>
             </TabItem>
 
+            <TabItem Header="NO MAN'S SKY">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                  <TextBlock Style="{StaticResource Heading}" Text="Emulador de Steam: en este juego no sirve" />
+                  <TextBlock Style="{StaticResource Hint}" Text="En 7 Days to Die un jugador crea la partida en este PC y el otro entra por la red local: basta con que cada ventana tenga un nombre distinto, y eso lo da el emulador. No Man's Sky no tiene partida por red local ni «conectar a IP»: junta a los jugadores en sus servidores de internet, y allí cada jugador entra con una cuenta real que tenga el juego. Con la identidad inventada del emulador no se puede entrar: cada ventana se quedaría sola en su universo. Por eso aquí cada jugador usa su propia copia con su cuenta." />
+                  <TextBlock Style="{StaticResource Hint}" Text="Comprobado leyendo el ejecutable: el juego inicia sesión en su servicio en línea con la cuenta de Steam. No se ha probado a abrirlo con el emulador." Margin="0,0,0,18" />
+
+                  <TextBlock Style="{StaticResource Heading}" Text="Copias del juego" FontSize="16" />
+                  <TextBlock Style="{StaticResource Hint}" Text="J1 usa la copia de Steam y se abre a través de Steam. J2 usa otra copia con otra cuenta (por ejemplo la de GOG): se detecta sola o la indicas eligiendo su NMS.exe." />
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Button Content="Elegir copia de J2…" Command="{Binding PickNoMansSkyCopyCommand}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding NoMansSkyCopiesText}" Foreground="{StaticResource Muted}" Margin="0,0,0,18" />
+
+                  <TextBlock Style="{StaticResource Heading}" Text="Filtro de mandos" FontSize="16" />
+                  <TextBlock Style="{StaticResource Hint}" Text="Hace que cada ventana vea solo su mando. Se instala junto al ejecutable de cada copia sin sobrescribir nada suyo y se puede quitar en cualquier momento. Antes, en Steam, desactiva Steam Input solo para este juego (Propiedades › Mando): si no, Steam le da los dos mandos a J1." />
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Button Content="Instalar / actualizar" Style="{StaticResource PrimaryButton}" Command="{Binding InstallNoMansSkyFilterCommand}" />
+                    <Button Content="Asignar mandos a las ventanas" Command="{Binding AssignNoMansSkyPadsCommand}" />
+                    <Button Content="Quitar filtro" Command="{Binding RemoveNoMansSkyFilterCommand}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding XInputSlotsStatus}" Foreground="{StaticResource Muted}" Margin="0,0,0,4" />
+                  <TextBlock Text="{Binding NoMansSkyFilterStatus}" Foreground="{StaticResource Muted}" Margin="0,0,0,18" />
+
+                  <TextBlock Style="{StaticResource Heading}" Text="Abrir y cerrar" FontSize="16" />
+                  <TextBlock Style="{StaticResource Hint}" Text="Lo mismo que hace JUGAR con este juego. Cada ventana recibe su mando al abrirse y la pantalla se divide cuando están las dos. El cierre es el normal del juego: guarda antes en uno de sus puntos de guardado." />
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Button Content="Lanzar J1 y J2" Command="{Binding LaunchNoMansSkyCommand}" />
+                    <Button Content="Lanzar solo J1" Command="{Binding LaunchNoMansSky1Command}" />
+                    <Button Content="Lanzar solo J2" Command="{Binding LaunchNoMansSky2Command}" />
+                    <Button Content="Dividir pantalla con las ventanas" Command="{Binding TileNoMansSkyCommand}" />
+                    <Button Content="Cerrar juegos" Command="{Binding CloseNoMansSkyCommand}" />
+                  </StackPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+
             <TabItem Header="LABORATORIO">
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>

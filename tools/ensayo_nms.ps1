@@ -67,6 +67,22 @@ try {
     Texts $root 'PANTALLA DIVIDIDA|EN PREPARACI|Todo listo|Falta preparar|^Juego|Identidad|mando por ventana|^Mandos$|^Partida$|^Copias del juego$|^J1: |Con su cuenta|Con la cuenta|Steam Input|su propia copia|Falta instalar|mandos conectados' | ForEach-Object { "    " + $_.Substring(0, [Math]::Min(150, $_.Length)) }
     "    botones: " + (($root.FindAll($scope, (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [Windows.Automation.ControlType]::Button))) | ForEach-Object { $_.Current.Name } | Where-Object { $_ -match 'Jugar|Cerrar juegos|Preparar|Elegir copia|Quitar filtro' }) -join ' | ')
     "    captura del lanzador: " + [L]::Capture($app.MainWindowHandle, (Join-Path $Out 'lanzador-nms.png'), 1400)
+
+    # AVANZADO > NO MAN'S SKY: las mismas herramientas que tiene 7 Days to Die en su pestana.
+    function Select-Tab($name) {
+        $tab = Find-One $root ([Windows.Automation.ControlType]::TabItem) $name
+        if (-not $tab) { throw "No aparece la pestana $name." }
+        $tab.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        Start-Sleep -Seconds 1
+    }
+    Select-Tab 'AVANZADO'
+    "--- AVANZADO: " + (($root.FindAll($scope, (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [Windows.Automation.ControlType]::TabItem))) | ForEach-Object { $_.Current.Name } | Where-Object { $_ -notmatch '^(JUGAR|MANDOS|AVANZADO)$' }) -join ' | ')
+    Select-Tab "NO MAN'S SKY"
+    Start-Sleep -Seconds 4
+    Texts $root 'Emulador de Steam|^Copias del juego$|^Filtro de mandos$|^Abrir y cerrar$|^J1: |no instalado|Instalado en|Ranuras XInput|no detectado' | ForEach-Object { "    " + $_.Substring(0, [Math]::Min(150, $_.Length)) }
+    "    botones: " + (($root.FindAll($scope, (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [Windows.Automation.ControlType]::Button))) | ForEach-Object { $_.Current.Name } | Where-Object { $_ -match 'Elegir copia|Instalar|Asignar mandos|Quitar filtro|Lanzar|Dividir pantalla|Cerrar juegos' }) -join ' | ')
+    "    captura de AVANZADO: " + [L]::Capture($app.MainWindowHandle, (Join-Path $Out 'avanzado-nms.png'), 1400)
+    Select-Tab 'JUGAR'
     if ($SinJuego) { return }
 
     $play = Find-One $root ([Windows.Automation.ControlType]::Button) 'Jugar'

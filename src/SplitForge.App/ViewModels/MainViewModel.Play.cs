@@ -170,6 +170,8 @@ public sealed partial class MainViewModel
     {
         var connected = XInputProbe.ConnectedSlots();
         var steps = IsNoMansSky ? NoMansSkySteps(connected) : SevenDaysSteps(connected);
+        if (!IsNoMansSky)
+            RefreshNoMansSkyState(); // AVANZADO › No Man's Sky se mantiene al día aunque el juego elegido sea otro.
 
         // Solo se toca la lista si algo cambió: así la interfaz no parpadea ni se redibuja sin motivo.
         if (PlaySteps.Count != steps.Count || !PlaySteps.Select(row => row.Step).SequenceEqual(steps))

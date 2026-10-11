@@ -17,6 +17,7 @@
 | --- | --- |
 | El multijugador va por PlayFab (servicios en la nube), no por Steam | `NMS.exe` importa `PartyWin.dll`, `PlayFabMultiplayerWin.dll`, `PlayFabCore.Win32.dll` y `PlayFabServices.Win32.dll` |
 | No usa la red entre jugadores de Steam | Interfaces de Steam que pide: `SteamUser021`, `SteamFriends017`, `SteamUtils010`, `SteamMatchMaking009`, `STEAMUSERSTATS_INTERFACE_VERSION012`, `STEAMAPPS_INTERFACE_VERSION008`, `STEAMREMOTESTORAGE_INTERFACE_VERSION016`, `STEAMHTTP_INTERFACE_VERSION003`, `STEAMSCREENSHOTS_INTERFACE_VERSION003`, `SteamInput006`. Ninguna `SteamNetworking*` |
+| Inicia sesión en su servicio en línea con la cuenta de Steam, y la partida compartida es de ese servicio | Cadenas de `NMS.exe` (2026-10-11): `LoginWithSteam`, `GetAuthSessionTicket`, `playfabapi.com`, `CreateAndJoinLobby`, `JoinArrangedLobby`, `CreateNewNetwork`. No se encontró ninguna orden de conexión directa (`DirectConnect`, `ConnectToIP`); `127.0.0.1` aparece dos veces, sin uso conocido |
 | El ejecutable lleva la protección de Steam | Sección `.bind` con el punto de entrada dentro (el envoltorio DRM de Steam) |
 | Mandos por XInput y por Steam Input | Importa `XINPUT9_1_0.dll` (`XInputGetState`, `XInputSetState`) y pide `SteamInput006`; en sus cadenas aparecen también Raw Input, DirectInput y GameInput |
 | Usa las funciones de foco y de puntero de Windows | Importa de `USER32`: `GetForegroundWindow`, `GetActiveWindow`, `GetCursorPos`, `SetCursorPos`, `ClipCursor`, `GetAsyncKeyState`, `GetKeyState`, `GetKeyboardState`, `RegisterRawInputDevices`, `GetRawInputData` |
@@ -56,6 +57,7 @@ No Man's Sky está en la biblioteca de la pantalla JUGAR. Al elegirlo:
 | «Preparar ahora» | Instala el filtro como `xinput9_1_0.dll` en `Binaries` de cada copia, tras una confirmación que explica que es un juego en línea. «Quitar filtro de mandos» lo retira |
 | JUGAR | Abre J1 a través de Steam y J2 desde su copia; da a cada proceso su mando (por la carpeta de su ejecutable) y divide la pantalla cuando están las dos ventanas. Con una sola copia abre solo a ese jugador y lo dice |
 | «Cerrar juegos» | Cierre normal de cada ventana, con aviso: el juego solo guarda en sus puntos de guardado |
+| AVANZADO › NO MAN'S SKY | Lo mismo que la pestaña de 7DTD, con lo que aplica aquí: copias, filtro de mandos («Instalar / actualizar», «Asignar mandos a las ventanas», «Quitar filtro» y su estado por ventana) y «Lanzar J1 y J2», «Lanzar solo J1/J2», «Dividir pantalla con las ventanas», «Cerrar juegos». El bloque del emulador explica por qué no se ofrece |
 
 **Comprobado:** la pantalla, con el paquete publicado y UI Automation (`tools/ensayo_nms.ps1 -SinJuego`): en este PC, J1 listo, falta la copia de J2 y falta el filtro. **Sin comprobar:** JUGAR y «Cerrar juegos» con el juego real desde el lanzador (`tools/ensayo_nms.ps1`, avisando antes al propietario), y todo lo que necesita dos copias.
 
@@ -70,10 +72,12 @@ No Man's Sky está en la biblioteca de la pantalla JUGAR. Al elegirlo:
 
 En 7DTD un jugador aloja la partida en su propio PC y el otro entra por la red local; por eso bastó con dar a cada instancia una identidad emulada. **En No Man's Sky eso no existe:**
 
-- La sesión compartida la montan los servidores de Hello Games. Cada jugador tiene que iniciar sesión con una cuenta real que tenga el juego. Una identidad emulada no puede iniciar sesión ahí.
-- El ejecutable está protegido: no arranca con el emulador de Steam si no se le quita la protección. **Eso no se va a hacer**: ni se salta la protección de un juego ni se modifican sus archivos.
+- La sesión compartida la montan los servidores de Hello Games. **Hecho** (leído en el ejecutable): el juego inicia sesión allí con el pase de la cuenta de Steam (`LoginWithSteam`, `GetAuthSessionTicket`) y las partidas compartidas son salas de ese servicio. **Supuesto razonable, sin prueba propia:** el servicio comprueba ese pase con Steam, así que una identidad inventada por el emulador no puede iniciar sesión y cada ventana quedaría sola en su universo.
+- El ejecutable lleva la protección de Steam. **Supuesto, sin probar:** con el emulador en lugar de `steam_api64.dll` no arrancaría sin quitársela. **Eso no se va a hacer**: no se salta la protección de un juego. Aunque arrancara, lo decisivo es el punto anterior.
 
 Consecuencia: para dos jugadores en la misma partida hacen falta **dos copias del juego con dos cuentas**.
+
+**El emulador no se ha probado con este juego** (2026-10-11). El propietario lo pidió «tal cual 7DTD»; la pestaña AVANZADO › NO MAN'S SKY lo explica en lugar de ofrecerlo. Dato para una prueba futura: el juego pide `SteamUser021` y el emulador implementa `SteamUser023` (las demás interfaces que pide coinciden en versión), así que haría falta esa variante. Lo esperable, si arrancara, es dos ventanas sin partida compartida.
 
 ## Rutas
 

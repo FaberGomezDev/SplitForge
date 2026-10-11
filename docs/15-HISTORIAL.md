@@ -579,6 +579,36 @@ PRÓXIMO PASO: el propietario desactiva Steam Input para el juego, pulsa «Prepa
   mando. Si J1 responde solo a su mando, comprar la segunda copia y probar con las dos.
 ```
 
+## 2026-10-11 · No Man's Sky también en AVANZADO, y por qué no lleva el emulador
+
+```text
+FECHA: 2026-10-11 (noche)
+RELEASE/COMMIT: pendiente
+OBJETIVO: el propietario no encontró No Man's Sky en AVANZADO ni dónde instalar o actualizar, y pide que
+  sea «igual, tal cual» 7 Days to Die, emulador de Steam incluido.
+CAMBIOS EFECTIVOS: pestaña AVANZADO › NO MAN'S SKY: copias, filtro de mandos («Instalar / actualizar»,
+  «Asignar mandos a las ventanas», «Quitar filtro», estado por ventana), «Lanzar J1 y J2», «Lanzar solo
+  J1/J2», «Dividir pantalla con las ventanas» y «Cerrar juegos». Se mantiene al día con cualquier juego
+  elegido. «Instalar / actualizar» pone al día las copias que ya tienen el filtro. El bloque «Emulador
+  de Steam» explica por qué no se ofrece.
+LO QUE NO SE HIZO, Y POR QUÉ: no se añadió el emulador para este juego. HECHO (cadenas de NMS.exe):
+  inicia sesión en su servicio en línea con el pase de la cuenta de Steam (LoginWithSteam,
+  GetAuthSessionTicket) y las partidas son salas de ese servicio; no se encontró ninguna orden de
+  conexión directa por IP. SUPUESTO: el servicio rechaza una identidad emulada, así que cada ventana
+  quedaría sola. No se ha probado.
+EVIDENCIA AUTOMÁTICA: 203 xUnit, 77 unittest.
+EVIDENCIA EN WINDOWS REAL: paquete publicado y UI Automation (tools/ensayo_nms.ps1 -SinJuego): AVANZADO
+  lista la pestaña NO MAN'S SKY con sus nueve botones y el estado de este PC (J1 con copia de Steam, sin
+  segunda copia, filtro sin instalar). Sin abrir el juego.
+ERRORES PROPIOS: (1) la primera entrega dejó el juego solo en JUGAR; el propietario lo buscó en AVANZADO.
+  (2) El plan daba por hecho que el ejecutable protegido no arranca con el emulador: era un supuesto y
+  así consta ahora.
+LIMITACIONES EXPLÍCITAS: ningún botón de la pestaña se ha pulsado con el juego abierto. El emulador
+  implementa SteamUser023 y el juego pide SteamUser021: probarlo exigiría esa variante.
+PRÓXIMO PASO: el mismo (Steam Input, «Instalar / actualizar», JUGAR con un mando). Si el propietario
+  quiere ver con el juego real qué pasa con el emulador, es una prueba aparte que hay que acordar.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

@@ -28,7 +28,8 @@ Detalle en [`plans/no-mans-sky.md`](plans/no-mans-sky.md). El propietario eligi�
 Ya está en la biblioteca del lanzador como «EN PREPARACIÓN · SIN VALIDAR» (ADR-027): preparación, «Elegir copia de J2…», «Preparar ahora», JUGAR y «Cerrar juegos».
 
 - **Bloqueante:** con Steam abierto, la copia de Steam no responde al mando de prueba del filtro (sonda de una instancia, 2026-10-11). Supuesto: recibe el mando por Steam Input. Falta que el propietario desactive Steam Input para este juego y lo pruebe con «Preparar ahora» y JUGAR (o repetir la sonda). Si tampoco responde, la copia de Steam no sirve para un jugador con mando propio.
-- JUGAR y «Cerrar juegos» de No Man's Sky no se han ejecutado con el juego desde el lanzador (`tools/ensayo_nms.ps1`, avisando antes).
+- JUGAR, «Cerrar juegos» y los botones de AVANZADO › NO MAN'S SKY no se han ejecutado con el juego (`tools/ensayo_nms.ps1`, avisando antes).
+- ¿Qué pasa de verdad al abrir el juego con el emulador de Steam? Sin probar. El propietario lo pidió «tal cual 7DTD»; lo esperable es que cada ventana quede sola (el juego inicia sesión en su servicio en línea con la cuenta de Steam). Probarlo exige añadir `SteamUser021` al emulador y acordarlo con él; no se quitará la protección del ejecutable.
 - La detección de la copia de GOG por el registro es un supuesto: no hay GOG en el PC. Si falla, sirve «Elegir copia de J2…».
 - ¿Lee la copia de GOG los mandos por XInput? Se espera que sí (no lleva Steam Input). Sin comprobar hasta tenerla.
 - ¿Atiende el mando la ventana sin foco? El foco simulado del filtro adopta la ventana del juego a los 3 s, pero no cubre `GetKeyboardState` ni Raw Input.

@@ -105,7 +105,7 @@ Cómo lo hace: pulsa los botones con el mando de prueba del filtro (`prueba.txt`
 powershell -ExecutionPolicy Bypass -File tools\ensayo_nms.ps1 -SinJuego
 ```
 
-Con `-SinJuego` abre el paquete publicado, elige No Man's Sky en la biblioteca, imprime su preparación y los botones disponibles, captura solo la ventana de SplitForge y lo cierra. **Ejecutado el 2026-10-11:** biblioteca con los dos juegos; J1 listo, falta la copia de J2 y falta el filtro.
+Con `-SinJuego` abre el paquete publicado, elige No Man's Sky en la biblioteca, imprime su preparación y los botones disponibles, entra en AVANZADO › NO MAN'S SKY e imprime sus textos y botones, captura solo la ventana de SplitForge y lo cierra. **Ejecutado el 2026-10-11:** biblioteca con los dos juegos; J1 listo, falta la copia de J2 y falta el filtro; la pestaña de AVANZADO con sus nueve botones.
 
 Sin `-SinJuego`, además pulsa JUGAR (abre la copia de Steam a través de Steam), espera a que el lanzador le asigne su mando, captura la ventana del juego y la cierra con «Cerrar juegos» (acepta el aviso). No entra en ninguna partida y no pulsa «Preparar ahora». **Sin ejecutar todavía; avisar antes al propietario.** En los dos modos restaura `settings.v2.json` al terminar y no arranca si hay un juego o un SplitForge abierto.
 

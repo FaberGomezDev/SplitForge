@@ -309,7 +309,9 @@ En la fase C el estado de J1 pasa a `teclas_soltadas=1`. Los juegos quedaron por
 - **Filtro nativo:** en un juego que no es de Unity adopta su ventana a los 3 s (antes 20 s) y descarta las ventanas menores de 320 × 200.
 - **Carátulas:** `SteamArt` lee también la disposición nueva de la caché de Steam (cada imagen en una subcarpeta con nombre de huella; la vertical se llama `library_capsule.jpg`).
 
-**Alternativas descartadas:** el emulador de Steam, quitar la protección del ejecutable o usar la versión antigua (ver el plan); esperar a validar el juego para añadirlo al lanzador (el propietario lo pidió ahora, y el cartel dice el estado real).
+- **AVANZADO › NO MAN'S SKY** (añadida el mismo día: el propietario esperaba encontrar el juego ahí, como 7DTD, con su «Instalar / actualizar» y el emulador). Tiene lo que aplica a este juego: copias, filtro de mandos (instalar o actualizar, asignar, quitar, estado por ventana) y abrir, dividir y cerrar. El bloque «Emulador de Steam» no ofrece instalarlo: explica en palabras llanas por qué aquí no sirve. Se mantiene al día aunque el juego elegido en la biblioteca sea otro.
+
+**Alternativas descartadas:** el emulador de Steam, quitar la protección del ejecutable o usar la versión antigua (ver el plan); esperar a validar el juego para añadirlo al lanzador (el propietario lo pidió ahora, y el cartel dice el estado real). Sobre el emulador: es **hecho** que el juego inicia sesión en su servicio en línea con el pase de la cuenta de Steam (cadenas del ejecutable); que ese servicio rechace una identidad emulada es un supuesto razonable sin prueba propia. No se ha abierto el juego con el emulador.
 
 **Evidencia (2026-10-11):** 203 pruebas xUnit (8 nuevas: instalación, copia de J2, jugador de cada proceso, preparación, catálogo, ajustes y carátulas). Con el paquete publicado y UI Automation (`tools/ensayo_nms.ps1 -SinJuego`): la biblioteca lista «7 Days to Die» y «No Man's Sky»; al elegir el segundo, la preparación refleja este PC (J1 en Steam: sí; copia de J2: falta; filtro: falta; mandos: 2) y aparecen «Preparar ahora» y «Elegir copia de J2…». Los ajustes del propietario se restauraron al terminar.
 

@@ -353,6 +353,8 @@ public sealed partial class MainViewModel
         {
             gameFolder = null;
         }
+        var nmsSteam = NoMansSkySteamCopy();
+        var nmsSecond = NoMansSkySecondCopy(nmsSteam);
         // El resultado se deja en un campo y lo publica el tick de la interfaz (ApplyFilterStatus). Antes se
         // publicaba con una continuación atada al contexto de sincronización: si la primera llamada llegaba
         // sin contexto (al construir la ventana), lanzaba una excepción con la marca «en curso» puesta y el
@@ -361,7 +363,10 @@ public sealed partial class MainViewModel
         {
             try
             {
-                Volatile.Write(ref _filterSnapshot, DescribeFilter(gameFolder, dataFolder));
+                Volatile.Write(ref _filterSnapshot, DescribeFilter(gameFolder, dataFolder) with
+                {
+                    NoMansSky = DescribeNoMansSkyFilter(dataFolder, nmsSteam, nmsSecond),
+                });
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException
                                            or System.ComponentModel.Win32Exception)
@@ -375,7 +380,7 @@ public sealed partial class MainViewModel
         });
     }
 
-    private sealed record FilterSnapshot(string Filter, string Slots, IReadOnlySet<int> FocusedInGame);
+    private sealed record FilterSnapshot(string Filter, string Slots, IReadOnlySet<int> FocusedInGame, string NoMansSky = "");
 
     private FilterSnapshot? _filterSnapshot;
 
@@ -385,6 +390,7 @@ public sealed partial class MainViewModel
         if (Interlocked.Exchange(ref _filterSnapshot, null) is not { } snapshot)
             return;
         FilterStatus = snapshot.Filter;
+        NoMansSkyFilterStatus = snapshot.NoMansSky;
         _focusedInGame = snapshot.FocusedInGame;
         if (!_detectingSlot)
             XInputSlotsStatus = snapshot.Slots;
@@ -407,18 +413,21 @@ public sealed partial class MainViewModel
         var status = WindowsDiagnostics.XInputStatus(dataFolder);
         if (status.Count == 0)
             return new($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, focused);
-        var perClient = status.GroupBy(st => st.Pid).Select(g =>
-        {
-            var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
-            var dlls = string.Join(", ", g.Select(st =>
-                $"{st.Dll}{(st.RealLoaded ? "" : " (¡DLL real NO cargada!)")}{(st.Reads >= 0 ? $" {st.Reads} lecturas" : "")}"
-                + (st.InterceptionText.Length > 0 ? $" [{st.InterceptionText}]" : "")));
-            var focus = g.Any(st => st.FocusForced) ? " · foco simulado" : "";
-            var pointer = g.Any(st => st.OwnCursor) ? " · puntero propio" : "";
-            var keys = g.Any(st => st.KeysReleased >= 0) ? " · teclas sin pegarse" : "";
-            return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}{keys}";
-        });
+        var perClient = status.GroupBy(st => st.Pid).Select(g => FilterClientLine(g, $"PID {g.Key}"));
         return new($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, focused);
+    }
+
+    /// <summary>Una línea de estado por ventana de juego: su mando, cada DLL del filtro que cargó y qué hace dentro.</summary>
+    private static string FilterClientLine(IEnumerable<XInputFilterStatus> client, string who)
+    {
+        var slot = client.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
+        var dlls = string.Join(", ", client.Select(st =>
+            $"{st.Dll}{(st.RealLoaded ? "" : " (¡DLL real NO cargada!)")}{(st.Reads >= 0 ? $" {st.Reads} lecturas" : "")}"
+            + (st.InterceptionText.Length > 0 ? $" [{st.InterceptionText}]" : "")));
+        var focus = client.Any(st => st.FocusForced) ? " · foco simulado" : "";
+        var pointer = client.Any(st => st.OwnCursor) ? " · puntero propio" : "";
+        var keys = client.Any(st => st.KeysReleased >= 0) ? " · teclas sin pegarse" : "";
+        return $"{who}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}{keys}";
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>
