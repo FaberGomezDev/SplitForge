@@ -544,6 +544,41 @@ PRÓXIMO PASO: que el propietario desactive Steam Input solo para este juego y r
   responde, seguir con la ruta A1; si no, replantear antes de comprar nada.
 ```
 
+## 2026-10-11 · No Man's Sky en el lanzador: biblioteca de varios juegos
+
+```text
+FECHA: 2026-10-11 (noche)
+RELEASE/COMMIT: pendiente
+OBJETIVO: el propietario pide añadir No Man's Sky a SplitForge para hacerlo funcionar como 7DTD.
+CAMBIOS EFECTIVOS (ADR-027):
+  - Core: catálogo LauncherGames; NoMansSkyAdapter (instalación, copia de J2, jugador de cada proceso,
+    preparación); ajustes SelectedGame y NoMansSky.SecondCopyFolder; SteamArt lee la disposición nueva
+    de la caché de Steam (subcarpetas con huella, library_capsule.jpg).
+  - Windows: GogLocator (registro de GOG, supuesto); procesos abiertos con su ruta; estado del filtro
+    para varios ejecutables.
+  - Aplicación: la biblioteca es una lista seleccionable; JUGAR, «Cerrar juegos», «Preparar ahora» y la
+    preparación dependen del juego elegido. No Man's Sky: J1 por Steam, J2 desde su copia, un mando por
+    proceso, pantalla dividida con dos ventanas; filtro como xinput9_1_0.dll solo con confirmación;
+    «Elegir copia de J2…» y «Quitar filtro de mandos».
+  - Filtro XInput: en juegos que no son de Unity adopta la ventana a los 3 s (antes 20 s) y descarta
+    las menores de 320 × 200.
+  - tools/ensayo_nms.ps1 (ensayo del lanzador con este juego); tools/ensayo_7dtd.ps1 elige 7DTD en la
+    biblioteca antes de pulsar JUGAR.
+EVIDENCIA AUTOMÁTICA: 203 xUnit (8 nuevas), 77 unittest; prueba de humo del filtro en verde.
+EVIDENCIA EN WINDOWS REAL: paquete publicado y UI Automation, sin abrir el juego: la biblioteca lista los
+  dos juegos; con No Man's Sky la preparación dice J1 listo, falta la copia de J2, falta el filtro, 2
+  mandos. Captura solo de la ventana de SplitForge: carátula, portada y logotipo del juego visibles.
+  Ajustes del propietario restaurados.
+ERRORES PROPIOS: la carátula de No Man's Sky no salía (la caché de Steam tiene otra disposición) y el
+  titular ponía «j2» en minúscula; corregidos al ver la captura.
+LIMITACIONES EXPLÍCITAS: JUGAR y «Cerrar juegos» de No Man's Sky no se han ejecutado con el juego desde
+  el lanzador. Nunca se han abierto dos instancias (no hay segunda copia). La detección de GOG no se
+  ha podido probar. Sigue el bloqueante de Steam Input: en el Steam del propietario no consta todavía
+  desactivado para este juego.
+PRÓXIMO PASO: el propietario desactiva Steam Input para el juego, pulsa «Preparar ahora» y JUGAR con un
+  mando. Si J1 responde solo a su mando, comprar la segunda copia y probar con las dos.
+```
+
 ## Siguiente entrada (plantilla)
 
 ```text

@@ -327,6 +327,8 @@ public sealed partial class MainViewModel : Observable, IDisposable
             Guard(_sessions.Tick, quiet: true);
             Guard(TileEmulatedClientsWhenReady, quiet: true);
             Guard(CloseEmulatedClientsStep, quiet: true);
+            Guard(TileNoMansSkyWhenReady, quiet: true);
+            Guard(CloseNoMansSkyStep, quiet: true);
             Guard(EndSessionWhenWindowsAreGone, quiet: true);
             Guard(KeepSessionAboveTaskbar, quiet: true);
             Guard(SyncBackdrop, quiet: true);
@@ -378,6 +380,9 @@ public sealed partial class MainViewModel : Observable, IDisposable
                 IsolateSaves = SteamEmuIsolateSaves,
             },
             FakeFocus = FakeFocusEnabled,
+            SelectedGame = _selectedGame?.Game.Id ?? _settings.SelectedGame,
+            // Antes de InitPlay (durante la construcción) aún no se ha leído: se conserva lo guardado.
+            NoMansSky = _selectedGame is null ? _settings.NoMansSky : new NoMansSkyOptions { SecondCopyFolder = _nmsSecondCopy },
         };
         try
         {

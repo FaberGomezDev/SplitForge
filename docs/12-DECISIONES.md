@@ -291,3 +291,32 @@ En la fase C el estado de J1 pasa a `teclas_soltadas=1`. Los juegos quedaron por
 - El ensayo carga la última partida del propietario y manda Alt al juego: en un ensayo anterior, cuando el mando de prueba aún metía pulsaciones dobles, J1 gastó un frasco de agua.
 - A veces el juego abre al arrancar un cuadro «Inicio de sesión de Discord» que hay que aceptar; mientras está abierto no carga la partida. Es del propio juego (va sin EOS). El propietario indica que no le molesta: no se toca.
 
+## ADR-027 · Aceptada (experimental) · Biblioteca de varios juegos; No Man's Sky con una copia por jugador
+
+**Contexto (propietario, 2026-10-11):** «agrega No Man's Sky en SplitForge, haremos que funcione tal cual lo hicimos con 7DTD». El lanzador (ADR-024) solo conocía 7DTD. No Man's Sky no admite la vía de 7DTD: su multijugador va por servicios en línea y el ejecutable lleva la protección de Steam ([`plans/no-mans-sky.md`](plans/no-mans-sky.md)). El propietario eligió J1 en Steam y J2 con otra copia (GOG).
+
+**Decisión:**
+
+- **Catálogo en Core** (`LauncherGames`): identificador, nombre, AppID, cartel, pasos de «Cómo se juega» y si usa identidad emulada. La biblioteca de la pantalla JUGAR es una lista seleccionable; el juego elegido se guarda en `settings.v2.json` (`SelectedGame`) y un identificador desconocido vuelve al primero.
+- **JUGAR, «Cerrar juegos», «Preparar ahora» y la lista «Preparación» hacen lo que toque en el juego elegido.** Con dos juegos son dos ramas en el modelo de la interfaz; una interfaz común de lanzamiento se extraerá cuando un tercer juego enseñe qué tienen en común de verdad.
+- **No Man's Sky** (`NoMansSkyAdapter`, sin emulador de Steam):
+  - J1 usa la copia de Steam y se abre **a través de Steam** (`steam://rungameid/275850`), como al pulsar «Jugar» en su biblioteca. No se arranca el ejecutable protegido por otra vía.
+  - J2 usa otra copia, con su cuenta: la que el usuario indica eligiendo su `NMS.exe`, o la de GOG si se detecta. La misma carpeta de Steam no vale como segunda copia.
+  - Qué jugador es cada proceso se sabe por la carpeta de su ejecutable. Cada proceso recibe su mando en cuanto existe; la pantalla se divide cuando están las dos ventanas. Con una sola copia se abre solo ese jugador y se dice.
+  - El filtro de mandos se instala como `xinput9_1_0.dll` (la que importa el juego) en `Binaries` de cada copia, **solo con «Preparar ahora» y tras una confirmación** que explica que es un juego en línea y que el filtro es un archivo añadido. No se sobrescribe nada del juego y se retira con «Quitar filtro de mandos».
+  - «Cerrar juegos» pide el cierre normal de cada ventana, avisando antes de que el juego solo guarda en sus puntos de guardado. Nunca a la fuerza.
+- **El cartel del juego dice «EN PREPARACIÓN · SIN VALIDAR»** y su ficha, «En preparación · 2 copias, 2 cuentas». Estar en la biblioteca no declara compatibilidad.
+- **Filtro nativo:** en un juego que no es de Unity adopta su ventana a los 3 s (antes 20 s) y descarta las ventanas menores de 320 × 200.
+- **Carátulas:** `SteamArt` lee también la disposición nueva de la caché de Steam (cada imagen en una subcarpeta con nombre de huella; la vertical se llama `library_capsule.jpg`).
+
+**Alternativas descartadas:** el emulador de Steam, quitar la protección del ejecutable o usar la versión antigua (ver el plan); esperar a validar el juego para añadirlo al lanzador (el propietario lo pidió ahora, y el cartel dice el estado real).
+
+**Evidencia (2026-10-11):** 203 pruebas xUnit (8 nuevas: instalación, copia de J2, jugador de cada proceso, preparación, catálogo, ajustes y carátulas). Con el paquete publicado y UI Automation (`tools/ensayo_nms.ps1 -SinJuego`): la biblioteca lista «7 Days to Die» y «No Man's Sky»; al elegir el segundo, la preparación refleja este PC (J1 en Steam: sí; copia de J2: falta; filtro: falta; mandos: 2) y aparecen «Preparar ahora» y «Elegir copia de J2…». Los ajustes del propietario se restauraron al terminar.
+
+**Límites:**
+
+- **JUGAR y «Cerrar juegos» de No Man's Sky no se han ejecutado con el juego** desde el lanzador. La sonda anterior hizo esos pasos con un guion (abrir por Steam, reconocer la ventana, cerrar con `WM_CLOSE`), no con este código.
+- Nunca se han abierto dos instancias: no hay segunda copia.
+- La detección de GOG (registro de GOG Galaxy) es un supuesto: en este PC no hay GOG.
+- Sigue el bloqueante de la sonda: con Steam Input activo, la copia de Steam no responde al mando del filtro.
+

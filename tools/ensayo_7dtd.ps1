@@ -113,6 +113,9 @@ try {
     if ($app.MainWindowHandle -eq 0) { throw 'La ventana de SplitForge no aparecio.' }
     Start-Sleep -Seconds 4
     $root = $AE::FromHandle($app.MainWindowHandle)
+    # La biblioteca recuerda el ultimo juego elegido: este ensayo es de 7 Days to Die.
+    $card = $root.FindFirst([Windows.Automation.TreeScope]::Descendants, (New-Object Windows.Automation.AndCondition((New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [Windows.Automation.ControlType]::ListItem)), (New-Object Windows.Automation.PropertyCondition($AE::NameProperty, '7 Days to Die')))))
+    if ($card) { $card.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select(); Start-Sleep -Milliseconds 700 }
     $play = Find-Button $root 'Jugar'
     if (-not $play) { throw 'No se encontro el boton Jugar.' }
     if (-not $play.Current.IsEnabled) { throw 'El boton Jugar esta deshabilitado.' }

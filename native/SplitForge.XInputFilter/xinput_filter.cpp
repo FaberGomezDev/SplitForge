@@ -463,8 +463,12 @@ BOOL CALLBACK FindOwnWindow(HWND hwnd, LPARAM lParam) {
         data->found = hwnd;
         return FALSE;
     }
-    if (data->anyWindow && !data->found)
-        data->found = hwnd; // Juego que no es Unity: la primera ventana visible propia.
+    if (data->anyWindow && !data->found) {
+        // Juego que no es de Unity: su primera ventana visible de tamaño de juego (no un aviso ni una auxiliar).
+        RECT rect{};
+        if (GetWindowRect(hwnd, &rect) && rect.right - rect.left >= 320 && rect.bottom - rect.top >= 200)
+            data->found = hwnd;
+    }
     return TRUE;
 }
 
@@ -515,8 +519,11 @@ void RedirectImports(HMODULE module, const ImportHook* hooks, size_t count) {
 // Hilo propio (nunca en DllMain): espera la ventana del juego y activa el foco simulado.
 DWORD WINAPI FocusThread(void*) {
     FindWindowData data{GetCurrentProcessId(), false, nullptr};
+    // Con Unity se espera a su ventana (20 s de margen); en otros motores (No Man's Sky usa GLFW) se acepta
+    // la ventana principal del proceso a los 3 s.
+    const int anyWindowAfter = GetModuleHandleW(L"UnityPlayer.dll") ? 80 : 12;
     for (int attempt = 0; attempt < 480 && !data.found; ++attempt) { // hasta 2 minutos
-        data.anyWindow = attempt >= 80; // tras 20 s sin ventana de Unity, se acepta cualquier ventana propia
+        data.anyWindow = attempt >= anyWindowAfter;
         EnumWindows(&FindOwnWindow, reinterpret_cast<LPARAM>(&data));
         if (!data.found)
             Sleep(250);

@@ -25,12 +25,16 @@ Resolver con evidencia concreta antes de programar sobre suposiciones.
 
 Detalle en [`plans/no-mans-sky.md`](plans/no-mans-sky.md). El propietario eligió la ruta A1 (2026-10-11): J1 en Steam y J2 con una copia en GOG. **Aún no comprada, a propósito.**
 
-- **Bloqueante:** con Steam abierto, la copia de Steam no responde al mando de prueba del filtro (sonda de una instancia, 2026-10-11). Supuesto: recibe el mando por Steam Input. Falta que el propietario desactive Steam Input para este juego y repetir la sonda. Si tampoco responde, la copia de Steam no sirve para un jugador con mando propio.
+Ya está en la biblioteca del lanzador como «EN PREPARACIÓN · SIN VALIDAR» (ADR-027): preparación, «Elegir copia de J2…», «Preparar ahora», JUGAR y «Cerrar juegos».
+
+- **Bloqueante:** con Steam abierto, la copia de Steam no responde al mando de prueba del filtro (sonda de una instancia, 2026-10-11). Supuesto: recibe el mando por Steam Input. Falta que el propietario desactive Steam Input para este juego y lo pruebe con «Preparar ahora» y JUGAR (o repetir la sonda). Si tampoco responde, la copia de Steam no sirve para un jugador con mando propio.
+- JUGAR y «Cerrar juegos» de No Man's Sky no se han ejecutado con el juego desde el lanzador (`tools/ensayo_nms.ps1`, avisando antes).
+- La detección de la copia de GOG por el registro es un supuesto: no hay GOG en el PC. Si falla, sirve «Elegir copia de J2…».
 - ¿Lee la copia de GOG los mandos por XInput? Se espera que sí (no lleva Steam Input). Sin comprobar hasta tenerla.
-- ¿Atiende el mando la ventana sin foco? El foco simulado del filtro busca primero la ventana de Unity y no cubre `GetKeyboardState` ni Raw Input.
+- ¿Atiende el mando la ventana sin foco? El foco simulado del filtro adopta la ventana del juego a los 3 s, pero no cubre `GetKeyboardState` ni Raw Input.
 - ¿Caben dos instancias en 8 GB de VRAM? Sin medir.
 - ¿Acepta el propietario usar el filtro de mandos en un juego en línea? No hay antitrampas y el juego admite mods; riesgo bajo, no nulo.
-- El lanzador solo conoce 7DTD: un segundo juego exige generalizar adaptador, biblioteca y botón JUGAR.
+- El lanzador elige entre dos juegos con dos ramas en el modelo de la interfaz. Con un tercero, extraer una interfaz común de lanzamiento.
 
 ## Emulador de Steam (componente principal)
 

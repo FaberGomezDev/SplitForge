@@ -33,8 +33,18 @@ public sealed record SteamEmuOptions
     public bool IsolateSaves { get; init; } = true;
 }
 
+/// <summary>No Man's Sky: dónde está la copia del jugador 2 (la de J1 es la de Steam y se detecta sola).</summary>
+public sealed record NoMansSkyOptions
+{
+    /// <summary>Carpeta de la segunda copia (por ejemplo la de GOG); vacía si aún no hay o no se ha indicado.</summary>
+    public string SecondCopyFolder { get; init; } = "";
+}
+
 public sealed record AppSettings
 {
+    /// <summary>Juego elegido en la biblioteca del lanzador (identificador de <c>LauncherGames</c>).</summary>
+    public string SelectedGame { get; init; } = LauncherGames.SevenDaysToDie;
+    public NoMansSkyOptions NoMansSky { get; init; } = new();
     public SplitOrientation Orientation { get; init; } = SplitOrientation.SideBySide;
     public int Gutter { get; init; } = 4;
     public bool Borderless { get; init; } = true;
@@ -144,5 +154,7 @@ public static class SettingsStore
         Mappings = s.Mappings ?? [],
         SevenDays = s.SevenDays ?? new SevenDaysServerOptions(),
         SteamEmu = s.SteamEmu ?? new SteamEmuOptions(),
+        NoMansSky = s.NoMansSky ?? new NoMansSkyOptions(),
+        SelectedGame = LauncherGames.Find(s.SelectedGame).Id,
     };
 }

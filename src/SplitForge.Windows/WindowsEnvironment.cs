@@ -31,6 +31,42 @@ public static class SteamLocator
 }
 
 /// <summary>
+/// Juegos instalados con GOG Galaxy, según el registro (<c>HKLM\SOFTWARE\WOW6432Node\GOG.com\Games</c>). Solo
+/// lectura. SUPUESTO sin comprobar en este equipo (no tiene GOG): cada juego guarda ahí su carpeta («path») y
+/// su ejecutable («exe»).
+/// </summary>
+[SupportedOSPlatform("windows")]
+public static class GogLocator
+{
+    /// <summary>Carpeta de instalación del juego de GOG cuyo ejecutable se llama <paramref name="exeName"/>, o null.</summary>
+    public static string? FindInstall(string exeName)
+    {
+        foreach (var root in new[] { @"SOFTWARE\WOW6432Node\GOG.com\Games", @"SOFTWARE\GOG.com\Games" })
+        {
+            try
+            {
+                using var games = Registry.LocalMachine.OpenSubKey(root);
+                if (games is null)
+                    continue;
+                foreach (var id in games.GetSubKeyNames())
+                {
+                    using var game = games.OpenSubKey(id);
+                    if (game?.GetValue("exe") is string exe && game.GetValue("path") is string path
+                        && string.Equals(Path.GetFileName(exe), exeName, StringComparison.OrdinalIgnoreCase)
+                        && Directory.Exists(path))
+                        return Path.GetFullPath(path);
+                }
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                // Sin permiso de lectura: como si no hubiera GOG.
+            }
+        }
+        return null;
+    }
+}
+
+/// <summary>
 /// Sandboxie-Plus permite abrir un segundo Steam en la misma sesión de
 /// Windows. SplitForge solo lo detecta y lanza Steam dentro del sandbox; el inicio de sesión lo hace el jugador.
 /// </summary>

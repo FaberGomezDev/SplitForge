@@ -1,6 +1,6 @@
 # No Man's Sky — adaptador · ESTADO: NO VALIDADO (`INSPECCIONADO`)
 
-> Segundo juego pedido por el propietario (2026-10-11). Esta página recoge lo que se ha **leído** de la instalación, sin ejecutar el juego ni tocar su carpeta. Nada aquí declara compatibilidad.
+> Segundo juego pedido por el propietario (2026-10-11). Esta página recoge lo que se ha **leído** de la instalación, la sonda con una instancia y lo que el lanzador hace ya con él. Nada aquí declara compatibilidad: en la biblioteca de SplitForge aparece como «EN PREPARACIÓN · SIN VALIDAR».
 
 ## Identificación
 
@@ -45,6 +45,27 @@ Decisión del propietario: **ruta A1** (J1 en Steam, J2 con una copia en GOG). A
 
 **Siguiente comprobación (necesita al propietario):** desactivar Steam Input **solo para este juego** (Steam › Biblioteca › No Man's Sky › Propiedades › Mando › «Desactivar Steam Input») y repetir la sonda. Si entonces responde al mando de prueba, el filtro puede aislarlo y la ruta A1 es viable; si no, la copia de Steam no sirve para un jugador con mando propio. **No comprar la segunda copia hasta saberlo.** La copia de GOG no lleva Steam Input: allí se espera XInput directo (sin comprobar).
 
+## En el lanzador (2026-10-11, ADR-027)
+
+No Man's Sky está en la biblioteca de la pantalla JUGAR. Al elegirlo:
+
+| Elemento | Qué hace |
+| --- | --- |
+| Preparación | Cuatro pasos: «Juego de J1 (Steam)», «Juego de J2 (otra copia)», «Un mando por ventana» (el filtro en cada copia) y «Mandos» |
+| «Elegir copia de J2…» | El usuario señala el `NMS.exe` de la otra copia. La de GOG se detecta sola (supuesto, sin GOG en este PC). La carpeta de Steam no vale como segunda copia |
+| «Preparar ahora» | Instala el filtro como `xinput9_1_0.dll` en `Binaries` de cada copia, tras una confirmación que explica que es un juego en línea. «Quitar filtro de mandos» lo retira |
+| JUGAR | Abre J1 a través de Steam y J2 desde su copia; da a cada proceso su mando (por la carpeta de su ejecutable) y divide la pantalla cuando están las dos ventanas. Con una sola copia abre solo a ese jugador y lo dice |
+| «Cerrar juegos» | Cierre normal de cada ventana, con aviso: el juego solo guarda en sus puntos de guardado |
+
+**Comprobado:** la pantalla, con el paquete publicado y UI Automation (`tools/ensayo_nms.ps1 -SinJuego`): en este PC, J1 listo, falta la copia de J2 y falta el filtro. **Sin comprobar:** JUGAR y «Cerrar juegos» con el juego real desde el lanzador (`tools/ensayo_nms.ps1`, avisando antes al propietario), y todo lo que necesita dos copias.
+
+**Lo que tiene que hacer el propietario, en este orden:**
+
+1. En Steam, desactivar Steam Input **solo para este juego** (Propiedades › Mando). Sin eso, Steam le da los dos mandos a J1.
+2. En SplitForge, elegir No Man's Sky y pulsar «Preparar ahora» (instala el filtro en la copia de Steam).
+3. Pulsar JUGAR con un mando: si J1 responde solo a su mando, la copia de Steam sirve y entonces tiene sentido comprar la segunda copia.
+4. Con la segunda copia instalada: «Elegir copia de J2…» si no se detecta sola, «Preparar ahora» otra vez y JUGAR.
+
 ## Lo que cambia respecto a 7 Days to Die
 
 En 7DTD un jugador aloja la partida en su propio PC y el otro entra por la red local; por eso bastó con dar a cada instancia una identidad emulada. **En No Man's Sky eso no existe:**
@@ -69,7 +90,7 @@ Consecuencia: para dos jugadores en la misma partida hacen falta **dos copias de
 ## Supuestos sin comprobar
 
 - Con Steam Input desactivado para el juego, lee los mandos por XInput (y entonces el filtro puede aislarlos). Con Steam Input activo los leería por Steam y el filtro no los vería.
-- La ventana sin foco deja de atender el mando (lo sugiere el handler de Nucleus, que fuerza el foco). El foco simulado del filtro debería servir, pero hoy busca la ventana de Unity primero y no cubre `GetKeyboardState` ni Raw Input.
+- La ventana sin foco deja de atender el mando (lo sugiere el handler de Nucleus, que fuerza el foco). El foco simulado del filtro debería servir: adopta la ventana del juego a los 3 s (ADR-027), pero no cubre `GetKeyboardState` ni Raw Input.
 - Dos instancias a la vez caben en 8 GB de VRAM con ajustes bajos. Sin medir.
 - El juego en línea admite una DLL de mandos junto al ejecutable. No hay antitrampas y el juego admite mods, pero es juego en línea con servicios de terceros: riesgo bajo, no nulo, y la decisión es del propietario.
 
@@ -97,4 +118,5 @@ Consecuencia: para dos jugadores en la misma partida hacen falta **dos copias de
 
 - Configuración y fecha: 2026-10-11, inspección de solo lectura (`dumpbin`, cadenas del ejecutable, existencia de carpetas).
 - Sonda de una instancia: 2026-10-11, lanzada con `steam://rungameid/275850`, mando de prueba del filtro y captura de la ventana del juego.
-- Resultado final: `NO VALIDADO`. Ruta elegida: A1. Bloqueado hasta repetir la sonda con Steam Input desactivado para el juego.
+- Lanzador: 2026-10-11, pantalla comprobada con UI Automation sobre el paquete publicado; sin abrir el juego.
+- Resultado final: `NO VALIDADO`. Ruta elegida: A1. Bloqueado hasta comprobar el mando con Steam Input desactivado para el juego.

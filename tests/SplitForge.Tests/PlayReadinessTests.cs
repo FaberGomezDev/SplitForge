@@ -51,4 +51,23 @@ public class PlayReadinessTests
         Assert.Null(art.Logo);
         Assert.Equal(new SteamArt(null, null, null), SteamArt.Find([current], "999"));
     }
+
+    [Fact]
+    public void ArtIsAlsoFoundInTheHashedSubfoldersOfNewerSteamClients()
+    {
+        // Disposición vista con No Man's Sky el 2026-10-11: cada imagen en una subcarpeta con nombre de huella,
+        // y la carátula vertical con el nombre «library_capsule.jpg».
+        using var tmp = new TempDir();
+        var cache = Path.Combine(tmp.Combine("steam"), "appcache", "librarycache", "275850");
+        var hero = Path.Combine(cache, "a06b", "library_hero.jpg");
+        var cover = Path.Combine(cache, "2012", "library_capsule.jpg");
+        var logo = Path.Combine(cache, "786b", "logo.png");
+        foreach (var file in new[] { hero, cover, logo, Path.Combine(cache, "a06b", "library_hero_blur.jpg") })
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+            File.WriteAllBytes(file, [1]);
+        }
+
+        Assert.Equal(new SteamArt(hero, cover, logo), SteamArt.Find([tmp.Combine("steam")], "275850"));
+    }
 }

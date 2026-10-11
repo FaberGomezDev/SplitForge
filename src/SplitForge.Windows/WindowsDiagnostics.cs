@@ -59,7 +59,15 @@ public static class WindowsDiagnostics
 
     /// <summary>Estado del filtro en los clientes de 7DTD abiertos (se descartan procesos cerrados).</summary>
     public static IReadOnlyList<XInputFilterStatus> XInputStatus(string dataFolder) =>
-        XInputFilter.ReadStatus(XInputStatusFolders(dataFolder), ProcessInspector.FindByExecutable(SevenDaysToDieAdapter.GameExe).ToHashSet());
+        XInputStatus(dataFolder, SevenDaysToDieAdapter.GameExe);
+
+    /// <summary>Estado del filtro en los procesos abiertos de esos ejecutables (se descartan los ya cerrados).</summary>
+    public static IReadOnlyList<XInputFilterStatus> XInputStatus(string dataFolder, params string[] gameExes) =>
+        XInputFilter.ReadStatus(XInputStatusFolders(dataFolder), gameExes.SelectMany(ProcessInspector.FindByExecutable).ToHashSet());
+
+    /// <summary>Procesos abiertos de un ejecutable, con la ruta de su imagen (para saber de qué instalación son).</summary>
+    public static IReadOnlyList<(int Pid, string Image)> RunningImages(string exeName) =>
+        [.. ProcessInspector.FindByExecutable(exeName).Select(pid => (pid, ProcessInspector.ImagePath(pid))).Where(p => p.Item2 is not null).Select(p => (p.pid, p.Item2!))];
 
     private static GameProcessDiagnostic Inspect(int pid, string exe, IReadOnlyDictionary<int, int> windowsByPid, IReadOnlyList<string> steamRoots)
     {

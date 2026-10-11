@@ -396,14 +396,17 @@ public sealed partial class MainViewModel
         var slots = connected.Count > 0
             ? $"Ranuras XInput con mando: {string.Join(", ", connected)}. Usa «Detectar» para saber cuál es cada mando."
             : "Ninguna ranura XInput con mando: los mandos deben llegar a Windows como XInput (p. ej. «Xbox 360 Controller»).";
+        // El foco simulado dentro del juego se mira en todos los juegos del lanzador, no solo en 7DTD.
+        var all = WindowsDiagnostics.XInputStatus(dataFolder, SevenDaysToDieAdapter.GameExe, NoMansSkyAdapter.GameExe);
+        var focused = XInputFilterStatus.FocusedInGame(all);
         if (gameFolder is null)
-            return new("7 Days to Die no detectado.", slots, NoPids);
+            return new("7 Days to Die no detectado.", slots, focused);
         var installed = XInputFilter.InstalledNames(gameFolder);
         if (installed.Count == 0)
-            return new("Filtro XInput no instalado.", slots, NoPids);
+            return new("Filtro XInput no instalado.", slots, focused);
         var status = WindowsDiagnostics.XInputStatus(dataFolder);
         if (status.Count == 0)
-            return new($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, NoPids);
+            return new($"Instalado ({string.Join(", ", installed)}). Ningún cliente abierto lo ha cargado aún (abre o reinicia los clientes).", slots, focused);
         var perClient = status.GroupBy(st => st.Pid).Select(g =>
         {
             var slot = g.Select(st => st.Slot).FirstOrDefault(v => v >= 0, -1);
@@ -415,7 +418,7 @@ public sealed partial class MainViewModel
             var keys = g.Any(st => st.KeysReleased >= 0) ? " · teclas sin pegarse" : "";
             return $"PID {g.Key}: mando {(slot >= 0 ? (slot + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "sin asignar")} · {dlls}{focus}{pointer}{keys}";
         });
-        return new($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, XInputFilterStatus.FocusedInGame(status));
+        return new($"Instalado ({string.Join(", ", installed)}).\n" + string.Join("\n", perClient), slots, focused);
     }
 
     private void ExportSevenDiagnostic() => Guard(() =>

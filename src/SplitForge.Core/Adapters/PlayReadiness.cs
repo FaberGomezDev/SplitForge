@@ -49,13 +49,36 @@ public sealed record SteamArt(string? Hero, string? Cover, string? Logo)
         foreach (var root in steamRoots)
         {
             var cache = Path.Combine(root, "appcache", "librarycache");
-            // Disposición actual (una carpeta por juego) y la anterior (archivos «AppID_nombre»).
-            hero ??= First(Path.Combine(cache, appId, "library_hero.jpg"), Path.Combine(cache, appId + "_library_hero.jpg"));
-            cover ??= First(Path.Combine(cache, appId, "library_600x900.jpg"), Path.Combine(cache, appId + "_library_600x900.jpg"));
-            logo ??= First(Path.Combine(cache, appId, "logo.png"), Path.Combine(cache, appId + "_logo.png"));
+            hero ??= Art(cache, appId, "library_hero.jpg");
+            cover ??= Art(cache, appId, "library_600x900.jpg", "library_capsule.jpg");
+            logo ??= Art(cache, appId, "logo.png");
         }
         return new SteamArt(hero, cover, logo);
 
-        static string? First(params string[] candidates) => candidates.FirstOrDefault(File.Exists);
+        // Tres disposiciones vistas en el cliente de Steam: una carpeta por juego con los archivos dentro, la misma
+        // carpeta con cada imagen en una subcarpeta con nombre de huella, y la anterior (archivos «AppID_nombre»).
+        static string? Art(string cache, string appId, params string[] names)
+        {
+            var folder = Path.Combine(cache, appId);
+            foreach (var name in names)
+            {
+                if (File.Exists(Path.Combine(folder, name)))
+                    return Path.Combine(folder, name);
+                if (File.Exists(Path.Combine(cache, appId + "_" + name)))
+                    return Path.Combine(cache, appId + "_" + name);
+                try
+                {
+                    if (Directory.Exists(folder)
+                        && Directory.EnumerateDirectories(folder).Order(StringComparer.OrdinalIgnoreCase)
+                            .Select(sub => Path.Combine(sub, name)).FirstOrDefault(File.Exists) is { } nested)
+                        return nested;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Una caché que no se deja leer es lo mismo que no tener la imagen.
+                }
+            }
+            return null;
+        }
     }
 }

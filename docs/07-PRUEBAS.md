@@ -35,6 +35,7 @@ Estas pruebas verifican lógica aislada y dobles de prueba; **no** validan dos p
 - Distribución por juego: proporción mínima 16:9 de 7DTD (solo estrecha los paneles más estrechos; se conserva al reaplicar), monitor completo y ventanas encima de la barra de tareas con «Tapar barra de tareas», y su persistencia.
 - Lanzamiento de clientes emulados: argumentos de 7DTD sin juego cruzado y con el tamaño del panel; `InstanceLaunch` con argumentos.
 - Detección de la ranura XInput pulsada (flancos de botones, gatillos que cruzan el umbral, mandos recién conectados ignorados).
+- No Man's Sky y biblioteca del lanzador (ADR-027): qué es una instalación, copia de J2 a partir de su `NMS.exe`, jugador de cada proceso por su carpeta, preparación (con una copia y con dos), catálogo de juegos, ajustes del juego elegido y carátulas en la disposición nueva de la caché de Steam.
 - Emulador de Steam (.NET):
   - instala con copia de seguridad, configuración y estado SHA-256, también con la estructura de plugins de Unity;
   - se niega a instalar dos veces o sin DLL original;
@@ -98,6 +99,16 @@ Cómo lo hace: pulsa los botones con el mando de prueba del filtro (`prueba.txt`
 
 **Avisos:** ocupa la pantalla unos 3 minutos; carga la **última partida del propietario** y cambia el objeto que J1 lleva en la mano; no se ejecuta si hay un juego o un SplitForge abierto. Mientras corre no hay que tocar teclado, ratón ni mandos, ni activar Ctrl+Alt+B: con el bloqueo de entrada, Alt no llega al juego y la fase B no reproduce el fallo (pasó en una repetición del 2026-10-11 en la que el propietario estaba usando el PC: las tres fases cambiaron de casilla). Al final cierra los juegos con el botón del lanzador (guardan al salir), cierra el lanzador y restaura `settings.v2.json` tal como estaba. Si el juego abre el cuadro «Inicio de sesión de Discord», lo acepta con el botón A del mando de prueba.
 
+### Ensayo del lanzador con No Man's Sky (`tools/ensayo_nms.ps1`, solo en el PC del propietario)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\ensayo_nms.ps1 -SinJuego
+```
+
+Con `-SinJuego` abre el paquete publicado, elige No Man's Sky en la biblioteca, imprime su preparación y los botones disponibles, captura solo la ventana de SplitForge y lo cierra. **Ejecutado el 2026-10-11:** biblioteca con los dos juegos; J1 listo, falta la copia de J2 y falta el filtro.
+
+Sin `-SinJuego`, además pulsa JUGAR (abre la copia de Steam a través de Steam), espera a que el lanzador le asigne su mando, captura la ventana del juego y la cierra con «Cerrar juegos» (acepta el aviso). No entra en ninguna partida y no pulsa «Preparar ahora». **Sin ejecutar todavía; avisar antes al propietario.** En los dos modos restaura `settings.v2.json` al terminar y no arranca si hay un juego o un SplitForge abierto.
+
 ### Pruebas de humo en Linux (desarrollo)
 
 - `SplitForge.Diagnostico mandos`: SDL3 3.5.0, hilo a 1000 Hz tras la corrección de plazos absolutos.
@@ -131,6 +142,8 @@ Cómo lo hace: pulsa los botones con el mando de prueba del filtro (`prueba.txt`
 | W22 | Tapar barra de tareas | Con la casilla activa, las ventanas ocupan el monitor completo y la barra de tareas no se ve; al detener, vuelven a su sitio y a su orden |
 | W23 | Ventana sin foco | Dentro de una partida, con el foco en la ventana de J1, J2 usa **todos** los botones de su mando (inventario, menús, rueda, mapa, saltar, recargar) y el puntero de sus menús no parpadea ni salta; repetir con el foco en J2. El estado del filtro dice «foco simulado · puntero propio» en los dos clientes |
 | W24 | Aviso de bloqueo | Al pulsar Ctrl+Alt+B aparece arriba, sobre los juegos, «TECLADO Y RATÓN BLOQUEADOS» y queda la insignia «Bloqueado · Ctrl+Alt+B»; al volver a pulsarlo, «DESBLOQUEADOS» y el aviso desaparece a los 3 s. El aviso no quita el foco al juego ni recibe clics |
+| W25 | No Man's Sky, un jugador | Con Steam Input desactivado para el juego y el filtro instalado con «Preparar ahora»: JUGAR abre la copia de Steam, el registro dice «J1 (PID …) → mando XInput 1» y el juego responde **solo** al mando de J1 (el otro mando no hace nada). «Cerrar juegos» avisa y lo cierra con normalidad |
+| W26 | No Man's Sky, dos jugadores | Con la segunda copia indicada y el filtro en las dos: JUGAR abre las dos, cada una con su mando, y divide la pantalla; los dos entran en la misma partida con sus cuentas. «Cerrar juegos» restaura la pantalla |
 
 **Resultado físico conocido:**
 - Prototipo: laboratorio v0.4 y Steam v0.5 confirmados.
